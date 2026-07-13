@@ -14,10 +14,12 @@
   "author": "Roberto Allende",
   "license": "MIT",
   "devDependencies": {
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.1.10",
     "builtin-modules": "3.3.0",
     "esbuild": "0.21.5",
+    "jsdom": "^29.1.1",
     "obsidian": "latest",
     "tslib": "2.6.0",
     "typescript": "^7.0.0",

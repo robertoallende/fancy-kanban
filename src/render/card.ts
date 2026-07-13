@@ -1,0 +1,36 @@
+import type { Card, FieldDefinition } from '../model/board';
+
+export function renderCard(card: Card, fields: FieldDefinition[]): HTMLElement {
+	const container = document.createElement('div');
+	container.classList.add('fk-card');
+
+	const visibleFields = fields.filter(f => f.name !== '_id');
+	const [titleField, ...secondaryFields] = visibleFields;
+
+	const title = document.createElement('p');
+	title.classList.add('fk-card__title');
+	title.textContent = card.values[titleField?.name] ?? '';
+	container.appendChild(title);
+
+	for (const field of secondaryFields) {
+		const value = card.values[field.name];
+		if (value === undefined || value === null || value === '') continue;
+
+		const row = document.createElement('div');
+		row.classList.add('fk-card__field');
+
+		const label = document.createElement('span');
+		label.classList.add('fk-card__field-label');
+		label.textContent = field.label;
+
+		const val = document.createElement('span');
+		val.classList.add('fk-card__field-value');
+		val.textContent = value;
+
+		row.appendChild(label);
+		row.appendChild(val);
+		container.appendChild(row);
+	}
+
+	return container;
+}
