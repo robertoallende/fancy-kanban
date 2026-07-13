@@ -256,9 +256,8 @@
   flex: none;
 }
 
-.fk-col-name    { width: 90px; }
 .fk-col-type    { width: 85px; }
-.fk-col-label   { width: 90px; }
+.fk-col-label   { width: 160px; }
 .fk-col-options { width: 120px; }
 .fk-col-default { width: 65px; }
 

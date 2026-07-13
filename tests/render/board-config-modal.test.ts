@@ -184,32 +184,31 @@ describe('BoardConfigModal — dynamic field list', () => {
 		expect(downBtns[downBtns.length - 1].disabled).toBe(true);
 	});
 
-	it('added field is included in saved schema', () => {
+	it('added field is included in saved schema with name derived from label', () => {
 		const { modal, onConfirm } = makeModal(SCHEMA);
 		const addBtn = Array.from(modal.contentEl.querySelectorAll('button'))
 			.find(b => b.textContent?.includes('Add field')) as HTMLButtonElement;
 		addBtn.click();
-		// Fill in the new blank row's name input
 		const rows = modal.contentEl.querySelectorAll('.fk-modal-field-row');
 		const lastRow = rows[rows.length - 1];
-		const nameInp = lastRow.querySelector('input') as HTMLInputElement;
-		nameInp.value = 'newfield';
-		nameInp.dispatchEvent(new Event('input'));
+		const labelInp = lastRow.querySelector('input') as HTMLInputElement;
+		labelInp.value = 'New Field';
+		labelInp.dispatchEvent(new Event('input'));
 		saveBtn(modal).click();
 		const schema = onConfirm.mock.calls[0][0] as BoardSchema;
-		expect(schema.fields.some(f => f.name === 'newfield')).toBe(true);
+		expect(schema.fields.some(f => f.name === 'new_field')).toBe(true);
 	});
 
-	it('shows error when adding a field with a duplicate name', () => {
+	it('shows error when adding a field with a label that derives a duplicate name', () => {
 		const { modal, onConfirm } = makeModal(SCHEMA);
 		const addBtn = Array.from(modal.contentEl.querySelectorAll('button'))
 			.find(b => b.textContent?.includes('Add field')) as HTMLButtonElement;
 		addBtn.click();
 		const rows = modal.contentEl.querySelectorAll('.fk-modal-field-row');
 		const lastRow = rows[rows.length - 1];
-		const nameInp = lastRow.querySelector('input') as HTMLInputElement;
-		nameInp.value = 'title'; // duplicate
-		nameInp.dispatchEvent(new Event('input'));
+		const labelInp = lastRow.querySelector('input') as HTMLInputElement;
+		labelInp.value = 'Title'; // derives 'title', which is a duplicate
+		labelInp.dispatchEvent(new Event('input'));
 		saveBtn(modal).click();
 		expect(onConfirm).not.toHaveBeenCalled();
 		expect(modal.contentEl.querySelector('.fk-modal-error')!.textContent).not.toBe('');

@@ -1,6 +1,10 @@
 import { App, Modal } from 'obsidian';
 import type { BoardSchema, FieldDefinition, FieldType } from '../model/board';
 
+function deriveFieldName(label: string): string {
+	return label.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
 const FIELD_TYPES: FieldType[] = ['Text', 'Textarea', 'Date', 'Number', 'Select', 'File'];
 
 const DEFAULT_SCHEMA: BoardSchema = {
@@ -105,8 +109,7 @@ export class BoardConfigModal extends Modal {
 		const row = document.createElement('div');
 		row.classList.add('fk-modal-field-row');
 
-		const nameInp = this.fixedInput(row, 'Name', field.name, 'fk-col-name');
-		nameInp.addEventListener('input', () => { field.name = nameInp.value; this.refreshViewConfig(); });
+		const isNew = field.name === '';
 
 		const typeSelect = document.createElement('select');
 		typeSelect.classList.add('fk-modal-input-sm', 'fk-col-type');
@@ -120,7 +123,15 @@ export class BoardConfigModal extends Modal {
 		row.appendChild(typeSelect);
 
 		const labelInp = this.fixedInput(row, 'Label', field.label, 'fk-col-label');
-		labelInp.addEventListener('input', () => { field.label = labelInp.value; });
+		if (!isNew) labelInp.title = `id: ${field.name}`;
+		labelInp.addEventListener('input', () => {
+			field.label = labelInp.value;
+			if (isNew) {
+				field.name = deriveFieldName(labelInp.value);
+				labelInp.title = field.name ? `id: ${field.name}` : '';
+				this.refreshViewConfig();
+			}
+		});
 
 		const isSelect = field.type === 'Select';
 
