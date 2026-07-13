@@ -188,6 +188,54 @@
   margin-top: 4px;
 }
 
+.fk-modal-section {
+  margin-bottom: 12px;
+}
+
+.fk-modal-section-label {
+  font-size: var(--font-smaller);
+  font-weight: 600;
+  opacity: 0.6;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fk-modal-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fk-modal-field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 6px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.fk-modal-input-sm {
+  width: auto;
+  flex: 1;
+  min-width: 80px;
+  font-size: var(--font-smaller);
+}
+
+.fk-modal-options-wrap {
+  display: flex;
+  flex: 2;
+}
+
+.fk-modal-error {
+  color: var(--text-error);
+  font-size: var(--font-smaller);
+  min-height: 1em;
+  margin: 4px 0;
+}
+
 .fk-error {
   color: var(--text-error);
   font-size: var(--font-smaller);

@@ -21,6 +21,10 @@ export function serializeBoard(board: Board): string {
 	return `---\n${config}\n---\n\n${table}`;
 }
 
+export function serializeBoardBlock(board: Board): string {
+	return `\`\`\`fancy-kanban\n${serializeBoard(board)}\n\`\`\``;
+}
+
 function serializeConfig(board: Board): string {
 	const lines: string[] = [];
 	lines.push(`title: ${board.title}`);

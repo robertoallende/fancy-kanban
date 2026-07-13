@@ -1,6 +1,8 @@
 import { addIcon, Notice, Plugin, TFile } from 'obsidian';
 import { registerPostProcessor } from './src/integration/postprocessor';
-import { FancyKanbanView, VIEW_TYPE_FANCY_KANBAN, BOARD_TEMPLATE } from './src/integration/standalone-view';
+import { FancyKanbanView, VIEW_TYPE_FANCY_KANBAN } from './src/integration/standalone-view';
+import { BoardConfigModal } from './src/render/board-config-modal';
+import { serializeBoardBlock } from './src/data/serializer';
 
 const FANCY_KANBAN_ICON = 'fancy-kanban-icon';
 
@@ -35,7 +37,17 @@ export default class FancyKanbanPlugin extends Plugin {
 			id: 'insert-board',
 			name: 'Insert Fancy Kanban board',
 			editorCallback: (editor) => {
-				editor.replaceRange(BOARD_TEMPLATE, editor.getCursor());
+				const template = serializeBoardBlock({
+					title: 'New Board',
+					fields: [
+						{ name: 'title', type: 'Text', label: 'Title' },
+						{ name: 'status', type: 'Select', label: 'Status', options: ['todo', 'doing', 'done'], default: 'todo' },
+					],
+					viewConfig: { columns: 'status' },
+					rawWorkflow: '',
+					cards: [],
+				});
+				editor.replaceRange(template, editor.getCursor());
 			},
 		});
 	}
@@ -44,17 +56,19 @@ export default class FancyKanbanPlugin extends Plugin {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_FANCY_KANBAN);
 	}
 
-	private async newBoard(): Promise<void> {
-		const baseName = 'New Board';
-		let fileName = `${baseName}.md`;
-		let counter = 2;
-		while (this.app.vault.getAbstractFileByPath(fileName)) {
-			fileName = `${baseName} ${counter}.md`;
-			counter++;
-		}
-
-		const file = await this.app.vault.create(fileName, BOARD_TEMPLATE);
-		const leaf = this.app.workspace.getLeaf(true);
-		await leaf.openFile(file as TFile);
+	private newBoard(): void {
+		new BoardConfigModal(this.app, null, async (schema) => {
+			const baseName = schema.title.trim() || 'New Board';
+			let fileName = `${baseName}.md`;
+			let counter = 2;
+			while (this.app.vault.getAbstractFileByPath(fileName)) {
+				fileName = `${baseName} ${counter}.md`;
+				counter++;
+			}
+			const content = serializeBoardBlock({ ...schema, cards: [] });
+			const file = await this.app.vault.create(fileName, content);
+			const leaf = this.app.workspace.getLeaf(true);
+			await leaf.openFile(file as TFile);
+		}).open();
 	}
 }
