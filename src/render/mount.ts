@@ -1,7 +1,7 @@
 import { App } from 'obsidian';
 import type { Board } from '../model/board';
 import { renderBoard } from './board';
-import { moveCard, deleteCard, createCard, updateCard } from '../model/mutations';
+import { reorderCard, deleteCard, createCard, updateCard } from '../model/mutations';
 import { parseWorkflow, isTransitionAllowed } from '../data/workflow';
 import { CardModal } from './card-modal';
 
@@ -60,12 +60,44 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 	});
 }
 
+function getInsertBeforeId(e: Event, col: HTMLElement): string | null {
+	const clientY = (e as MouseEvent).clientY ?? 0;
+	const cards = Array.from(col.querySelectorAll<HTMLElement>('.fk-card:not(.fk-card--dragging)'));
+	for (const card of cards) {
+		const rect = card.getBoundingClientRect();
+		if (clientY < rect.top + rect.height / 2) return card.dataset.cardId ?? null;
+	}
+	return null;
+}
+
+function updateDropIndicator(col: HTMLElement, insertBeforeId: string | null): void {
+	col.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
+	const indicator = document.createElement('div');
+	indicator.classList.add('fk-drop-indicator');
+	const cardsEl = col.querySelector('.fk-column__cards');
+	if (!cardsEl) return;
+	if (insertBeforeId === null) {
+		cardsEl.appendChild(indicator);
+	} else {
+		const target = cardsEl.querySelector(`[data-card-id="${insertBeforeId}"]`);
+		if (target) cardsEl.insertBefore(indicator, target);
+		else cardsEl.appendChild(indicator);
+	}
+}
+
+function clearDropState(boardEl: HTMLElement): void {
+	boardEl.querySelectorAll('.fk-card--dragging').forEach(c => c.classList.remove('fk-card--dragging'));
+	boardEl.querySelectorAll('.fk-column--drag-over').forEach(c => c.classList.remove('fk-column--drag-over'));
+	boardEl.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
+}
+
 function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void): void {
 	const columnField = board.fields.find(f => f.name === board.viewConfig.columns);
 	const statusOptions = columnField?.options ?? [];
 	const workflowMap = parseWorkflow(board.rawWorkflow || undefined, statusOptions);
 
 	let draggingCardId: string | null = null;
+	let insertBeforeId: string | null = null;
 
 	boardEl.addEventListener('dragstart', (e) => {
 		const card = (e.target as HTMLElement).closest<HTMLElement>('.fk-card');
@@ -76,8 +108,8 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 
 	boardEl.addEventListener('dragend', () => {
 		draggingCardId = null;
-		boardEl.querySelectorAll('.fk-card--dragging').forEach(c => c.classList.remove('fk-card--dragging'));
-		boardEl.querySelectorAll('.fk-column--drag-over').forEach(c => c.classList.remove('fk-column--drag-over'));
+		insertBeforeId = null;
+		clearDropState(boardEl);
 	});
 
 	boardEl.addEventListener('dragover', (e) => {
@@ -86,14 +118,16 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 		e.preventDefault();
 		boardEl.querySelectorAll('.fk-column--drag-over').forEach(c => c.classList.remove('fk-column--drag-over'));
 		col.classList.add('fk-column--drag-over');
+		insertBeforeId = getInsertBeforeId(e, col);
+		updateDropIndicator(col, insertBeforeId);
 	});
 
 	boardEl.addEventListener('dragleave', (e) => {
 		const col = (e.target as HTMLElement).closest<HTMLElement>('.fk-column');
 		if (!col) return;
-		// Only remove if leaving the column entirely (not entering a child)
 		if (!col.contains(e.relatedTarget as Node)) {
 			col.classList.remove('fk-column--drag-over');
+			col.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
 		}
 	});
 
@@ -101,14 +135,15 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 		const col = (e.target as HTMLElement).closest<HTMLElement>('.fk-column');
 		if (!col || !draggingCardId) return;
 
-		boardEl.querySelectorAll('.fk-column--drag-over').forEach(c => c.classList.remove('fk-column--drag-over'));
+		clearDropState(boardEl);
 
 		const toValue = col.dataset.columnValue ?? '';
 		const draggedCard = board.cards.find(c => c.id === draggingCardId);
 		const fromValue = draggedCard?.values[board.viewConfig.columns] ?? '';
 
-		if (!isTransitionAllowed(workflowMap, fromValue, toValue)) return;
+		if (fromValue !== toValue && !isTransitionAllowed(workflowMap, fromValue, toValue)) return;
 
-		dispatch(moveCard(board, draggingCardId, toValue));
+		dispatch(reorderCard(board, draggingCardId, toValue, insertBeforeId));
+		insertBeforeId = null;
 	});
 }

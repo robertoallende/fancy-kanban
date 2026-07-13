@@ -100,19 +100,28 @@ describe('drag lifecycle', () => {
 });
 
 describe('drop — allowed transition', () => {
-	it('dispatches moveCard when dropping on a different column (no workflow = all allowed)', () => {
+	it('dispatches reorderCard when dropping on a different column', () => {
 		const { el, save } = makeEl();
 		const card = getCard(el, 'c1');
 		const targetCol = getColumn(el, 'done');
 
 		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		targetCol.dispatchEvent(
-			new Event('drop', { bubbles: true }),
-		);
+		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
 
 		expect(save).toHaveBeenCalledTimes(1);
 		const savedBoard = save.mock.calls[0][0] as Board;
 		expect(savedBoard.cards.find(c => c.id === 'c1')!.values.status).toBe('done');
+	});
+
+	it('dispatches reorderCard when dropping on the same column (reorder)', () => {
+		const { el, save } = makeEl();
+		const card = getCard(el, 'c1');
+		const sameCol = getColumn(el, 'inbox');
+
+		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
+		sameCol.dispatchEvent(new Event('drop', { bubbles: true }));
+
+		expect(save).toHaveBeenCalledTimes(1);
 	});
 
 	it('clears .fk-column--drag-over after drop', () => {
@@ -124,6 +133,16 @@ describe('drop — allowed transition', () => {
 		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
 		expect(targetCol.classList.contains('fk-column--drag-over')).toBe(false);
 	});
+
+	it('clears drop indicator after drop', () => {
+		const { el } = makeEl();
+		const card = getCard(el, 'c1');
+		const targetCol = getColumn(el, 'done');
+		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
+		targetCol.dispatchEvent(new Event('dragover', { bubbles: true }));
+		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
+		expect(el.querySelector('.fk-drop-indicator')).toBeNull();
+	});
 });
 
 describe('drop — blocked transition', () => {
@@ -134,17 +153,6 @@ describe('drop — blocked transition', () => {
 
 		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
 		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
-
-		expect(save).not.toHaveBeenCalled();
-	});
-
-	it('does not dispatch when dropping on the same column', () => {
-		const { el, save } = makeEl();
-		const card = getCard(el, 'c1'); // status: inbox
-		const sameCol = getColumn(el, 'inbox');
-
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		sameCol.dispatchEvent(new Event('drop', { bubbles: true }));
 
 		expect(save).not.toHaveBeenCalled();
 	});

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { moveCard, addCard, deleteCard, updateCardField, createCard, updateCard } from '../../src/model/mutations';
+import { reorderCard, addCard, deleteCard, updateCardField, createCard, updateCard } from '../../src/model/mutations';
 import type { Board } from '../../src/model/board';
 
 const BOARD: Board = {
@@ -18,40 +18,40 @@ const BOARD: Board = {
 	],
 };
 
-describe('moveCard', () => {
+describe('reorderCard — cross-column move', () => {
 	it('updates the column field value for the target card', () => {
-		const result = moveCard(BOARD, 'card1', 'doing');
+		const result = reorderCard(BOARD, 'card1', 'doing', null);
 		const card = result.cards.find(c => c.id === 'card1')!;
 		expect(card.values.status).toBe('doing');
 	});
 
 	it('leaves other fields on the card unchanged', () => {
-		const result = moveCard(BOARD, 'card1', 'doing');
+		const result = reorderCard(BOARD, 'card1', 'doing', null);
 		const card = result.cards.find(c => c.id === 'card1')!;
 		expect(card.values.title).toBe('Alpha');
 		expect(card.values.priority).toBe('high');
 	});
 
 	it('leaves other cards unchanged', () => {
-		const result = moveCard(BOARD, 'card1', 'doing');
+		const result = reorderCard(BOARD, 'card1', 'doing', null);
 		const card2 = result.cards.find(c => c.id === 'card2')!;
 		expect(card2.values.status).toBe('doing');
 		expect(card2.values.title).toBe('Beta');
 	});
 
 	it('leaves board field definitions unchanged', () => {
-		const result = moveCard(BOARD, 'card1', 'doing');
+		const result = reorderCard(BOARD, 'card1', 'doing', null);
 		expect(result.fields).toEqual(BOARD.fields);
 	});
 
 	it('returns board unchanged if cardId not found', () => {
-		const result = moveCard(BOARD, 'nonexistent', 'doing');
+		const result = reorderCard(BOARD, 'nonexistent', 'doing', null);
 		expect(result.cards).toEqual(BOARD.cards);
 	});
 
 	it('does not mutate the original board', () => {
 		const original = JSON.stringify(BOARD);
-		moveCard(BOARD, 'card1', 'doing');
+		reorderCard(BOARD, 'card1', 'doing', null);
 		expect(JSON.stringify(BOARD)).toBe(original);
 	});
 });
@@ -236,10 +236,49 @@ describe('updateCard', () => {
 	});
 });
 
+describe('reorderCard', () => {
+	it('moves card to another column when insertBeforeId is null (append)', () => {
+		const result = reorderCard(BOARD, 'card1', 'done', null);
+		const card = result.cards.find(c => c.id === 'card1')!;
+		expect(card.values.status).toBe('done');
+		expect(result.cards[result.cards.length - 1].id).toBe('card1');
+	});
+
+	it('inserts card before the target card in the same column', () => {
+		const result = reorderCard(BOARD, 'card3', 'inbox', 'card1');
+		const ids = result.cards.map(c => c.id);
+		expect(ids.indexOf('card3')).toBeLessThan(ids.indexOf('card1'));
+	});
+
+	it('inserts card before target card in a different column', () => {
+		const result = reorderCard(BOARD, 'card1', 'doing', 'card2');
+		const card = result.cards.find(c => c.id === 'card1')!;
+		expect(card.values.status).toBe('doing');
+		const ids = result.cards.map(c => c.id);
+		expect(ids.indexOf('card1')).toBeLessThan(ids.indexOf('card2'));
+	});
+
+	it('appends when insertBeforeId is not found', () => {
+		const result = reorderCard(BOARD, 'card1', 'done', 'nonexistent');
+		expect(result.cards[result.cards.length - 1].id).toBe('card1');
+	});
+
+	it('returns board unchanged if cardId not found', () => {
+		const result = reorderCard(BOARD, 'nonexistent', 'done', null);
+		expect(result.cards).toEqual(BOARD.cards);
+	});
+
+	it('does not mutate the original board', () => {
+		const original = JSON.stringify(BOARD);
+		reorderCard(BOARD, 'card1', 'done', null);
+		expect(JSON.stringify(BOARD)).toBe(original);
+	});
+});
+
 describe('composition', () => {
-	it('moveCard after deleteCard produces the expected result', () => {
+	it('reorderCard after deleteCard produces the expected result', () => {
 		const afterDelete = deleteCard(BOARD, 'card3');
-		const afterMove = moveCard(afterDelete, 'card1', 'done');
+		const afterMove = reorderCard(afterDelete, 'card1', 'done', null);
 		expect(afterMove.cards.find(c => c.id === 'card3')).toBeUndefined();
 		expect(afterMove.cards.find(c => c.id === 'card1')!.values.status).toBe('done');
 	});

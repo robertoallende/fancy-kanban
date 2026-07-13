@@ -65,6 +65,14 @@
   opacity: 0.4;
 }
 
+.fk-drop-indicator {
+  height: 2px;
+  background: var(--interactive-accent);
+  border-radius: 1px;
+  margin: 2px 0;
+  pointer-events: none;
+}
+
 .fk-column__cards {
   display: flex;
   flex-direction: column;
