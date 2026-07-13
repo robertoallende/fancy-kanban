@@ -9,7 +9,7 @@ export function renderCard(card: Card, fields: FieldDefinition[]): HTMLElement {
 	const visibleFields = fields.filter(f => f.name !== '_id');
 	const [titleField, ...secondaryFields] = visibleFields;
 
-	const title = document.createElement('p');
+	const title = document.createElement('div');
 	title.classList.add('fk-card__title');
 	title.textContent = card.values[titleField?.name] ?? '';
 	title.dataset.cardId = card.id;

@@ -29,7 +29,7 @@
   background: var(--background-secondary);
   border-radius: var(--fk-col-radius);
   padding: var(--fk-col-padding);
-  min-width: 200px;
+  width: 272px;
   flex-shrink: 0;
 }
 
@@ -75,7 +75,7 @@
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--fk-card-radius);
-  padding: 10px 12px;
+  padding: 6px 10px 8px;
 }
 
 .fk-card__title {
