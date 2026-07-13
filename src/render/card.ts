@@ -3,6 +3,8 @@ import type { Card, FieldDefinition } from '../model/board';
 export function renderCard(card: Card, fields: FieldDefinition[]): HTMLElement {
 	const container = document.createElement('div');
 	container.classList.add('fk-card');
+	container.setAttribute('draggable', 'true');
+	container.dataset.cardId = card.id;
 
 	const visibleFields = fields.filter(f => f.name !== '_id');
 	const [titleField, ...secondaryFields] = visibleFields;

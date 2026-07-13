@@ -2,13 +2,14 @@ import type { Card, FieldDefinition } from '../model/board';
 import { renderCard } from './card';
 
 export function renderColumn(
-	_name: string,
+	name: string,
 	label: string,
 	cards: Card[],
 	fields: FieldDefinition[],
 ): HTMLElement {
 	const container = document.createElement('div');
 	container.classList.add('fk-column');
+	container.dataset.columnValue = name;
 
 	const header = document.createElement('div');
 	header.classList.add('fk-column__header');

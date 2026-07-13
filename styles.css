@@ -55,6 +55,16 @@
   opacity: var(--fk-opacity-count);
 }
 
+.fk-column--drag-over {
+  background: color-mix(in srgb, var(--interactive-accent) 15%, var(--background-secondary));
+  outline: 1px solid var(--interactive-accent);
+  outline-offset: -1px;
+}
+
+.fk-card--dragging {
+  opacity: 0.4;
+}
+
 .fk-column__cards {
   display: flex;
   flex-direction: column;
