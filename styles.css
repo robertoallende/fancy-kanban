@@ -9,6 +9,12 @@
   --fk-opacity-count: 0.4;
   --fk-opacity-field-label: 0.45;
   --fk-opacity-field-value: 0.75;
+
+  /* Break out of Obsidian's readable line length constraint */
+  width: calc(100% + 2 * var(--file-margins, 40px));
+  margin-left: calc(-1 * var(--file-margins, 40px));
+  margin-right: calc(-1 * var(--file-margins, 40px));
+  box-sizing: border-box;
 }
 
 .fk-board__columns {
