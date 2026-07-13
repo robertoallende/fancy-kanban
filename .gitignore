@@ -1,5 +1,4 @@
 # Build output
-main.js
 *.js.map
 
 # Test coverage
