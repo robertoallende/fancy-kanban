@@ -146,6 +146,27 @@
   display: block;
 }
 
+.fk-field-input,
+.fk-title-input {
+  background: var(--background-primary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: 3px;
+  padding: 1px 4px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: var(--text-normal);
+}
+
+.fk-field-input {
+  font-size: var(--font-smaller);
+}
+
+.fk-title-input {
+  font-size: var(--font-text-size);
+  font-weight: var(--font-normal);
+}
+
 .fk-error {
   color: var(--text-error);
   font-size: var(--font-smaller);

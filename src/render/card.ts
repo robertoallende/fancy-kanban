@@ -12,6 +12,8 @@ export function renderCard(card: Card, fields: FieldDefinition[]): HTMLElement {
 	const title = document.createElement('p');
 	title.classList.add('fk-card__title');
 	title.textContent = card.values[titleField?.name] ?? '';
+	title.dataset.cardId = card.id;
+	title.dataset.fieldName = titleField?.name ?? '';
 	container.appendChild(title);
 
 	for (const field of secondaryFields) {
@@ -20,6 +22,7 @@ export function renderCard(card: Card, fields: FieldDefinition[]): HTMLElement {
 
 		const row = document.createElement('div');
 		row.classList.add('fk-card__field');
+		row.dataset.fieldName = field.name;
 
 		const label = document.createElement('span');
 		label.classList.add('fk-card__field-label');
