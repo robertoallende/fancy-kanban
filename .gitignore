@@ -2,6 +2,9 @@
 main.js
 *.js.map
 
+# Test coverage
+coverage/
+
 # Node
 node_modules/
 npm-debug.log*
