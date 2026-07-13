@@ -1,7 +1,7 @@
 # Fancy Kanban
 
 [![CI](https://github.com/robertoallende/fancy-kanban/actions/workflows/ci.yml/badge.svg)](https://github.com/robertoallende/fancy-kanban/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/robertoallende/fancy-kanban/graph/badge.svg)](https://codecov.io/gh/robertoallende/fancy-kanban)
+[![codecov](https://codecov.io/github/robertoallende/fancy-kanban/graph/badge.svg?token=007FYCYQV9)](https://codecov.io/github/robertoallende/fancy-kanban)
 
 Embeddable kanban boards in any Obsidian note, with native swimlanes and a relational field model.
 
