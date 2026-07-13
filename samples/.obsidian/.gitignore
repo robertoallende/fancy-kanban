@@ -1,0 +1,8 @@
+*
+!.gitignore
+!community-plugins.json
+!plugins/
+!plugins/fancy-kanban/
+!plugins/fancy-kanban/main.js
+!plugins/fancy-kanban/manifest.json
+!plugins/fancy-kanban/styles.css
