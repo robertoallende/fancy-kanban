@@ -1,4 +1,5 @@
 import type { Plugin, MarkdownPostProcessorContext } from 'obsidian';
+import { TFile } from 'obsidian';
 import { parseBlock } from '../data/parser';
 import { mountBoard } from '../render/mount';
 import writeBack from './write-back';
@@ -25,7 +26,8 @@ export function registerPostProcessor(plugin: Plugin): void {
 			return;
 		}
 
-		const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
+		const abstract = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
+		const file = abstract instanceof TFile ? abstract : null;
 		if (!file) {
 			mountBoard(el, result.board, () => Promise.resolve(), plugin.app);
 			return;

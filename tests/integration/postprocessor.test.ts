@@ -16,7 +16,7 @@ function makePlugin(filePath = 'note.md', file: TFile | null = MOCK_FILE): {
 		}),
 		app: {
 			vault: {
-				getFileByPath: vi.fn(() => file),
+				getAbstractFileByPath: vi.fn(() => file),
 				process: vi.fn((_file: TFile, fn: (c: string) => string) => Promise.resolve(fn(''))),
 			},
 		},

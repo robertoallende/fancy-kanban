@@ -22,7 +22,10 @@ __export(main_exports, {
   default: () => FancyKanbanPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
+
+// src/integration/postprocessor.ts
+var import_obsidian3 = require("obsidian");
 
 // src/data/schema.ts
 function parseConfig(configText) {
@@ -391,6 +394,7 @@ var CardModal = class extends import_obsidian.Modal {
     this.values = {};
   }
   onOpen() {
+    var _a;
     const { contentEl } = this;
     contentEl.empty();
     this.titleEl.textContent = this.card ? "Edit card" : "Add card";
@@ -409,8 +413,7 @@ var CardModal = class extends import_obsidian.Modal {
       this.close();
     });
     contentEl.appendChild(saveBtn);
-    const firstInput = contentEl.querySelector("input, textarea, select");
-    firstInput == null ? void 0 : firstInput.focus();
+    (_a = contentEl.querySelector("input, textarea, select")) == null ? void 0 : _a.focus();
   }
   renderField(container, field) {
     var _a, _b;
@@ -906,7 +909,8 @@ function registerPostProcessor(plugin) {
       el.appendChild(error);
       return;
     }
-    const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
+    const abstract = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
+    const file = abstract instanceof import_obsidian3.TFile ? abstract : null;
     if (!file) {
       mountBoard(el, result.board, () => Promise.resolve(), plugin.app);
       return;
@@ -918,9 +922,9 @@ function registerPostProcessor(plugin) {
 }
 
 // src/integration/standalone-view.ts
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 var VIEW_TYPE_FANCY_KANBAN = "fancy-kanban-view";
-var FancyKanbanView = class extends import_obsidian3.ItemView {
+var FancyKanbanView = class extends import_obsidian4.ItemView {
   constructor(leaf) {
     super(leaf);
     this.boardTitle = "Fancy Kanban";
@@ -970,7 +974,7 @@ var FancyKanbanView = class extends import_obsidian3.ItemView {
 // main.ts
 var FANCY_KANBAN_ICON = "fancy-kanban-icon";
 function registerIcon() {
-  (0, import_obsidian4.addIcon)(FANCY_KANBAN_ICON, `<g transform="scale(4.1667)" fill="none" stroke="currentColor" stroke-width="1.44" stroke-linecap="round" stroke-linejoin="round">
+  (0, import_obsidian5.addIcon)(FANCY_KANBAN_ICON, `<g transform="scale(4.1667)" fill="none" stroke="currentColor" stroke-width="1.44" stroke-linecap="round" stroke-linejoin="round">
 <path d="M8.2 11H5.8C5.35817 11 5 11.2985 5 11.6667V22.3333C5 22.7015 5.35817 23 5.8 23H8.2C8.64183 23 9 22.7015 9 22.3333V11.6667C9 11.2985 8.64183 11 8.2 11Z"/>
 <path d="M13.2 11H10.8C10.3582 11 10 11.2985 10 11.6667V18.3333C10 18.7015 10.3582 19 10.8 19H13.2C13.6418 19 14 18.7015 14 18.3333V11.6667C14 11.2985 13.6418 11 13.2 11Z"/>
 <path d="M18.2 11H15.8C15.3582 11 15 11.2686 15 11.6V19.4C15 19.7314 15.3582 20 15.8 20H18.2C18.6418 20 19 19.7314 19 19.4V11.6C19 11.2686 18.6418 11 18.2 11Z"/>
@@ -978,7 +982,7 @@ function registerIcon() {
 <path d="M3 8.20044H21"/>
 </g>`);
 }
-var FancyKanbanPlugin = class extends import_obsidian4.Plugin {
+var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
   async onload() {
     registerIcon();
     this.registerView(VIEW_TYPE_FANCY_KANBAN, (leaf) => new FancyKanbanView(leaf));
@@ -988,12 +992,12 @@ var FancyKanbanPlugin = class extends import_obsidian4.Plugin {
     });
     this.addCommand({
       id: "new-board",
-      name: "New Fancy Kanban board",
+      name: "New board",
       callback: () => this.newBoard()
     });
     this.addCommand({
       id: "insert-board",
-      name: "Insert Fancy Kanban board",
+      name: "Insert board",
       editorCallback: (editor) => {
         const template = serializeBoardBlock({
           title: "New Board",
@@ -1009,11 +1013,10 @@ var FancyKanbanPlugin = class extends import_obsidian4.Plugin {
       }
     });
   }
-  async onunload() {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_FANCY_KANBAN);
+  onunload() {
   }
   newBoard() {
-    new BoardConfigModal(this.app, null, async (schema) => {
+    new BoardConfigModal(this.app, null, (schema) => {
       const baseName = schema.title.trim() || "New Board";
       let fileName = `${baseName}.md`;
       let counter = 2;
@@ -1022,9 +1025,11 @@ var FancyKanbanPlugin = class extends import_obsidian4.Plugin {
         counter++;
       }
       const content = serializeBoardBlock({ ...schema, cards: [] });
-      const file = await this.app.vault.create(fileName, content);
-      const leaf = this.app.workspace.getLeaf(true);
-      await leaf.openFile(file);
+      void this.app.vault.create(fileName, content).then((file) => {
+        if (file instanceof import_obsidian5.TFile) {
+          void this.app.workspace.getLeaf(true).openFile(file);
+        }
+      });
     }).open();
   }
 };

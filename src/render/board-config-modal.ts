@@ -55,7 +55,7 @@ export class BoardConfigModal extends Modal {
 		saveBtn.addEventListener('click', () => this.submit());
 		contentEl.appendChild(saveBtn);
 
-		(contentEl.querySelector('input') as HTMLElement | null)?.focus();
+		contentEl.querySelector<HTMLElement>('input')?.focus();
 	}
 
 	private renderTitleInput(container: HTMLElement): void {

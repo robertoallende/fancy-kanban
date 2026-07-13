@@ -1,4 +1,4 @@
-import { addIcon, Notice, Plugin, TFile } from 'obsidian';
+import { addIcon, Plugin, TFile } from 'obsidian';
 import { registerPostProcessor } from './src/integration/postprocessor';
 import { FancyKanbanView, VIEW_TYPE_FANCY_KANBAN } from './src/integration/standalone-view';
 import { BoardConfigModal } from './src/render/board-config-modal';
@@ -29,13 +29,13 @@ export default class FancyKanbanPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'new-board',
-			name: 'New Fancy Kanban board',
+			name: 'New board',
 			callback: () => this.newBoard(),
 		});
 
 		this.addCommand({
 			id: 'insert-board',
-			name: 'Insert Fancy Kanban board',
+			name: 'Insert board',
 			editorCallback: (editor) => {
 				const template = serializeBoardBlock({
 					title: 'New Board',
@@ -52,12 +52,12 @@ export default class FancyKanbanPlugin extends Plugin {
 		});
 	}
 
-	async onunload() {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_FANCY_KANBAN);
+	onunload() {
+		// intentionally empty — Obsidian handles leaf cleanup
 	}
 
 	private newBoard(): void {
-		new BoardConfigModal(this.app, null, async (schema) => {
+		new BoardConfigModal(this.app, null, (schema) => {
 			const baseName = schema.title.trim() || 'New Board';
 			let fileName = `${baseName}.md`;
 			let counter = 2;
@@ -66,9 +66,11 @@ export default class FancyKanbanPlugin extends Plugin {
 				counter++;
 			}
 			const content = serializeBoardBlock({ ...schema, cards: [] });
-			const file = await this.app.vault.create(fileName, content);
-			const leaf = this.app.workspace.getLeaf(true);
-			await leaf.openFile(file as TFile);
+			void this.app.vault.create(fileName, content).then((file) => {
+				if (file instanceof TFile) {
+					void this.app.workspace.getLeaf(true).openFile(file);
+				}
+			});
 		}).open();
 	}
 }

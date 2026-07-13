@@ -37,8 +37,7 @@ export class CardModal extends Modal {
 		});
 		contentEl.appendChild(saveBtn);
 
-		const firstInput = contentEl.querySelector('input, textarea, select') as HTMLElement | null;
-		firstInput?.focus();
+		contentEl.querySelector<HTMLElement>('input, textarea, select')?.focus();
 	}
 
 	private renderField(container: HTMLElement, field: FieldDefinition): void {
