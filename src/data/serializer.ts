@@ -22,7 +22,7 @@ export function serializeBoard(board: Board): string {
 }
 
 export function serializeBoardBlock(board: Board): string {
-	return `\`\`\`fancy-kanban\n${serializeBoard(board)}\n\`\`\``;
+	return `\`\`\`fancy-kanban\n${serializeBoard(board)}\n\`\`\`\n`;
 }
 
 function serializeConfig(board: Board): string {
