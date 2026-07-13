@@ -61,9 +61,10 @@ function attachInlineEdit(boardEl: HTMLElement, board: Board, dispatch: (b: Boar
 			const commit = () => dispatch(updateCardField(board, cardId, fieldName, input.value));
 			const cancel = () => { titleEl.textContent = currentValue; };
 			input.addEventListener('blur', commit);
-			input.addEventListener('keydown', (ev) => {
-				if (ev.key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
-				if (ev.key === 'Escape') { input.removeEventListener('blur', commit); cancel(); }
+			input.addEventListener('keydown', (ev: Event) => {
+				const key = (ev as KeyboardEvent).key;
+				if (key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
+				if (key === 'Escape') { input.removeEventListener('blur', commit); cancel(); }
 			});
 			return;
 		}
@@ -107,9 +108,10 @@ function attachInlineEdit(boardEl: HTMLElement, board: Board, dispatch: (b: Boar
 		const commit = () => dispatch(updateCardField(board, cardId, fieldName, input.value));
 		const cancel = () => { input.replaceWith(valueEl); };
 		input.addEventListener('blur', commit);
-		input.addEventListener('keydown', (ev) => {
-			if (ev.key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
-			if (ev.key === 'Escape') { input.removeEventListener('blur', commit); cancel(); }
+		input.addEventListener('keydown', (ev: Event) => {
+			const key = (ev as KeyboardEvent).key;
+			if (key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
+			if (key === 'Escape') { input.removeEventListener('blur', commit); cancel(); }
 		});
 	});
 }
