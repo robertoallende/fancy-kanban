@@ -85,24 +85,6 @@
   font-weight: var(--font-normal);
 }
 
-.fk-card__field {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-  margin-top: 2px;
-}
-
-.fk-card__field-label {
-  font-size: var(--font-smaller);
-  color: var(--text-normal);
-  opacity: var(--fk-opacity-field-label);
-}
-
-.fk-card__field-value {
-  font-size: var(--font-smaller);
-  color: var(--text-normal);
-  opacity: var(--fk-opacity-field-value);
-}
 
 .fk-board .fk-col__add-btn {
   width: 100%;
