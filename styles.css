@@ -139,7 +139,6 @@
   opacity: 0.5;
   cursor: pointer;
   font-size: var(--font-smaller);
-  text-align: left !important;
   justify-content: flex-start;
   border-radius: var(--fk-card-radius);
 }
