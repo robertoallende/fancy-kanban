@@ -1,14 +1,25 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
-import type { Plugin } from 'obsidian';
-import { registerPostProcessor } from '../../src/integration/postprocessor';
+import type { Plugin, TFile } from 'obsidian';
+import { registerPostProcessor, blockIndexFromContext } from '../../src/integration/postprocessor';
 
-function makePlugin(): { plugin: Plugin; getHandler: () => ((source: string, el: HTMLElement) => void) } {
-	let capturedHandler: ((source: string, el: HTMLElement) => void) | null = null;
+const MOCK_FILE = {} as TFile;
+
+function makePlugin(filePath = 'note.md', file: TFile | null = MOCK_FILE): {
+	plugin: Plugin;
+	getHandler: () => ((source: string, el: HTMLElement, ctx: unknown) => void);
+} {
+	let capturedHandler: ((source: string, el: HTMLElement, ctx: unknown) => void) | null = null;
 	const plugin = {
 		registerMarkdownCodeBlockProcessor: vi.fn((_, handler) => {
 			capturedHandler = handler;
 		}),
+		app: {
+			vault: {
+				getFileByPath: vi.fn(() => file),
+				process: vi.fn((_file: TFile, fn: (c: string) => string) => Promise.resolve(fn(''))),
+			},
+		},
 	} as unknown as Plugin;
 	return {
 		plugin,
@@ -16,6 +27,13 @@ function makePlugin(): { plugin: Plugin; getHandler: () => ((source: string, el:
 			if (!capturedHandler) throw new Error('handler not registered');
 			return capturedHandler;
 		},
+	};
+}
+
+function makeCtx(lineStart = 0, text = ''): unknown {
+	return {
+		sourcePath: 'note.md',
+		getSectionInfo: vi.fn(() => ({ lineStart, lineEnd: lineStart + 10, text })),
 	};
 }
 
@@ -55,7 +73,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el);
+			getHandler()(VALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 
@@ -63,7 +81,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el);
+			getHandler()(VALID_SOURCE, el, makeCtx());
 			expect(el.children.length).toBe(1);
 		});
 
@@ -71,8 +89,16 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el);
+			getHandler()(VALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-error')).toBeNull();
+		});
+
+		it('renders board even when file is not found', () => {
+			const { plugin, getHandler } = makePlugin('note.md', null);
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(VALID_SOURCE, el, makeCtx());
+			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 	});
 
@@ -81,7 +107,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el);
+			getHandler()(INVALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-error')).not.toBeNull();
 		});
 
@@ -89,7 +115,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el);
+			getHandler()(INVALID_SOURCE, el, makeCtx());
 			expect(el.children.length).toBe(1);
 		});
 
@@ -97,7 +123,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el);
+			getHandler()(INVALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-board')).toBeNull();
 		});
 
@@ -105,8 +131,74 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el);
+			getHandler()(INVALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-error')!.textContent!.length).toBeGreaterThan(0);
 		});
+	});
+});
+
+describe('blockIndexFromContext', () => {
+	const el = document.createElement('div');
+
+	it('returns 0 when the block is the first fancy-kanban block in the file', () => {
+		const ctx = {
+			sourcePath: 'note.md',
+			getSectionInfo: vi.fn(() => ({
+				lineStart: 2,
+				lineEnd: 8,
+				text: '# Note\n\n```fancy-kanban\n---\ntitle: X\n---\n```\n',
+			})),
+		};
+		expect(blockIndexFromContext(ctx as never, el)).toBe(0);
+	});
+
+	it('returns 1 when one fancy-kanban block appears before the target', () => {
+		const text = [
+			'# Note',
+			'',
+			'```fancy-kanban',
+			'---',
+			'title: First',
+			'---',
+			'```',
+			'',
+			'```fancy-kanban',
+			'---',
+			'title: Second',
+			'---',
+			'```',
+		].join('\n');
+		const ctx = {
+			sourcePath: 'note.md',
+			getSectionInfo: vi.fn(() => ({ lineStart: 8, lineEnd: 12, text })),
+		};
+		expect(blockIndexFromContext(ctx as never, el)).toBe(1);
+	});
+
+	it('returns 0 when getSectionInfo returns null', () => {
+		const ctx = {
+			sourcePath: 'note.md',
+			getSectionInfo: vi.fn(() => null),
+		};
+		expect(blockIndexFromContext(ctx as never, el)).toBe(0);
+	});
+
+	it('does not count non-fancy-kanban code fences', () => {
+		const text = [
+			'```javascript',
+			'console.log("hi");',
+			'```',
+			'',
+			'```fancy-kanban',
+			'---',
+			'title: Board',
+			'---',
+			'```',
+		].join('\n');
+		const ctx = {
+			sourcePath: 'note.md',
+			getSectionInfo: vi.fn(() => ({ lineStart: 4, lineEnd: 8, text })),
+		};
+		expect(blockIndexFromContext(ctx as never, el)).toBe(0);
 	});
 });
