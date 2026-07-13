@@ -25,6 +25,7 @@ data.json
 .vscode/
 .idea/
 *.swp
+.obsidian
 
 # OS
 .DS_Store
