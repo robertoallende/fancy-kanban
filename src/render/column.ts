@@ -7,32 +7,32 @@ export function renderColumn(
 	cards: Card[],
 	fields: FieldDefinition[],
 ): HTMLElement {
-	const container = document.createElement('div');
+	const container = activeDocument.createElement('div');
 	container.classList.add('fk-column');
 	container.dataset.columnValue = name;
 
-	const header = document.createElement('div');
+	const header = activeDocument.createElement('div');
 	header.classList.add('fk-column__header');
 
-	const title = document.createElement('span');
+	const title = activeDocument.createElement('span');
 	title.classList.add('fk-column__title');
 	title.textContent = label;
 
-	const count = document.createElement('span');
+	const count = activeDocument.createElement('span');
 	count.classList.add('fk-column__count');
 	count.textContent = String(cards.length);
 
 	header.appendChild(title);
 	header.appendChild(count);
 
-	const cardsContainer = document.createElement('div');
+	const cardsContainer = activeDocument.createElement('div');
 	cardsContainer.classList.add('fk-column__cards');
 
 	for (const card of cards) {
 		cardsContainer.appendChild(renderCard(card, fields));
 	}
 
-	const addBtn = document.createElement('button');
+	const addBtn = activeDocument.createElement('button');
 	addBtn.classList.add('fk-col__add-btn');
 	addBtn.textContent = '+ Add card';
 

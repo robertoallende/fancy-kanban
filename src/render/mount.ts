@@ -83,7 +83,7 @@ function getInsertBeforeId(e: Event, col: HTMLElement): string | null {
 
 function updateDropIndicator(col: HTMLElement, insertBeforeId: string | null): void {
 	col.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
-	const indicator = document.createElement('div');
+	const indicator = activeDocument.createElement('div');
 	indicator.classList.add('fk-drop-indicator');
 	const cardsEl = col.querySelector('.fk-column__cards');
 	if (!cardsEl) return;

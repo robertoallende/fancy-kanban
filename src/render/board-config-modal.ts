@@ -45,11 +45,11 @@ export class BoardConfigModal extends Modal {
 		this.renderViewConfig(contentEl);
 		this.renderWorkflow(contentEl);
 
-		this.errorEl = document.createElement('p');
+		this.errorEl = activeDocument.createElement('p');
 		this.errorEl.classList.add('fk-modal-error');
 		contentEl.appendChild(this.errorEl);
 
-		const saveBtn = document.createElement('button');
+		const saveBtn = activeDocument.createElement('button');
 		saveBtn.classList.add('fk-modal-save');
 		saveBtn.textContent = 'Save';
 		saveBtn.addEventListener('click', () => this.submit());
@@ -60,7 +60,7 @@ export class BoardConfigModal extends Modal {
 
 	private renderTitleInput(container: HTMLElement): void {
 		const wrap = this.field(container, 'Board title');
-		const inp = document.createElement('input');
+		const inp = activeDocument.createElement('input');
 		inp.type = 'text';
 		inp.classList.add('fk-modal-input');
 		inp.value = this.schema.title;
@@ -69,21 +69,21 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private renderFieldsSection(container: HTMLElement): void {
-		const section = document.createElement('div');
+		const section = activeDocument.createElement('div');
 		section.classList.add('fk-modal-section');
 
-		const heading = document.createElement('p');
+		const heading = activeDocument.createElement('p');
 		heading.classList.add('fk-modal-section-label');
 		heading.textContent = 'Fields';
 		section.appendChild(heading);
 
-		this.fieldListEl = document.createElement('div');
+		this.fieldListEl = activeDocument.createElement('div');
 		this.fieldListEl.classList.add('fk-modal-field-list');
 		section.appendChild(this.fieldListEl);
 
 		this.rerenderFieldList();
 
-		const addBtn = document.createElement('button');
+		const addBtn = activeDocument.createElement('button');
 		addBtn.classList.add('fk-modal-add-field');
 		addBtn.textContent = '+ Add field';
 		addBtn.addEventListener('click', () => {
@@ -106,7 +106,7 @@ export class BoardConfigModal extends Modal {
 
 	renderFieldRow(field: FieldDefinition, idx: number): HTMLElement {
 		const total = this.schema.fields.length;
-		const row = document.createElement('div');
+		const row = activeDocument.createElement('div');
 		row.classList.add('fk-modal-field-row');
 
 		const isNew = field.name === '';
@@ -122,10 +122,10 @@ export class BoardConfigModal extends Modal {
 			}
 		});
 
-		const typeSelect = document.createElement('select');
+		const typeSelect = activeDocument.createElement('select');
 		typeSelect.classList.add('fk-modal-input-sm', 'fk-col-type');
 		for (const t of FIELD_TYPES) {
-			const o = document.createElement('option');
+			const o = activeDocument.createElement('option');
 			o.value = t;
 			o.textContent = t;
 			if (t === field.type) o.selected = true;
@@ -161,7 +161,7 @@ export class BoardConfigModal extends Modal {
 		});
 
 		// Reorder / remove controls
-		const controls = document.createElement('div');
+		const controls = activeDocument.createElement('div');
 		controls.classList.add('fk-modal-row-controls');
 
 		const upBtn = this.iconBtn(controls, '↑', idx === 0);
@@ -190,11 +190,11 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private renderViewConfig(container: HTMLElement): void {
-		const section = document.createElement('div');
+		const section = activeDocument.createElement('div');
 		section.classList.add('fk-modal-section');
 
 		const colWrap = this.field(section, 'Columns field');
-		const colSelect = document.createElement('select');
+		const colSelect = activeDocument.createElement('select');
 		colSelect.classList.add('fk-modal-input');
 		colSelect.dataset.role = 'columns';
 		this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
@@ -206,7 +206,7 @@ export class BoardConfigModal extends Modal {
 
 	private renderWorkflow(container: HTMLElement): void {
 		const wrap = this.field(container, 'Workflow (optional)');
-		const inp = document.createElement('input');
+		const inp = activeDocument.createElement('input');
 		inp.type = 'text';
 		inp.classList.add('fk-modal-input');
 		inp.placeholder = 'todo→doing, doing→done';
@@ -225,7 +225,7 @@ export class BoardConfigModal extends Modal {
 		const names = this.schema.fields.map(f => f.name).filter(n => n);
 		for (const name of names) {
 			if (!existing.includes(name)) {
-				const o = document.createElement('option');
+				const o = activeDocument.createElement('option');
 				o.value = name;
 				o.textContent = name;
 				select.appendChild(o);
@@ -262,9 +262,9 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private field(container: HTMLElement, label: string): HTMLElement {
-		const wrap = document.createElement('div');
+		const wrap = activeDocument.createElement('div');
 		wrap.classList.add('fk-modal-field');
-		const lbl = document.createElement('label');
+		const lbl = activeDocument.createElement('label');
 		lbl.textContent = label;
 		wrap.appendChild(lbl);
 		container.appendChild(wrap);
@@ -272,7 +272,7 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private smallInput(container: HTMLElement, placeholder: string, value: string): HTMLInputElement {
-		const inp = document.createElement('input');
+		const inp = activeDocument.createElement('input');
 		inp.type = 'text';
 		inp.classList.add('fk-modal-input-sm');
 		inp.placeholder = placeholder;
@@ -282,7 +282,7 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private fixedInput(container: HTMLElement, placeholder: string, value: string, cls: string): HTMLInputElement {
-		const inp = document.createElement('input');
+		const inp = activeDocument.createElement('input');
 		inp.type = 'text';
 		inp.classList.add('fk-modal-input-sm', cls);
 		inp.placeholder = placeholder;
@@ -292,7 +292,7 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private iconBtn(container: HTMLElement, label: string, disabled: boolean): HTMLButtonElement {
-		const btn = document.createElement('button');
+		const btn = activeDocument.createElement('button');
 		btn.classList.add('fk-modal-icon-btn');
 		btn.textContent = label;
 		btn.disabled = disabled;

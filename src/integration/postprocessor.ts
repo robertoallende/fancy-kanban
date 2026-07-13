@@ -19,7 +19,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('fancy-kanban', (source, el, ctx) => {
 		const result = parseBlock(source);
 		if (!result.ok) {
-			const error = document.createElement('p');
+			const error = activeDocument.createElement('p');
 			error.classList.add('fk-error');
 			error.textContent = result.error;
 			el.appendChild(error);

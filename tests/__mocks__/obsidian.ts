@@ -1,3 +1,6 @@
+// Mirror Obsidian's activeDocument global for popout window compatibility
+Object.assign(globalThis, { activeDocument: document });
+
 export class WorkspaceLeaf {}
 
 class ObsidianHTMLElement extends HTMLElement {

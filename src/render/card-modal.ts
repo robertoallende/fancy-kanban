@@ -28,7 +28,7 @@ export class CardModal extends Modal {
 			this.renderField(contentEl, field);
 		}
 
-		const saveBtn = document.createElement('button');
+		const saveBtn = activeDocument.createElement('button');
 		saveBtn.classList.add('fk-modal-save');
 		saveBtn.textContent = 'Save';
 		saveBtn.addEventListener('click', () => {
@@ -46,20 +46,20 @@ export class CardModal extends Modal {
 			: (field.default ?? '');
 		this.values[field.name] = initialValue;
 
-		const wrapper = document.createElement('div');
+		const wrapper = activeDocument.createElement('div');
 		wrapper.classList.add('fk-modal-field');
 
-		const label = document.createElement('label');
+		const label = activeDocument.createElement('label');
 		label.textContent = field.label;
 		wrapper.appendChild(label);
 
 		const onChange = (value: string) => { this.values[field.name] = value; };
 
 		if (field.type === 'Select' && field.options) {
-			const sel = document.createElement('select');
+			const sel = activeDocument.createElement('select');
 			sel.classList.add('fk-modal-input');
 			for (const opt of field.options) {
-				const o = document.createElement('option');
+				const o = activeDocument.createElement('option');
 				o.value = opt;
 				o.textContent = opt;
 				if (opt === initialValue) o.selected = true;
@@ -68,14 +68,14 @@ export class CardModal extends Modal {
 			sel.addEventListener('change', () => onChange(sel.value));
 			wrapper.appendChild(sel);
 		} else if (field.type === 'Textarea') {
-			const ta = document.createElement('textarea');
+			const ta = activeDocument.createElement('textarea');
 			ta.classList.add('fk-modal-input');
 			ta.value = initialValue;
 			ta.rows = 4;
 			ta.addEventListener('input', () => onChange(ta.value));
 			wrapper.appendChild(ta);
 		} else {
-			const inp = document.createElement('input');
+			const inp = activeDocument.createElement('input');
 			inp.classList.add('fk-modal-input');
 			inp.type = field.type === 'Date' ? 'date'
 				: field.type === 'Number' ? 'number'
