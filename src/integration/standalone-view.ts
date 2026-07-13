@@ -68,7 +68,7 @@ export class FancyKanbanView extends ItemView {
 
 		this.boardTitle = result.board.title;
 		const save = (board: typeof result.board) => writeBack(this.app.vault, file, 0, board);
-		mountBoard(contentEl, result.board, save);
+		mountBoard(contentEl, result.board, save, this.app);
 	}
 
 	async onClose(): Promise<void> {

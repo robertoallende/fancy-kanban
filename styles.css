@@ -177,6 +177,27 @@
   font-weight: var(--font-normal);
 }
 
+.fk-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.fk-modal-field label {
+  font-size: var(--font-smaller);
+  opacity: 0.6;
+}
+
+.fk-modal-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fk-modal-save {
+  margin-top: 4px;
+}
+
 .fk-error {
   color: var(--text-error);
   font-size: var(--font-smaller);

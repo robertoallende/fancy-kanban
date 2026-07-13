@@ -1,35 +1,28 @@
+import { App } from 'obsidian';
 import type { Board } from '../model/board';
 import { renderBoard } from './board';
-import { moveCard, addCard, deleteCard, updateCardField } from '../model/mutations';
+import { moveCard, deleteCard, createCard, updateCard } from '../model/mutations';
 import { parseWorkflow, isTransitionAllowed } from '../data/workflow';
+import { CardModal } from './card-modal';
 
 export type SaveFn = (board: Board) => Promise<void>;
 
-export function mountBoard(el: HTMLElement, board: Board, save: SaveFn): void {
+export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: App): void {
 	while (el.firstChild) el.removeChild(el.firstChild);
 
 	const dispatch = (newBoard: Board): void => {
-		save(newBoard).then(() => mountBoard(el, newBoard, save));
+		save(newBoard).then(() => mountBoard(el, newBoard, save, app));
 	};
 
 	const boardEl = renderBoard(board);
 	attachDragDrop(boardEl, board, dispatch);
-	attachCardActions(boardEl, board, dispatch);
-	attachInlineEdit(boardEl, board, dispatch);
+	attachCardActions(boardEl, board, dispatch, app);
 	el.appendChild(boardEl);
 }
 
-function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void): void {
+function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void, app?: App): void {
 	boardEl.addEventListener('click', (e) => {
 		const target = e.target as HTMLElement;
-
-		const addBtn = target.closest<HTMLElement>('.fk-col__add-btn');
-		if (addBtn) {
-			const col = addBtn.closest<HTMLElement>('.fk-column');
-			const columnValue = col?.dataset.columnValue ?? '';
-			dispatch(addCard(board, columnValue));
-			return;
-		}
 
 		const deleteBtn = target.closest<HTMLElement>('.fk-card__delete');
 		if (deleteBtn) {
@@ -38,81 +31,32 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 			dispatch(deleteCard(board, cardId));
 			return;
 		}
-	});
-}
 
-function attachInlineEdit(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void): void {
-	boardEl.addEventListener('click', (e) => {
-		const target = e.target as HTMLElement;
-
-		// Title click
-		const titleEl = target.closest<HTMLElement>('.fk-card__title');
-		if (titleEl && !titleEl.querySelector('.fk-title-input')) {
-			const cardId = titleEl.dataset.cardId ?? '';
-			const fieldName = titleEl.dataset.fieldName ?? '';
-			const currentValue = titleEl.textContent ?? '';
-			const input = document.createElement('input');
-			input.type = 'text';
-			input.classList.add('fk-title-input');
-			input.value = currentValue;
-			titleEl.textContent = '';
-			titleEl.appendChild(input);
-			input.focus();
-			const commit = () => dispatch(updateCardField(board, cardId, fieldName, input.value));
-			const cancel = () => { titleEl.textContent = currentValue; };
-			input.addEventListener('blur', commit);
-			input.addEventListener('keydown', (ev: Event) => {
-				const key = (ev as KeyboardEvent).key;
-				if (key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
-				if (key === 'Escape') { input.removeEventListener('blur', commit); cancel(); }
-			});
+		const addBtn = target.closest<HTMLElement>('.fk-col__add-btn');
+		if (addBtn) {
+			const col = addBtn.closest<HTMLElement>('.fk-column');
+			const columnValue = col?.dataset.columnValue ?? '';
+			if (app) {
+				new CardModal(app, board, null, columnValue, (values) => {
+					dispatch(createCard(board, columnValue, values));
+				}).open();
+			} else {
+				dispatch(createCard(board, columnValue, {}));
+			}
 			return;
 		}
 
-		// Field value click
-		const valueEl = target.closest<HTMLElement>('.fk-card__field-value');
-		if (!valueEl) return;
-		const fieldRow = valueEl.closest<HTMLElement>('.fk-card__field');
-		const card = valueEl.closest<HTMLElement>('.fk-card');
-		if (!fieldRow || !card) return;
-		const cardId = card.dataset.cardId ?? '';
-		const fieldName = fieldRow.dataset.fieldName ?? '';
-		const fieldDef = board.fields.find(f => f.name === fieldName);
-		const currentValue = valueEl.textContent ?? '';
-
-		let input: HTMLInputElement | HTMLSelectElement;
-		if (fieldDef?.type === 'Select' && fieldDef.options) {
-			const sel = document.createElement('select');
-			sel.classList.add('fk-field-input');
-			for (const opt of fieldDef.options) {
-				const o = document.createElement('option');
-				o.value = opt;
-				o.textContent = opt;
-				if (opt === currentValue) o.selected = true;
-				sel.appendChild(o);
+		const cardEl = target.closest<HTMLElement>('.fk-card');
+		if (cardEl) {
+			const cardId = cardEl.dataset.cardId ?? '';
+			const card = board.cards.find(c => c.id === cardId) ?? null;
+			const columnValue = cardEl.closest<HTMLElement>('.fk-column')?.dataset.columnValue ?? '';
+			if (app && card) {
+				new CardModal(app, board, card, columnValue, (values) => {
+					dispatch(updateCard(board, cardId, values));
+				}).open();
 			}
-			input = sel;
-		} else {
-			const inp = document.createElement('input');
-			inp.classList.add('fk-field-input');
-			inp.type = fieldDef?.type === 'Date' ? 'date'
-				: fieldDef?.type === 'Number' ? 'number'
-				: 'text';
-			inp.value = currentValue;
-			input = inp;
 		}
-
-		valueEl.replaceWith(input);
-		(input as HTMLElement).focus?.();
-
-		const commit = () => dispatch(updateCardField(board, cardId, fieldName, input.value));
-		const cancel = () => { input.replaceWith(valueEl); };
-		input.addEventListener('blur', commit);
-		input.addEventListener('keydown', (ev: Event) => {
-			const key = (ev as KeyboardEvent).key;
-			if (key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
-			if (key === 'Escape') { input.removeEventListener('blur', commit); cancel(); }
-		});
 	});
 }
 

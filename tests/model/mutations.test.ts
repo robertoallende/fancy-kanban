@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { moveCard, addCard, deleteCard, updateCardField } from '../../src/model/mutations';
+import { moveCard, addCard, deleteCard, updateCardField, createCard, updateCard } from '../../src/model/mutations';
 import type { Board } from '../../src/model/board';
 
 const BOARD: Board = {
@@ -168,6 +168,70 @@ describe('updateCardField', () => {
 	it('does not mutate the original board', () => {
 		const original = JSON.stringify(BOARD);
 		updateCardField(BOARD, 'card1', 'title', 'Changed');
+		expect(JSON.stringify(BOARD)).toBe(original);
+	});
+});
+
+describe('createCard', () => {
+	it('increases card count by 1', () => {
+		const result = createCard(BOARD, 'inbox', { title: 'New' });
+		expect(result.cards.length).toBe(BOARD.cards.length + 1);
+	});
+
+	it('sets the column field to the given columnValue', () => {
+		const result = createCard(BOARD, 'done', { title: 'New' });
+		const card = result.cards[result.cards.length - 1];
+		expect(card.values.status).toBe('done');
+	});
+
+	it('sets provided field values on the new card', () => {
+		const result = createCard(BOARD, 'inbox', { title: 'Hello', priority: 'high' });
+		const card = result.cards[result.cards.length - 1];
+		expect(card.values.title).toBe('Hello');
+		expect(card.values.priority).toBe('high');
+	});
+
+	it('falls back to field default for missing values', () => {
+		const result = createCard(BOARD, 'inbox', {});
+		const card = result.cards[result.cards.length - 1];
+		expect(card.values.priority).toBe('low');
+	});
+
+	it('generates a unique id', () => {
+		const result = createCard(BOARD, 'inbox', {});
+		const card = result.cards[result.cards.length - 1];
+		expect(card.id).toMatch(/^[a-z0-9]{8}$/);
+	});
+
+	it('does not mutate the original board', () => {
+		const original = JSON.stringify(BOARD);
+		createCard(BOARD, 'inbox', { title: 'X' });
+		expect(JSON.stringify(BOARD)).toBe(original);
+	});
+});
+
+describe('updateCard', () => {
+	it('updates multiple fields on the target card at once', () => {
+		const result = updateCard(BOARD, 'card1', { title: 'New Title', priority: 'low' });
+		const card = result.cards.find(c => c.id === 'card1')!;
+		expect(card.values.title).toBe('New Title');
+		expect(card.values.priority).toBe('low');
+	});
+
+	it('leaves unmentioned fields unchanged', () => {
+		const result = updateCard(BOARD, 'card1', { title: 'New Title' });
+		const card = result.cards.find(c => c.id === 'card1')!;
+		expect(card.values.status).toBe('inbox');
+	});
+
+	it('leaves other cards unchanged', () => {
+		const result = updateCard(BOARD, 'card1', { title: 'New Title' });
+		expect(result.cards.find(c => c.id === 'card2')).toEqual(BOARD.cards[1]);
+	});
+
+	it('does not mutate the original board', () => {
+		const original = JSON.stringify(BOARD);
+		updateCard(BOARD, 'card1', { title: 'Changed' });
 		expect(JSON.stringify(BOARD)).toBe(original);
 	});
 });

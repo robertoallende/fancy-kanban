@@ -24,6 +24,17 @@ export class ItemView {
 	registerEvent(_e: unknown): void {}
 }
 
+export class Modal {
+	contentEl: ObsidianHTMLElement = new ObsidianHTMLElement();
+	titleEl: HTMLElement = document.createElement('div');
+	app: unknown;
+	constructor(app: unknown) { this.app = app; }
+	open(): void { this.onOpen(); }
+	close(): void { this.onClose(); }
+	onOpen(): void {}
+	onClose(): void {}
+}
+
 export class Plugin {}
 export class TFile {}
 export class Notice { constructor(_msg: string) {} }

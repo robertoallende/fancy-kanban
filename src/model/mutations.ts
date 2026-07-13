@@ -27,6 +27,31 @@ export function deleteCard(board: Board, cardId: string): Board {
 	return { ...board, cards: board.cards.filter(card => card.id !== cardId) };
 }
 
+export function createCard(board: Board, columnValue: string, values: Record<string, string>): Board {
+	const columnField = board.viewConfig.columns;
+	const cardValues: Record<string, string> = {};
+	for (const field of board.fields) {
+		if (field.name === columnField) {
+			cardValues[field.name] = columnValue;
+		} else {
+			cardValues[field.name] = values[field.name] ?? field.default ?? '';
+		}
+	}
+	const newCard: Card = { id: generateId(), values: cardValues };
+	return { ...board, cards: [...board.cards, newCard] };
+}
+
+export function updateCard(board: Board, cardId: string, values: Record<string, string>): Board {
+	return {
+		...board,
+		cards: board.cards.map(card =>
+			card.id === cardId
+				? { ...card, values: { ...card.values, ...values } }
+				: card,
+		),
+	};
+}
+
 export function updateCardField(board: Board, cardId: string, fieldName: string, value: string): Board {
 	return {
 		...board,

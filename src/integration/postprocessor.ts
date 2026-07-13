@@ -27,7 +27,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 
 		const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
 		if (!file) {
-			mountBoard(el, result.board, () => Promise.resolve());
+			mountBoard(el, result.board, () => Promise.resolve(), plugin.app);
 			return;
 		}
 
@@ -35,6 +35,6 @@ export function registerPostProcessor(plugin: Plugin): void {
 		const save = (b: typeof result.board) =>
 			writeBack(plugin.app.vault, file, blockIndex, b);
 
-		mountBoard(el, result.board, save);
+		mountBoard(el, result.board, save, plugin.app);
 	});
 }
