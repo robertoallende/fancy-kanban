@@ -303,7 +303,7 @@
   cursor: pointer;
   font-size: var(--font-smaller);
   opacity: 0.6;
-  padding: 4px 0;
+  padding: 4px 8px;
 }
 
 .fk-modal-add-field:hover {
