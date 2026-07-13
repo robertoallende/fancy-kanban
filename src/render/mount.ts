@@ -1,6 +1,6 @@
 import type { Board } from '../model/board';
 import { renderBoard } from './board';
-import { moveCard } from '../model/mutations';
+import { moveCard, addCard, deleteCard } from '../model/mutations';
 import { parseWorkflow, isTransitionAllowed } from '../data/workflow';
 
 export type SaveFn = (board: Board) => Promise<void>;
@@ -14,7 +14,30 @@ export function mountBoard(el: HTMLElement, board: Board, save: SaveFn): void {
 
 	const boardEl = renderBoard(board);
 	attachDragDrop(boardEl, board, dispatch);
+	attachCardActions(boardEl, board, dispatch);
 	el.appendChild(boardEl);
+}
+
+function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void): void {
+	boardEl.addEventListener('click', (e) => {
+		const target = e.target as HTMLElement;
+
+		const addBtn = target.closest<HTMLElement>('.fk-col__add-btn');
+		if (addBtn) {
+			const col = addBtn.closest<HTMLElement>('.fk-column');
+			const columnValue = col?.dataset.columnValue ?? '';
+			dispatch(addCard(board, columnValue));
+			return;
+		}
+
+		const deleteBtn = target.closest<HTMLElement>('.fk-card__delete');
+		if (deleteBtn) {
+			const card = deleteBtn.closest<HTMLElement>('.fk-card');
+			const cardId = card?.dataset.cardId ?? '';
+			dispatch(deleteCard(board, cardId));
+			return;
+		}
+	});
 }
 
 function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void): void {

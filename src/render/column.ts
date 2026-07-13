@@ -32,8 +32,13 @@ export function renderColumn(
 		cardsContainer.appendChild(renderCard(card, fields));
 	}
 
+	const addBtn = document.createElement('button');
+	addBtn.classList.add('fk-col__add-btn');
+	addBtn.textContent = '+ Add card';
+
 	container.appendChild(header);
 	container.appendChild(cardsContainer);
+	container.appendChild(addBtn);
 
 	return container;
 }

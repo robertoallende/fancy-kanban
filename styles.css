@@ -104,6 +104,48 @@
   opacity: var(--fk-opacity-field-value);
 }
 
+.fk-col__add-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-normal);
+  opacity: 0.5;
+  cursor: pointer;
+  font-size: var(--font-smaller);
+  text-align: left;
+  border-radius: var(--fk-card-radius);
+}
+
+.fk-col__add-btn:hover {
+  opacity: 0.8;
+  background: var(--background-modifier-hover);
+}
+
+.fk-card {
+  position: relative;
+}
+
+.fk-card__delete {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-error);
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: var(--font-smaller);
+  line-height: 1;
+  padding: 0;
+}
+
+.fk-card:hover .fk-card__delete {
+  display: block;
+}
+
 .fk-error {
   color: var(--text-error);
   font-size: var(--font-smaller);

@@ -34,5 +34,10 @@ export function renderCard(card: Card, fields: FieldDefinition[]): HTMLElement {
 		container.appendChild(row);
 	}
 
+	const deleteBtn = document.createElement('button');
+	deleteBtn.classList.add('fk-card__delete');
+	deleteBtn.textContent = '×';
+	container.appendChild(deleteBtn);
+
 	return container;
 }
