@@ -243,7 +243,7 @@
 
 .fk-modal-field-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
   align-items: center;
   padding: 6px;
@@ -252,15 +252,20 @@
 }
 
 .fk-modal-input-sm {
-  width: auto;
-  flex: 1;
-  min-width: 80px;
   font-size: var(--font-smaller);
+  flex: none;
 }
 
-.fk-modal-options-wrap {
-  display: flex;
-  flex: 2;
+.fk-col-name    { width: 90px; }
+.fk-col-type    { width: 85px; }
+.fk-col-label   { width: 90px; }
+.fk-col-options { width: 120px; }
+.fk-col-default { width: 65px; }
+
+.fk-modal-field-row input:disabled,
+.fk-modal-field-row select:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 .fk-modal-row-controls {

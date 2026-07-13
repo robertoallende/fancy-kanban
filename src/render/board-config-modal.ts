@@ -105,11 +105,11 @@ export class BoardConfigModal extends Modal {
 		const row = document.createElement('div');
 		row.classList.add('fk-modal-field-row');
 
-		const nameInp = this.smallInput(row, 'Name', field.name);
+		const nameInp = this.fixedInput(row, 'Name', field.name, 'fk-col-name');
 		nameInp.addEventListener('input', () => { field.name = nameInp.value; this.refreshViewConfig(); });
 
 		const typeSelect = document.createElement('select');
-		typeSelect.classList.add('fk-modal-input-sm');
+		typeSelect.classList.add('fk-modal-input-sm', 'fk-col-type');
 		for (const t of FIELD_TYPES) {
 			const o = document.createElement('option');
 			o.value = t;
@@ -117,27 +117,36 @@ export class BoardConfigModal extends Modal {
 			if (t === field.type) o.selected = true;
 			typeSelect.appendChild(o);
 		}
-		typeSelect.addEventListener('change', () => {
-			field.type = typeSelect.value as FieldType;
-			optionsWrap.style.display = field.type === 'Select' ? '' : 'none';
-		});
 		row.appendChild(typeSelect);
 
-		const labelInp = this.smallInput(row, 'Label', field.label);
+		const labelInp = this.fixedInput(row, 'Label', field.label, 'fk-col-label');
 		labelInp.addEventListener('input', () => { field.label = labelInp.value; });
 
-		const optionsWrap = document.createElement('div');
-		optionsWrap.classList.add('fk-modal-options-wrap');
-		optionsWrap.style.display = field.type === 'Select' ? '' : 'none';
-		const optionsInp = this.smallInput(optionsWrap, 'Options (pipe-separated)', (field.options ?? []).join('|'));
-		optionsInp.addEventListener('input', () => {
-			field.options = optionsInp.value.split('|').map(s => s.trim()).filter(Boolean);
-		});
-		row.appendChild(optionsWrap);
+		const isSelect = field.type === 'Select';
 
-		const defaultInp = this.smallInput(row, 'Default', field.default ?? '');
+		const optionsInp = this.fixedInput(row, 'a, b, c', (field.options ?? []).join(', '), 'fk-col-options');
+		optionsInp.disabled = !isSelect;
+		optionsInp.addEventListener('input', () => {
+			field.options = optionsInp.value.split(',').map(s => s.trim()).filter(Boolean);
+		});
+
+		const defaultInp = this.fixedInput(row, 'Default', field.default ?? '', 'fk-col-default');
+		defaultInp.disabled = !isSelect;
 		defaultInp.addEventListener('input', () => {
 			field.default = defaultInp.value || undefined;
+		});
+
+		typeSelect.addEventListener('change', () => {
+			field.type = typeSelect.value as FieldType;
+			const nowSelect = field.type === 'Select';
+			optionsInp.disabled = !nowSelect;
+			defaultInp.disabled = !nowSelect;
+			if (!nowSelect) {
+				field.options = undefined;
+				field.default = undefined;
+				optionsInp.value = '';
+				defaultInp.value = '';
+			}
 		});
 
 		// Reorder / remove controls
@@ -276,6 +285,16 @@ export class BoardConfigModal extends Modal {
 		const inp = document.createElement('input');
 		inp.type = 'text';
 		inp.classList.add('fk-modal-input-sm');
+		inp.placeholder = placeholder;
+		inp.value = value;
+		container.appendChild(inp);
+		return inp;
+	}
+
+	private fixedInput(container: HTMLElement, placeholder: string, value: string, cls: string): HTMLInputElement {
+		const inp = document.createElement('input');
+		inp.type = 'text';
+		inp.classList.add('fk-modal-input-sm', cls);
 		inp.placeholder = placeholder;
 		inp.value = value;
 		container.appendChild(inp);
