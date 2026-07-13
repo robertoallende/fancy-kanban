@@ -111,17 +111,6 @@ export class BoardConfigModal extends Modal {
 
 		const isNew = field.name === '';
 
-		const typeSelect = document.createElement('select');
-		typeSelect.classList.add('fk-modal-input-sm', 'fk-col-type');
-		for (const t of FIELD_TYPES) {
-			const o = document.createElement('option');
-			o.value = t;
-			o.textContent = t;
-			if (t === field.type) o.selected = true;
-			typeSelect.appendChild(o);
-		}
-		row.appendChild(typeSelect);
-
 		const labelInp = this.fixedInput(row, 'Label', field.label, 'fk-col-label');
 		if (!isNew) labelInp.title = `id: ${field.name}`;
 		labelInp.addEventListener('input', () => {
@@ -132,6 +121,17 @@ export class BoardConfigModal extends Modal {
 				this.refreshViewConfig();
 			}
 		});
+
+		const typeSelect = document.createElement('select');
+		typeSelect.classList.add('fk-modal-input-sm', 'fk-col-type');
+		for (const t of FIELD_TYPES) {
+			const o = document.createElement('option');
+			o.value = t;
+			o.textContent = t;
+			if (t === field.type) o.selected = true;
+			typeSelect.appendChild(o);
+		}
+		row.appendChild(typeSelect);
 
 		const isSelect = field.type === 'Select';
 
