@@ -13,7 +13,7 @@ export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: Ap
 	while (el.firstChild) el.removeChild(el.firstChild);
 
 	const dispatch = (newBoard: Board): void => {
-		save(newBoard).then(() => mountBoard(el, newBoard, save, app));
+		void save(newBoard).then(() => mountBoard(el, newBoard, save, app));
 	};
 
 	const boardEl = renderBoard(board);

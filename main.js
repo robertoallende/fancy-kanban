@@ -732,7 +732,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
 function mountBoard(el, board, save, app) {
   while (el.firstChild) el.removeChild(el.firstChild);
   const dispatch = (newBoard) => {
-    save(newBoard).then(() => mountBoard(el, newBoard, save, app));
+    void save(newBoard).then(() => mountBoard(el, newBoard, save, app));
   };
   const boardEl = renderBoard(board);
   attachDragDrop(boardEl, board, dispatch);
