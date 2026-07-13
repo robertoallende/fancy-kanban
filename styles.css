@@ -104,37 +104,41 @@
   opacity: var(--fk-opacity-field-value);
 }
 
-.fk-col__add-btn {
+.fk-board .fk-col__add-btn {
   width: 100%;
   margin-top: 8px;
   padding: 6px;
   background: transparent;
   border: none;
+  box-shadow: none;
   color: var(--text-normal);
   opacity: 0.5;
   cursor: pointer;
   font-size: var(--font-smaller);
-  text-align: left;
+  text-align: left !important;
+  justify-content: flex-start;
   border-radius: var(--fk-card-radius);
 }
 
-.fk-col__add-btn:hover {
+.fk-board .fk-col__add-btn:hover {
   opacity: 0.8;
   background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
 .fk-card {
   position: relative;
 }
 
-.fk-card__delete {
+.fk-board .fk-card__delete {
   display: none;
   position: absolute;
   top: 6px;
   right: 6px;
   background: transparent;
   border: none;
-  color: var(--text-error);
+  box-shadow: none;
+  color: var(--text-normal);
   cursor: pointer;
   opacity: 0.7;
   font-size: var(--font-smaller);
@@ -142,8 +146,14 @@
   padding: 0;
 }
 
-.fk-card:hover .fk-card__delete {
+.fk-board .fk-card:hover .fk-card__delete {
   display: block;
+}
+
+.fk-board .fk-card:hover .fk-card__delete:hover {
+  background: var(--background-modifier-hover);
+  box-shadow: none;
+  border-radius: 3px;
 }
 
 .fk-field-input,
