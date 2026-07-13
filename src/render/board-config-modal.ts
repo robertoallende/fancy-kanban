@@ -16,6 +16,7 @@ const DEFAULT_SCHEMA: BoardSchema = {
 export class BoardConfigModal extends Modal {
 	private schema: BoardSchema;
 	private errorEl: HTMLElement | null = null;
+	private fieldListEl: HTMLElement | null = null;
 
 	constructor(
 		app: App,
@@ -66,23 +67,41 @@ export class BoardConfigModal extends Modal {
 	private renderFieldsSection(container: HTMLElement): void {
 		const section = document.createElement('div');
 		section.classList.add('fk-modal-section');
+
 		const heading = document.createElement('p');
 		heading.classList.add('fk-modal-section-label');
 		heading.textContent = 'Fields';
 		section.appendChild(heading);
 
-		const list = document.createElement('div');
-		list.classList.add('fk-modal-field-list');
-		section.appendChild(list);
+		this.fieldListEl = document.createElement('div');
+		this.fieldListEl.classList.add('fk-modal-field-list');
+		section.appendChild(this.fieldListEl);
 
-		for (const f of this.schema.fields) {
-			list.appendChild(this.renderFieldRow(f));
-		}
+		this.rerenderFieldList();
+
+		const addBtn = document.createElement('button');
+		addBtn.classList.add('fk-modal-add-field');
+		addBtn.textContent = '+ Add field';
+		addBtn.addEventListener('click', () => {
+			this.schema.fields.push({ name: '', type: 'Text', label: '' });
+			this.rerenderFieldList();
+			this.refreshViewConfig();
+		});
+		section.appendChild(addBtn);
 
 		container.appendChild(section);
 	}
 
-	renderFieldRow(field: FieldDefinition): HTMLElement {
+	private rerenderFieldList(): void {
+		if (!this.fieldListEl) return;
+		this.fieldListEl.innerHTML = '';
+		this.schema.fields.forEach((f, idx) => {
+			this.fieldListEl!.appendChild(this.renderFieldRow(f, idx));
+		});
+	}
+
+	renderFieldRow(field: FieldDefinition, idx: number): HTMLElement {
+		const total = this.schema.fields.length;
 		const row = document.createElement('div');
 		row.classList.add('fk-modal-field-row');
 
@@ -121,6 +140,32 @@ export class BoardConfigModal extends Modal {
 			field.default = defaultInp.value || undefined;
 		});
 
+		// Reorder / remove controls
+		const controls = document.createElement('div');
+		controls.classList.add('fk-modal-row-controls');
+
+		const upBtn = this.iconBtn(controls, '↑', idx === 0);
+		upBtn.addEventListener('click', () => {
+			[this.schema.fields[idx - 1], this.schema.fields[idx]] =
+				[this.schema.fields[idx], this.schema.fields[idx - 1]];
+			this.rerenderFieldList();
+		});
+
+		const downBtn = this.iconBtn(controls, '↓', idx === total - 1);
+		downBtn.addEventListener('click', () => {
+			[this.schema.fields[idx], this.schema.fields[idx + 1]] =
+				[this.schema.fields[idx + 1], this.schema.fields[idx]];
+			this.rerenderFieldList();
+		});
+
+		const removeBtn = this.iconBtn(controls, '×', total <= 1);
+		removeBtn.addEventListener('click', () => {
+			this.schema.fields.splice(idx, 1);
+			this.rerenderFieldList();
+			this.refreshViewConfig();
+		});
+
+		row.appendChild(controls);
 		return row;
 	}
 
@@ -235,6 +280,15 @@ export class BoardConfigModal extends Modal {
 		inp.value = value;
 		container.appendChild(inp);
 		return inp;
+	}
+
+	private iconBtn(container: HTMLElement, label: string, disabled: boolean): HTMLButtonElement {
+		const btn = document.createElement('button');
+		btn.classList.add('fk-modal-icon-btn');
+		btn.textContent = label;
+		btn.disabled = disabled;
+		container.appendChild(btn);
+		return btn;
 	}
 
 	onClose(): void {

@@ -229,6 +229,48 @@
   flex: 2;
 }
 
+.fk-modal-row-controls {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.fk-board .fk-modal-icon-btn,
+.fk-modal-icon-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  opacity: 0.5;
+  font-size: var(--font-smaller);
+  padding: 2px 4px;
+}
+
+.fk-modal-icon-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.fk-modal-icon-btn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.fk-modal-add-field {
+  margin-top: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--font-smaller);
+  opacity: 0.6;
+  padding: 4px 0;
+}
+
+.fk-modal-add-field:hover {
+  opacity: 1;
+}
+
 .fk-modal-error {
   color: var(--text-error);
   font-size: var(--font-smaller);
