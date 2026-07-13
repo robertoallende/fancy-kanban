@@ -1,0 +1,21 @@
+{
+  "name": "fancy-kanban",
+  "version": "0.0.1",
+  "description": "Embeddable kanban boards in any note, with native swimlanes and a relational field model.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+  },
+  "keywords": [],
+  "author": "Roberto Allende",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "builtin-modules": "3.3.0",
+    "esbuild": "0.21.5",
+    "obsidian": "latest",
+    "tslib": "2.6.0",
+    "typescript": "^7.0.0"
+  }
+}
