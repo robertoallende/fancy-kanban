@@ -37,7 +37,7 @@ I kept bouncing off every kanban plugin I tried. They lived in their own tab, cu
 
 This inserts a `fancy-kanban` code block into your note (or opens one in a standalone view), pre-populated with a starter config and an empty table. From there, open the **board setup** panel to add or edit fields, columns, and workflow — no need to hand-edit the config block unless you want to.
 
-![Fancy Kanban board embedded in a note](images/demo-edit-card.png)
+![Modal Dialog to edit a card](images/demo-edit-card.png)
 
 ### Edit a board
 
@@ -45,13 +45,13 @@ This inserts a `fancy-kanban` code block into your note (or opens one in a stand
 - Click a card to open the card editor, where every field on that card is editable
 - The underlying table updates automatically as you work — your note's Markdown source stays in sync with the board
 
-![Fancy Kanban board embedded in a note](images/demo-board-settings.png)
+![Fancy Kanban board settings dialog](images/demo-board-settings.png)
 
 ### The data format
 
 Each board is a fenced code block — here's the board above, as it actually looks in the note's source:
 
-![Fancy Kanban board embedded in a note](images/demo-markdown.png)
+![Fancy Kanban plain markdown](images/demo-markdown.png)
 
 
 ````markdown
@@ -87,7 +87,7 @@ Fancy Kanban is early. In rough order:
 - [ ] **Import from `obsidian-kanban`** — bring existing boards over without manually rebuilding them
 - [ ] **Swimlanes** — a `lanes` field as a second grouping dimension over the same table
 
-If there's a gap you'd like prioritized, [open an issue](https://claude.ai/issues) — this roadmap takes real usage and feedback into account.
+If there's a gap you'd like prioritized, [open an issue](https://github.com/robertoallende/fancy-kanban/issues) — this roadmap takes real usage and feedback into account.
 
 ## Acknowledgements
 
@@ -95,7 +95,7 @@ Thanks to [mgmeyers](https://github.com/mgmeyers) for `obsidian-kanban`, and to 
 
 ## License
 
-[MIT](https://claude.ai/chat/LICENSE) — Copyright (c) 2026 Astuten.io Ltd
+[MIT](https://github.com/robertoallende/fancy-kanban/blob/main/LICENSE) — Copyright (c) 2026 Astuten.io Ltd
 
 ---
 
