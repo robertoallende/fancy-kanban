@@ -86,6 +86,21 @@ describe('renderBoard', () => {
 		});
 	});
 
+	describe('header', () => {
+		it('renders a .fk-board__header element', () => {
+			expect(renderBoard(BOARD).querySelector('.fk-board__header')).not.toBeNull();
+		});
+
+		it('displays the board title in .fk-board__title', () => {
+			const el = renderBoard(BOARD);
+			expect(el.querySelector('.fk-board__title')?.textContent).toBe('My Board');
+		});
+
+		it('renders a settings button with class fk-board__settings', () => {
+			expect(renderBoard(BOARD).querySelector('.fk-board__settings')).not.toBeNull();
+		});
+	});
+
 	describe('edge cases', () => {
 		it('board with no cards renders all columns with count 0', () => {
 			const board: Board = { ...BOARD, cards: [] };

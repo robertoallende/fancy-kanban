@@ -4,6 +4,8 @@ import { renderBoard } from './board';
 import { reorderCard, deleteCard, createCard, updateCard } from '../model/mutations';
 import { parseWorkflow, isTransitionAllowed } from '../data/workflow';
 import { CardModal } from './card-modal';
+import { BoardConfigModal } from './board-config-modal';
+import { reconcileCards } from '../data/schema';
 
 export type SaveFn = (board: Board) => Promise<void>;
 
@@ -29,6 +31,15 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 			const card = deleteBtn.closest<HTMLElement>('.fk-card');
 			const cardId = card?.dataset.cardId ?? '';
 			dispatch(deleteCard(board, cardId));
+			return;
+		}
+
+		const settingsBtn = target.closest<HTMLElement>('.fk-board__settings');
+		if (settingsBtn && app) {
+			new BoardConfigModal(app, board, (schema) => {
+				const reconciledCards = reconcileCards(schema.fields, board.cards);
+				dispatch({ ...schema, cards: reconciledCards });
+			}).open();
 			return;
 		}
 

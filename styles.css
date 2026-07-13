@@ -17,6 +17,40 @@
   box-sizing: border-box;
 }
 
+.fk-board__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fk-board__title {
+  font-size: var(--font-smaller);
+  font-weight: 700;
+  letter-spacing: var(--fk-header-tracking);
+  text-transform: uppercase;
+  color: var(--text-normal);
+  opacity: var(--fk-opacity-col-header);
+}
+
+.fk-board .fk-board__settings {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-normal);
+  opacity: 0.4;
+  cursor: pointer;
+  font-size: var(--font-smaller);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.fk-board .fk-board__settings:hover {
+  opacity: 0.8;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
+}
+
 .fk-board__columns {
   display: flex;
   flex-direction: row;

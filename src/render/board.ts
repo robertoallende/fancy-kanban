@@ -9,6 +9,22 @@ export function renderBoard(board: Board): HTMLElement {
 	const wrapper = document.createElement('div');
 	wrapper.classList.add('fk-board');
 
+	const header = document.createElement('div');
+	header.classList.add('fk-board__header');
+
+	const titleEl = document.createElement('span');
+	titleEl.classList.add('fk-board__title');
+	titleEl.textContent = board.title;
+	header.appendChild(titleEl);
+
+	const settingsBtn = document.createElement('button');
+	settingsBtn.classList.add('fk-board__settings');
+	settingsBtn.textContent = '⚙';
+	settingsBtn.title = 'Board settings';
+	header.appendChild(settingsBtn);
+
+	wrapper.appendChild(header);
+
 	const columnsContainer = document.createElement('div');
 	columnsContainer.classList.add('fk-board__columns');
 

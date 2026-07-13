@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mountBoard } from '../../src/render/mount';
-import type { Board } from '../../src/model/board';
+import type { Board, BoardSchema } from '../../src/model/board';
+import { BoardConfigModal } from '../../src/render/board-config-modal';
 
 const BOARD: Board = {
 	title: 'Test Board',
@@ -99,6 +100,59 @@ describe('mountBoard', () => {
 			await save(BOARD_V2);
 			expect(save).toHaveBeenCalledTimes(1);
 		});
+	});
+});
+
+describe('mountBoard — settings button', () => {
+	afterEach(() => vi.restoreAllMocks());
+
+	it('clicking the settings button opens BoardConfigModal when app is provided', () => {
+		const el = document.createElement('div');
+		const save = makeSave();
+		const fakeApp = {} as never;
+		mountBoard(el, BOARD, save, fakeApp);
+
+		const openSpy = vi.spyOn(BoardConfigModal.prototype, 'open');
+		const btn = el.querySelector('.fk-board__settings') as HTMLButtonElement;
+		btn.click();
+		expect(openSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not open BoardConfigModal when app is not provided', () => {
+		const el = document.createElement('div');
+		const save = makeSave();
+		mountBoard(el, BOARD, save);
+
+		const openSpy = vi.spyOn(BoardConfigModal.prototype, 'open');
+		const btn = el.querySelector('.fk-board__settings') as HTMLButtonElement;
+		btn.click();
+		expect(openSpy).not.toHaveBeenCalled();
+	});
+
+	it('dispatches updated board with reconciled cards after confirming schema change', async () => {
+		const el = document.createElement('div');
+		const save = makeSave();
+		const fakeApp = {} as never;
+		mountBoard(el, BOARD, save, fakeApp);
+
+		let capturedOnConfirm: ((schema: BoardSchema) => void) | null = null;
+		vi.spyOn(BoardConfigModal.prototype, 'open').mockImplementation(function (this: BoardConfigModal) {
+			capturedOnConfirm = (this as unknown as { onConfirm: (s: BoardSchema) => void }).onConfirm;
+		});
+
+		const btn = el.querySelector('.fk-board__settings') as HTMLButtonElement;
+		btn.click();
+
+		const newSchema: BoardSchema = {
+			...BOARD,
+			title: 'Renamed Board',
+		};
+		capturedOnConfirm!(newSchema);
+
+		expect(save).toHaveBeenCalledTimes(1);
+		const saved = save.mock.calls[0][0] as Board;
+		expect(saved.title).toBe('Renamed Board');
+		expect(saved.cards).toBeDefined();
 	});
 });
 
