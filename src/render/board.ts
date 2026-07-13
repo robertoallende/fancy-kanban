@@ -12,16 +12,16 @@ export function renderBoard(board: Board): HTMLElement {
 	const header = document.createElement('div');
 	header.classList.add('fk-board__header');
 
-	const titleEl = document.createElement('span');
-	titleEl.classList.add('fk-board__title');
-	titleEl.textContent = board.title;
-	header.appendChild(titleEl);
-
 	const settingsBtn = document.createElement('button');
 	settingsBtn.classList.add('fk-board__settings');
 	settingsBtn.textContent = '⚙';
 	settingsBtn.title = 'Board settings';
 	header.appendChild(settingsBtn);
+
+	const titleEl = document.createElement('span');
+	titleEl.classList.add('fk-board__title');
+	titleEl.textContent = board.title;
+	header.appendChild(titleEl);
 
 	wrapper.appendChild(header);
 
