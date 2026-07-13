@@ -201,20 +201,6 @@ export class BoardConfigModal extends Modal {
 		colSelect.addEventListener('change', () => { this.schema.viewConfig.columns = colSelect.value; });
 		colWrap.appendChild(colSelect);
 
-		const laneWrap = this.field(section, 'Lanes field (optional)');
-		const laneSelect = document.createElement('select');
-		laneSelect.classList.add('fk-modal-input');
-		laneSelect.dataset.role = 'lanes';
-		const blank = document.createElement('option');
-		blank.value = '';
-		blank.textContent = '— none —';
-		laneSelect.appendChild(blank);
-		this.populateFieldSelect(laneSelect, this.schema.viewConfig.lanes ?? '');
-		laneSelect.addEventListener('change', () => {
-			this.schema.viewConfig.lanes = laneSelect.value || undefined;
-		});
-		laneWrap.appendChild(laneSelect);
-
 		container.appendChild(section);
 	}
 
@@ -231,14 +217,7 @@ export class BoardConfigModal extends Modal {
 
 	private refreshViewConfig(): void {
 		const colSelect = this.contentEl.querySelector<HTMLSelectElement>('[data-role="columns"]');
-		const laneSelect = this.contentEl.querySelector<HTMLSelectElement>('[data-role="lanes"]');
 		if (colSelect) this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
-		if (laneSelect) {
-			const first = laneSelect.firstChild as HTMLElement;
-			laneSelect.innerHTML = '';
-			laneSelect.appendChild(first);
-			this.populateFieldSelect(laneSelect, this.schema.viewConfig.lanes ?? '');
-		}
 	}
 
 	private populateFieldSelect(select: HTMLSelectElement, current: string): void {
