@@ -109,13 +109,22 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 		if (target.closest('button')) return;
 		const card = target.closest<HTMLElement>('.fk-card');
 		if (!card) return;
-		e.preventDefault();
-		draggingCardId = card.dataset.cardId ?? null;
-		card.classList.add('fk-card--dragging');
 
-		const onMove = (e: PointerEvent) => {
-			if (!draggingCardId) return;
-			const below = activeDocument.elementFromPoint(e.clientX, e.clientY);
+		const startX = e.clientX;
+		const startY = e.clientY;
+		let dragStarted = false;
+
+		const onMove = (ev: PointerEvent) => {
+			if (!dragStarted) {
+				const dx = ev.clientX - startX;
+				const dy = ev.clientY - startY;
+				if (dx * dx + dy * dy < 25) return;
+				dragStarted = true;
+				draggingCardId = card.dataset.cardId ?? null;
+				card.classList.add('fk-card--dragging');
+			}
+			ev.preventDefault();
+			const below = activeDocument.elementFromPoint(ev.clientX, ev.clientY);
 			const col = below?.closest<HTMLElement>('.fk-column') ?? null;
 			if (col !== currentCol) {
 				currentCol?.classList.remove('fk-column--drag-over');
@@ -124,7 +133,7 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 				col?.classList.add('fk-column--drag-over');
 			}
 			if (col) {
-				insertBeforeId = getInsertBeforeId(e.clientY, col);
+				insertBeforeId = getInsertBeforeId(ev.clientY, col);
 				updateDropIndicator(col, insertBeforeId);
 			}
 		};
@@ -132,15 +141,15 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 		const onUp = () => {
 			activeDocument.removeEventListener('pointermove', onMove);
 			activeDocument.removeEventListener('pointerup', onUp);
-			if (!draggingCardId) return;
+			if (!dragStarted) return;
 			const col = currentCol;
 			clearDropState(boardEl);
-			if (col) {
+			if (col && draggingCardId) {
 				const toValue = col.dataset.columnValue ?? '';
 				const draggedCard = board.cards.find(c => c.id === draggingCardId);
 				const fromValue = draggedCard?.values[board.viewConfig.columns] ?? '';
 				if (fromValue === toValue || isTransitionAllowed(workflowMap, fromValue, toValue)) {
-					dispatch(reorderCard(board, draggingCardId!, toValue, insertBeforeId));
+					dispatch(reorderCard(board, draggingCardId, toValue, insertBeforeId));
 				}
 			}
 			draggingCardId = null;

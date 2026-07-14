@@ -98,6 +98,9 @@
 .fk-card--draggable {
   touch-action: none;
   cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .fk-card--dragging {

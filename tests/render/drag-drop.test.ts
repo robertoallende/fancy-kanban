@@ -41,9 +41,9 @@ function pointerDown(target: HTMLElement) {
 	target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }));
 }
 
-function pointerMoveTo(col: HTMLElement) {
+function pointerMoveTo(col: HTMLElement, clientX = 50, clientY = 50) {
 	(activeDocument as Document & { elementFromPoint: () => Element }).elementFromPoint = () => col;
-	activeDocument.dispatchEvent(new PointerEvent('pointermove', { clientX: 50, clientY: 50 }));
+	activeDocument.dispatchEvent(new PointerEvent('pointermove', { clientX, clientY }));
 }
 
 function pointerUp() {
@@ -73,11 +73,19 @@ describe('DOM attributes', () => {
 describe('drag lifecycle — pointer events', () => {
 	afterEach(() => vi.restoreAllMocks());
 
-	it('pointerdown on a card adds .fk-card--dragging', () => {
+	it('pointerdown + move on a card adds .fk-card--dragging', () => {
 		const { el } = makeEl();
 		const card = getCard(el, 'c1');
 		pointerDown(card);
+		pointerMoveTo(getColumn(el, 'inbox'));
 		expect(card.classList.contains('fk-card--dragging')).toBe(true);
+	});
+
+	it('pointerdown alone does not add .fk-card--dragging', () => {
+		const { el } = makeEl();
+		const card = getCard(el, 'c1');
+		pointerDown(card);
+		expect(card.classList.contains('fk-card--dragging')).toBe(false);
 	});
 
 	it('pointerdown on a button inside a card does not start drag', () => {
@@ -93,6 +101,7 @@ describe('drag lifecycle — pointer events', () => {
 		const { el } = makeEl();
 		const card = getCard(el, 'c1');
 		pointerDown(card);
+		pointerMoveTo(getColumn(el, 'inbox'));
 		pointerUp();
 		expect(card.classList.contains('fk-card--dragging')).toBe(false);
 	});

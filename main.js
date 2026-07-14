@@ -826,19 +826,26 @@ function attachDragDrop(boardEl, board, dispatch) {
   let currentCol = null;
   let insertBeforeId = null;
   boardEl.addEventListener("pointerdown", (e) => {
-    var _a2;
     const target = e.target;
     if (target.closest("button")) return;
     const card = target.closest(".fk-card");
     if (!card) return;
-    e.preventDefault();
-    draggingCardId = (_a2 = card.dataset.cardId) != null ? _a2 : null;
-    card.classList.add("fk-card--dragging");
-    const onMove = (e2) => {
-      var _a3;
-      if (!draggingCardId) return;
-      const below = activeDocument.elementFromPoint(e2.clientX, e2.clientY);
-      const col = (_a3 = below == null ? void 0 : below.closest(".fk-column")) != null ? _a3 : null;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let dragStarted = false;
+    const onMove = (ev) => {
+      var _a2, _b;
+      if (!dragStarted) {
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        if (dx * dx + dy * dy < 25) return;
+        dragStarted = true;
+        draggingCardId = (_a2 = card.dataset.cardId) != null ? _a2 : null;
+        card.classList.add("fk-card--dragging");
+      }
+      ev.preventDefault();
+      const below = activeDocument.elementFromPoint(ev.clientX, ev.clientY);
+      const col = (_b = below == null ? void 0 : below.closest(".fk-column")) != null ? _b : null;
       if (col !== currentCol) {
         currentCol == null ? void 0 : currentCol.classList.remove("fk-column--drag-over");
         currentCol == null ? void 0 : currentCol.querySelectorAll(".fk-drop-indicator").forEach((el) => el.remove());
@@ -846,19 +853,19 @@ function attachDragDrop(boardEl, board, dispatch) {
         col == null ? void 0 : col.classList.add("fk-column--drag-over");
       }
       if (col) {
-        insertBeforeId = getInsertBeforeId(e2.clientY, col);
+        insertBeforeId = getInsertBeforeId(ev.clientY, col);
         updateDropIndicator(col, insertBeforeId);
       }
     };
     const onUp = () => {
-      var _a3, _b;
+      var _a2, _b;
       activeDocument.removeEventListener("pointermove", onMove);
       activeDocument.removeEventListener("pointerup", onUp);
-      if (!draggingCardId) return;
+      if (!dragStarted) return;
       const col = currentCol;
       clearDropState(boardEl);
-      if (col) {
-        const toValue = (_a3 = col.dataset.columnValue) != null ? _a3 : "";
+      if (col && draggingCardId) {
+        const toValue = (_a2 = col.dataset.columnValue) != null ? _a2 : "";
         const draggedCard = board.cards.find((c) => c.id === draggingCardId);
         const fromValue = (_b = draggedCard == null ? void 0 : draggedCard.values[board.viewConfig.columns]) != null ? _b : "";
         if (fromValue === toValue || isTransitionAllowed(workflowMap, fromValue, toValue)) {
