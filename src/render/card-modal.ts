@@ -10,6 +10,7 @@ export class CardModal extends Modal {
 		private card: Card | null,
 		private columnValue: string,
 		private onConfirm: (values: Record<string, string>) => void,
+		private onDelete?: () => void,
 	) {
 		super(app);
 	}
@@ -28,6 +29,20 @@ export class CardModal extends Modal {
 			this.renderField(contentEl, field);
 		}
 
+		const footer = activeDocument.createElement('div');
+		footer.classList.add('fk-modal-footer');
+
+		if (this.onDelete) {
+			const deleteBtn = activeDocument.createElement('button');
+			deleteBtn.classList.add('fk-modal-delete');
+			deleteBtn.textContent = 'Delete';
+			deleteBtn.addEventListener('click', () => {
+				this.onDelete!();
+				this.close();
+			});
+			footer.appendChild(deleteBtn);
+		}
+
 		const saveBtn = activeDocument.createElement('button');
 		saveBtn.classList.add('fk-modal-save');
 		saveBtn.textContent = 'Save';
@@ -35,7 +50,8 @@ export class CardModal extends Modal {
 			this.onConfirm(this.values);
 			this.close();
 		});
-		contentEl.appendChild(saveBtn);
+		footer.appendChild(saveBtn);
+		contentEl.appendChild(footer);
 
 		contentEl.querySelector<HTMLElement>('input, textarea, select')?.focus();
 	}

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mountBoard } from '../../src/render/mount';
 import type { Board } from '../../src/model/board';
 
@@ -37,6 +37,19 @@ function getColumn(el: HTMLElement, value: string) {
 	return el.querySelector(`[data-column-value="${value}"]`) as HTMLElement;
 }
 
+function pointerDown(target: HTMLElement) {
+	target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }));
+}
+
+function pointerMoveTo(col: HTMLElement) {
+	(activeDocument as Document & { elementFromPoint: () => Element }).elementFromPoint = () => col;
+	activeDocument.dispatchEvent(new PointerEvent('pointermove', { clientX: 50, clientY: 50 }));
+}
+
+function pointerUp() {
+	activeDocument.dispatchEvent(new PointerEvent('pointerup'));
+}
+
 describe('DOM attributes', () => {
 	it('each .fk-card has data-card-id set to card.id', () => {
 		const { el } = makeEl();
@@ -44,9 +57,9 @@ describe('DOM attributes', () => {
 		expect(getCard(el, 'c2')).not.toBeNull();
 	});
 
-	it('each .fk-card has draggable="true"', () => {
+	it('each .fk-card has class fk-card--draggable', () => {
 		const { el } = makeEl();
-		expect(getCard(el, 'c1').getAttribute('draggable')).toBe('true');
+		expect(getCard(el, 'c1').classList.contains('fk-card--draggable')).toBe(true);
 	});
 
 	it('each .fk-column has data-column-value', () => {
@@ -57,57 +70,67 @@ describe('DOM attributes', () => {
 	});
 });
 
-describe('drag lifecycle', () => {
-	it('dragstart adds .fk-card--dragging to the card', () => {
+describe('drag lifecycle — pointer events', () => {
+	afterEach(() => vi.restoreAllMocks());
+
+	it('pointerdown on a card adds .fk-card--dragging', () => {
 		const { el } = makeEl();
 		const card = getCard(el, 'c1');
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
+		pointerDown(card);
 		expect(card.classList.contains('fk-card--dragging')).toBe(true);
 	});
 
-	it('dragend removes .fk-card--dragging from all cards', () => {
+	it('pointerdown on a button inside a card does not start drag', () => {
 		const { el } = makeEl();
 		const card = getCard(el, 'c1');
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		card.dispatchEvent(new Event('dragend', { bubbles: true }));
+		const btn = document.createElement('button');
+		card.appendChild(btn);
+		btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
 		expect(card.classList.contains('fk-card--dragging')).toBe(false);
 	});
 
-	it('dragover adds .fk-column--drag-over to the target column', () => {
+	it('pointerup clears .fk-card--dragging', () => {
 		const { el } = makeEl();
+		const card = getCard(el, 'c1');
+		pointerDown(card);
+		pointerUp();
+		expect(card.classList.contains('fk-card--dragging')).toBe(false);
+	});
+
+	it('pointermove over a column adds .fk-column--drag-over', () => {
+		const { el } = makeEl();
+		pointerDown(getCard(el, 'c1'));
 		const col = getColumn(el, 'doing');
-		col.dispatchEvent(new Event('dragover', { bubbles: true }));
+		pointerMoveTo(col);
 		expect(col.classList.contains('fk-column--drag-over')).toBe(true);
 	});
 
-	it('dragover removes .fk-column--drag-over from other columns', () => {
+	it('pointermove clears drag-over from previous column', () => {
 		const { el } = makeEl();
-		const inbox = getColumn(el, 'inbox');
-		const doing = getColumn(el, 'doing');
-		inbox.dispatchEvent(new Event('dragover', { bubbles: true }));
-		doing.dispatchEvent(new Event('dragover', { bubbles: true }));
-		expect(inbox.classList.contains('fk-column--drag-over')).toBe(false);
-		expect(doing.classList.contains('fk-column--drag-over')).toBe(true);
+		pointerDown(getCard(el, 'c1'));
+		pointerMoveTo(getColumn(el, 'inbox'));
+		pointerMoveTo(getColumn(el, 'doing'));
+		expect(getColumn(el, 'inbox').classList.contains('fk-column--drag-over')).toBe(false);
+		expect(getColumn(el, 'doing').classList.contains('fk-column--drag-over')).toBe(true);
 	});
 
-	it('dragleave removes .fk-column--drag-over from the column', () => {
+	it('pointerup clears .fk-column--drag-over', () => {
 		const { el } = makeEl();
-		const col = getColumn(el, 'inbox');
-		col.dispatchEvent(new Event('dragover', { bubbles: true }));
-		col.dispatchEvent(new Event('dragleave', { bubbles: true }));
-		expect(col.classList.contains('fk-column--drag-over')).toBe(false);
+		pointerDown(getCard(el, 'c1'));
+		pointerMoveTo(getColumn(el, 'done'));
+		pointerUp();
+		expect(getColumn(el, 'done').classList.contains('fk-column--drag-over')).toBe(false);
 	});
 });
 
 describe('drop — allowed transition', () => {
+	afterEach(() => vi.restoreAllMocks());
+
 	it('dispatches reorderCard when dropping on a different column', () => {
 		const { el, save } = makeEl();
-		const card = getCard(el, 'c1');
-		const targetCol = getColumn(el, 'done');
-
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
-
+		pointerDown(getCard(el, 'c1'));
+		pointerMoveTo(getColumn(el, 'done'));
+		pointerUp();
 		expect(save).toHaveBeenCalledTimes(1);
 		const savedBoard = save.mock.calls[0][0] as Board;
 		expect(savedBoard.cards.find(c => c.id === 'c1')!.values.status).toBe('done');
@@ -115,45 +138,29 @@ describe('drop — allowed transition', () => {
 
 	it('dispatches reorderCard when dropping on the same column (reorder)', () => {
 		const { el, save } = makeEl();
-		const card = getCard(el, 'c1');
-		const sameCol = getColumn(el, 'inbox');
-
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		sameCol.dispatchEvent(new Event('drop', { bubbles: true }));
-
+		pointerDown(getCard(el, 'c1'));
+		pointerMoveTo(getColumn(el, 'inbox'));
+		pointerUp();
 		expect(save).toHaveBeenCalledTimes(1);
-	});
-
-	it('clears .fk-column--drag-over after drop', () => {
-		const { el } = makeEl();
-		const card = getCard(el, 'c1');
-		const targetCol = getColumn(el, 'done');
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		targetCol.dispatchEvent(new Event('dragover', { bubbles: true }));
-		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
-		expect(targetCol.classList.contains('fk-column--drag-over')).toBe(false);
 	});
 
 	it('clears drop indicator after drop', () => {
 		const { el } = makeEl();
-		const card = getCard(el, 'c1');
-		const targetCol = getColumn(el, 'done');
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		targetCol.dispatchEvent(new Event('dragover', { bubbles: true }));
-		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
+		pointerDown(getCard(el, 'c1'));
+		pointerMoveTo(getColumn(el, 'done'));
+		pointerUp();
 		expect(el.querySelector('.fk-drop-indicator')).toBeNull();
 	});
 });
 
 describe('drop — blocked transition', () => {
+	afterEach(() => vi.restoreAllMocks());
+
 	it('does not dispatch when workflow blocks the transition', () => {
 		const { el, save } = makeEl(BOARD_WITH_WORKFLOW);
-		const card = getCard(el, 'c1'); // inbox
-		const targetCol = getColumn(el, 'done'); // inbox→done not in workflow
-
-		card.dispatchEvent(new Event('dragstart', { bubbles: true }));
-		targetCol.dispatchEvent(new Event('drop', { bubbles: true }));
-
+		pointerDown(getCard(el, 'c1')); // inbox
+		pointerMoveTo(getColumn(el, 'done')); // inbox→done not in workflow
+		pointerUp();
 		expect(save).not.toHaveBeenCalled();
 	});
 });

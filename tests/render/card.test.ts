@@ -69,10 +69,10 @@ describe('renderCard', () => {
 		});
 	});
 
-	describe('delete button', () => {
-		it('renders a .fk-card__delete button', () => {
+	describe('drag', () => {
+		it('has class fk-card--draggable', () => {
 			const el = renderCard(CARD, FIELDS);
-			expect(el.querySelector('.fk-card__delete')).not.toBeNull();
+			expect(el.classList.contains('fk-card--draggable')).toBe(true);
 		});
 	});
 });

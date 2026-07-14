@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mountBoard } from '../../src/render/mount';
+import { CardModal } from '../../src/render/card-modal';
 import type { Board } from '../../src/model/board';
 
 const BOARD: Board = {
@@ -63,38 +64,46 @@ describe('add card button', () => {
 	});
 });
 
-describe('delete card button', () => {
-	it('each card has exactly one .fk-card__delete button', () => {
+describe('delete card via modal', () => {
+	afterEach(() => vi.restoreAllMocks());
+
+	it('no .fk-card__delete button on card face', () => {
 		const { el } = makeEl();
-		const cards = el.querySelectorAll('.fk-card');
-		cards.forEach(card => {
-			expect(card.querySelectorAll('.fk-card__delete').length).toBe(1);
-		});
+		expect(el.querySelector('.fk-card__delete')).toBeNull();
 	});
 
-	it('clicking delete dispatches deleteCard with the correct cardId', () => {
-		const { el, save } = makeEl();
-		const card = el.querySelector('[data-card-id="c1"]')!;
-		const btn = card.querySelector('.fk-card__delete') as HTMLElement;
-		btn.click();
+	it('onDelete from CardModal dispatches deleteCard for the correct card', () => {
+		const el = document.createElement('div');
+		const save = vi.fn().mockResolvedValue(undefined);
+		mountBoard(el, BOARD, save, {} as never);
+
+		let capturedOnDelete: (() => void) | undefined;
+		vi.spyOn(CardModal.prototype, 'open').mockImplementation(function (this: CardModal) {
+			capturedOnDelete = (this as unknown as { onDelete?: () => void }).onDelete;
+		});
+
+		(el.querySelector('[data-card-id="c1"]') as HTMLElement).click();
+		capturedOnDelete!();
+
 		expect(save).toHaveBeenCalledTimes(1);
 		const savedBoard = save.mock.calls[0][0] as Board;
 		expect(savedBoard.cards.find(c => c.id === 'c1')).toBeUndefined();
 	});
 
 	it('deleting one card does not affect others', () => {
-		const { el, save } = makeEl();
-		const card = el.querySelector('[data-card-id="c1"]')!;
-		(card.querySelector('.fk-card__delete') as HTMLElement).click();
+		const el = document.createElement('div');
+		const save = vi.fn().mockResolvedValue(undefined);
+		mountBoard(el, BOARD, save, {} as never);
+
+		let capturedOnDelete: (() => void) | undefined;
+		vi.spyOn(CardModal.prototype, 'open').mockImplementation(function (this: CardModal) {
+			capturedOnDelete = (this as unknown as { onDelete?: () => void }).onDelete;
+		});
+
+		(el.querySelector('[data-card-id="c1"]') as HTMLElement).click();
+		capturedOnDelete!();
+
 		const savedBoard = save.mock.calls[0][0] as Board;
 		expect(savedBoard.cards.find(c => c.id === 'c2')).toBeDefined();
-	});
-
-	it('card count decreases by 1 after delete', () => {
-		const { el, save } = makeEl();
-		const card = el.querySelector('[data-card-id="c2"]')!;
-		(card.querySelector('.fk-card__delete') as HTMLElement).click();
-		const savedBoard = save.mock.calls[0][0] as Board;
-		expect(savedBoard.cards.length).toBe(BOARD.cards.length - 1);
 	});
 });

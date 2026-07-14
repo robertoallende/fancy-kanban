@@ -95,8 +95,14 @@
   outline-offset: -1px;
 }
 
+.fk-card--draggable {
+  touch-action: none;
+  cursor: grab;
+}
+
 .fk-card--dragging {
   opacity: 0.4;
+  pointer-events: none;
 }
 
 .fk-drop-indicator {
@@ -149,34 +155,27 @@
   box-shadow: none;
 }
 
-.fk-card {
-  position: relative;
+.fk-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
 }
 
-.fk-board .fk-card__delete {
-  display: none;
-  position: absolute;
-  top: 6px;
-  right: 6px;
+.fk-board .fk-modal-delete {
   background: transparent;
   border: none;
   box-shadow: none;
-  color: var(--text-normal);
+  color: var(--text-error);
   cursor: pointer;
-  opacity: 0.7;
   font-size: var(--font-smaller);
-  line-height: 1;
-  padding: 0;
+  opacity: 0.7;
+  padding: 4px 8px;
 }
 
-.fk-board .fk-card:hover .fk-card__delete {
-  display: block;
-}
-
-.fk-board .fk-card:hover .fk-card__delete:hover {
-  background: var(--background-modifier-hover);
+.fk-board .fk-modal-delete:hover {
+  opacity: 1;
   box-shadow: none;
-  border-radius: 3px;
 }
 
 .fk-field-input,
