@@ -1,18 +1,15 @@
-name: Release
+name: E2E
 
 on:
   push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-
-permissions:
-  contents: write
-  attestations: write
-  id-token: write
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  test:
+  e2e:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,9 +21,6 @@ jobs:
       - run: npm ci
 
       - run: npm run build
-
-      - name: Unit tests
-        run: npm test
 
       - name: Get Obsidian cache key
         run: |
@@ -55,44 +49,7 @@ jobs:
           herbstluftwm &
           sleep 1
 
-      - name: E2E tests
+      - name: Run e2e tests
         run: npm run test:e2e
         env:
           WDIO_MAX_INSTANCES: 2
-
-  release:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Attest main.js
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-path: main.js
-
-      - name: Attest styles.css
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-path: styles.css
-
-      - name: Create release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create ${{ github.ref_name }} \
-            main.js \
-            manifest.json \
-            styles.css \
-            --title "${{ github.ref_name }}" \
-            --notes "Release ${{ github.ref_name }}"
