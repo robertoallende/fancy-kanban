@@ -2,6 +2,10 @@
 
 
 
+## 0.1.4 - 15/07/2026
+
+- Close card modal automatically after saving a new card
+
 ## 0.1.3 - 15/07/2026
 
 - Moved the delete card button from the card face into the card editor modal

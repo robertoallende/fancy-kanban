@@ -418,8 +418,8 @@ var CardModal = class extends import_obsidian.Modal {
     saveBtn.classList.add("fk-modal-save");
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => {
-      this.onConfirm(this.values);
       this.close();
+      this.onConfirm(this.values);
     });
     footer.appendChild(saveBtn);
     contentEl.appendChild(footer);
@@ -464,8 +464,8 @@ var CardModal = class extends import_obsidian.Modal {
       inp.addEventListener("input", () => onChange(inp.value));
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
-          this.onConfirm(this.values);
           this.close();
+          this.onConfirm(this.values);
         }
       });
       wrapper.appendChild(inp);
