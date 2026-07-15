@@ -1,8 +1,10 @@
 import type { Board, Card, FieldDefinition } from '../model/board';
+import { SUPPORTED_VERSION } from '../model/board';
 import { parseConfig, reconcileCards } from './schema';
 
 export type ParseResult =
-	| { ok: true; board: Board }
+	| { ok: true; board: Board; readonly: false }
+	| { ok: true; board: Board; readonly: true; readonlyReason: string }
 	| { ok: false; error: string };
 
 // Splits a markdown table row on unescaped pipes only.
@@ -91,8 +93,18 @@ export function parseBlock(blockText: string): ParseResult {
 
 		const rawCards = parseTable(tableText, schema.fields);
 		const cards = reconcileCards(schema.fields, rawCards);
+		const board: Board = { ...schema, cards };
 
-		return { ok: true, board: { ...schema, cards } };
+		if (schema.version > SUPPORTED_VERSION) {
+			return {
+				ok: true,
+				board,
+				readonly: true,
+				readonlyReason: `This board was created with version ${schema.version} of the Fancy Kanban format. Update the plugin to edit it.`,
+			};
+		}
+
+		return { ok: true, board, readonly: false };
 	} catch (err) {
 		return { ok: false, error: err instanceof Error ? err.message : String(err) };
 	}

@@ -33,9 +33,17 @@ export function registerPostProcessor(plugin: Plugin): void {
 			return;
 		}
 
+		if (result.readonly) {
+			const banner = activeDocument.createElement('p');
+			banner.classList.add('fk-banner', 'fk-banner--warning');
+			banner.textContent = result.readonlyReason;
+			el.appendChild(banner);
+		}
+
 		const blockIndex = blockIndexFromContext(ctx, el);
-		const save = (b: typeof result.board) =>
-			writeBack(plugin.app.vault, file, blockIndex, b);
+		const save = result.readonly
+			? () => Promise.resolve()
+			: (b: typeof result.board) => writeBack(plugin.app.vault, file, blockIndex, b);
 
 		mountBoard(el, result.board, save, plugin.app);
 	});

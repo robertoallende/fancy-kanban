@@ -27,12 +27,16 @@ var import_obsidian5 = require("obsidian");
 // src/integration/postprocessor.ts
 var import_obsidian3 = require("obsidian");
 
+// src/model/board.ts
+var SUPPORTED_VERSION = 1;
+
 // src/data/schema.ts
 function parseConfig(configText) {
   const lines = configText.split("\n");
   let title = "";
   let rawWorkflow = "";
   let lanes;
+  let version = 1;
   const fields = [];
   let inFields = false;
   for (const line of lines) {
@@ -48,6 +52,7 @@ function parseConfig(configText) {
     const key = trimmed.slice(0, colonIdx).trim();
     const value = trimmed.slice(colonIdx + 1).trim();
     if (key === "title") title = value;
+    else if (key === "version") version = parseInt(value, 10) || 1;
     else if (key === "workflow") rawWorkflow = value.replace(/^"(.*)"$/, "$1");
     else if (key === "lanes") lanes = value;
     else if (key === "fields") inFields = true;
@@ -56,6 +61,7 @@ function parseConfig(configText) {
     title,
     fields,
     rawWorkflow,
+    version,
     viewConfig: { columns: "status", lanes }
   };
 }
@@ -104,8 +110,8 @@ function splitRow(line) {
   let i = 0;
   if (line[0] === "|") i = 1;
   while (i < line.length) {
-    if (line[i] === "\\" && line[i + 1] === "|") {
-      current += "\\|";
+    if (line[i] === "\\" && (line[i + 1] === "|" || line[i + 1] === "\\")) {
+      current += line[i] + line[i + 1];
       i += 2;
     } else if (line[i] === "|") {
       cells.push(current);
@@ -120,7 +126,7 @@ function splitRow(line) {
   return cells;
 }
 function unescapeCell(cell) {
-  return cell.trim().replace(/\\[|]/g, "|").replace(/<br>/gi, "\n");
+  return cell.trim().replace(/<br\/?>/gi, "\n").replace(/\\[|]/g, "|").replace(/\\\\/g, "\\");
 }
 function parseTable(tableText, fields) {
   const lines = tableText.split("\n").filter((l) => l.trim().startsWith("|"));
@@ -159,7 +165,16 @@ function parseBlock(blockText) {
     }
     const rawCards = parseTable(tableText, schema.fields);
     const cards = reconcileCards(schema.fields, rawCards);
-    return { ok: true, board: { ...schema, cards } };
+    const board = { ...schema, cards };
+    if (schema.version > SUPPORTED_VERSION) {
+      return {
+        ok: true,
+        board,
+        readonly: true,
+        readonlyReason: `This board was created with version ${schema.version} of the Fancy Kanban format. Update the plugin to edit it.`
+      };
+    }
+    return { ok: true, board, readonly: false };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
@@ -243,7 +258,7 @@ function renderBoard(board) {
 
 // src/data/serializer.ts
 function escapeCell(value) {
-  return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
+  return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
 function generateId() {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -270,6 +285,7 @@ ${serializeBoard(board)}
 }
 function serializeConfig(board) {
   const lines = [];
+  lines.push(`version: 1`);
   lines.push(`title: ${board.title}`);
   lines.push("fields:");
   for (const field of board.fields) {
@@ -294,11 +310,14 @@ function serializeTable(board) {
   const allLabels = ["_id", ...schemaLabels, ...orphanedKeys];
   const header = `| ${allLabels.join(" | ")} |`;
   const separator = `| ${allLabels.map(() => "---").join(" | ")} |`;
-  const rows = board.cards.map((card) => serializeRow(card, board, orphanedKeys));
+  const seenIds = /* @__PURE__ */ new Set();
+  const rows = board.cards.map((card) => serializeRow(card, board, orphanedKeys, seenIds));
   return [header, separator, ...rows].join("\n");
 }
-function serializeRow(card, board, orphanedKeys) {
-  const id = card.id || generateId();
+function serializeRow(card, board, orphanedKeys, seenIds) {
+  let id = card.id || generateId();
+  if (seenIds.has(id)) id = generateId();
+  seenIds.add(id);
   const schemaCells = board.fields.map((f) => {
     var _a;
     return escapeCell((_a = card.values[f.name]) != null ? _a : "");
@@ -365,7 +384,7 @@ function parseWorkflow(workflowString, statusOptions) {
     return map;
   }
   for (const pair of workflowString.split(",")) {
-    const [from, to] = pair.split("\u2192").map((s) => s.trim());
+    const [from, to] = pair.split(/->|→/).map((s) => s.trim());
     if (!from || !to) continue;
     if (!map.has(from)) map.set(from, /* @__PURE__ */ new Set());
     map.get(from).add(to);
@@ -498,7 +517,8 @@ var DEFAULT_SCHEMA = {
     { name: "status", type: "Select", label: "Status", options: ["todo", "doing", "done"], default: "todo" }
   ],
   viewConfig: { columns: "status" },
-  rawWorkflow: ""
+  rawWorkflow: "",
+  version: 1
 };
 var BoardConfigModal = class extends import_obsidian2.Modal {
   constructor(app, initial, onConfirm) {
@@ -941,8 +961,14 @@ function registerPostProcessor(plugin) {
       mountBoard(el, result.board, () => Promise.resolve(), plugin.app);
       return;
     }
+    if (result.readonly) {
+      const banner = activeDocument.createElement("p");
+      banner.classList.add("fk-banner", "fk-banner--warning");
+      banner.textContent = result.readonlyReason;
+      el.appendChild(banner);
+    }
     const blockIndex = blockIndexFromContext(ctx, el);
-    const save = (b) => writeBack(plugin.app.vault, file, blockIndex, b);
+    const save = result.readonly ? () => Promise.resolve() : (b) => writeBack(plugin.app.vault, file, blockIndex, b);
     mountBoard(el, result.board, save, plugin.app);
   });
 }
@@ -1033,6 +1059,7 @@ var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
           ],
           viewConfig: { columns: "status" },
           rawWorkflow: "",
+          version: 1,
           cards: []
         });
         editor.replaceRange(template, editor.getCursor());

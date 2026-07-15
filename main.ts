@@ -45,6 +45,7 @@ export default class FancyKanbanPlugin extends Plugin {
 					],
 					viewConfig: { columns: 'status' },
 					rawWorkflow: '',
+					version: 1,
 					cards: [],
 				});
 				editor.replaceRange(template, editor.getCursor());

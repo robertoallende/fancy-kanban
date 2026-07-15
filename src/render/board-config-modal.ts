@@ -15,6 +15,7 @@ const DEFAULT_SCHEMA: BoardSchema = {
 	],
 	viewConfig: { columns: 'status' },
 	rawWorkflow: '',
+	version: 1,
 };
 
 export class BoardConfigModal extends Modal {

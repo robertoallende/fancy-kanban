@@ -18,11 +18,14 @@ export interface Card {
 	values: Record<string, string>;
 }
 
+export const SUPPORTED_VERSION = 1;
+
 export interface BoardSchema {
 	title: string;
 	fields: FieldDefinition[];
 	viewConfig: ViewConfig;
 	rawWorkflow: string;
+	version: number;
 }
 
 export interface Board extends BoardSchema {

@@ -5,6 +5,7 @@ export function parseConfig(configText: string): BoardSchema {
 	let title = '';
 	let rawWorkflow = '';
 	let lanes: string | undefined;
+	let version = 1;
 	const fields: FieldDefinition[] = [];
 	let inFields = false;
 
@@ -26,6 +27,7 @@ export function parseConfig(configText: string): BoardSchema {
 		const value = trimmed.slice(colonIdx + 1).trim();
 
 		if (key === 'title') title = value;
+		else if (key === 'version') version = parseInt(value, 10) || 1;
 		else if (key === 'workflow') rawWorkflow = value.replace(/^"(.*)"$/, '$1');
 		else if (key === 'lanes') lanes = value;
 		else if (key === 'fields') inFields = true;
@@ -35,6 +37,7 @@ export function parseConfig(configText: string): BoardSchema {
 		title,
 		fields,
 		rawWorkflow,
+		version,
 		viewConfig: { columns: 'status', lanes },
 	};
 }

@@ -28,6 +28,7 @@ export function serializeBoardBlock(board: Board): string {
 
 function serializeConfig(board: Board): string {
 	const lines: string[] = [];
+	lines.push(`version: 1`);
 	lines.push(`title: ${board.title}`);
 	lines.push('fields:');
 	for (const field of board.fields) {

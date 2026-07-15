@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseBlock } from '../../src/data/parser';
+import { serializeBoard } from '../../src/data/serializer';
 
 const MINIMAL_BLOCK = `
 ---
@@ -240,5 +241,41 @@ fields:
 			expect(typeof result.error).toBe('string');
 			expect(result.error.length).toBeGreaterThan(0);
 		});
+	});
+});
+
+describe('version key', () => {
+	it('treats a missing version as version 1 and is writable', () => {
+		const result = parseBlock(MINIMAL_BLOCK);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.board.version).toBe(1);
+		expect(result.readonly).toBe(false);
+	});
+
+	it('parses an explicit version: 1 and is writable', () => {
+		const block = MINIMAL_BLOCK.replace('title: My Board', 'version: 1\ntitle: My Board');
+		const result = parseBlock(block);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.board.version).toBe(1);
+		expect(result.readonly).toBe(false);
+	});
+
+	it('marks a version 2 board as readonly', () => {
+		const block = MINIMAL_BLOCK.replace('title: My Board', 'version: 2\ntitle: My Board');
+		const result = parseBlock(block);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.readonly).toBe(true);
+		if (!result.readonly) return;
+		expect(result.readonlyReason).toMatch(/version 2/);
+	});
+
+	it('serializer emits version: 1', () => {
+		const result = parseBlock(MINIMAL_BLOCK);
+		if (!result.ok) return;
+		const serialized = serializeBoard(result.board);
+		expect(serialized).toMatch(/^version: 1/m);
 	});
 });
