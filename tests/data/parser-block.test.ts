@@ -47,26 +47,26 @@ describe('parseBlock', () => {
 
 		it('parses board title', () => {
 			const result = parseBlock(MINIMAL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.title).toBe('My Board');
 		});
 
 		it('parses fields', () => {
 			const result = parseBlock(MINIMAL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.fields).toHaveLength(2);
 			expect(result.board.fields[0].name).toBe('status');
 		});
 
 		it('returns empty cards array for a board with no data rows', () => {
 			const result = parseBlock(MINIMAL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards).toHaveLength(0);
 		});
 
 		it('parses all six field types from the full block', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			const types = result.board.fields.map(f => f.type);
 			expect(types).toContain('Select');
 			expect(types).toContain('Text');
@@ -78,25 +78,25 @@ describe('parseBlock', () => {
 
 		it('parses all three data rows from the full block', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards).toHaveLength(3);
 		});
 
 		it('parses workflow string', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.rawWorkflow).toContain('inbox→doing');
 		});
 
 		it('parses lanes into viewConfig', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.viewConfig.lanes).toBe('team');
 		});
 
 		it('viewConfig.columns is always "status"', () => {
 			const result = parseBlock(MINIMAL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.viewConfig.columns).toBe('status');
 		});
 	});
@@ -153,7 +153,7 @@ fields:
 | x1  | inbox  | Task  |
 `;
 			const result = parseBlock(block);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards[0].values['effort']).toBe('0');
 		});
 
@@ -169,13 +169,13 @@ fields:
 | x1  | inbox  | keep me  |
 `;
 			const result = parseBlock(block);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards[0].values['oldfield']).toBe('keep me');
 		});
 
 		it('preserves _id values through the full pipeline', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards[0].id).toBe('x7k2a1');
 			expect(result.board.cards[1].id).toBe('m3p9b2');
 			expect(result.board.cards[2].id).toBe('q1r4c3');
@@ -183,13 +183,13 @@ fields:
 
 		it('unescapes <br> in cell values', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards[1].values['notes']).toBe('Multi-line\ncontent here');
 		});
 
 		it('unescapes \\| in cell values', () => {
 			const result = parseBlock(FULL_BLOCK);
-			if (!result.ok) throw new Error(result.error);
+			if (!result.ok) throw new Error(result.errors[0].message);
 			expect(result.board.cards[2].values['docs']).toBe('setup.md|guide.md');
 		});
 	});
@@ -216,7 +216,7 @@ fields:
 `);
 			expect(result.ok).toBe(false);
 			if (result.ok) return;
-			expect(result.error).toMatch(/title/i);
+			expect(result.errors[0].message).toMatch(/title/i);
 		});
 
 		it('returns ok:false for a malformed field line', () => {
@@ -231,15 +231,38 @@ fields:
 `);
 			expect(result.ok).toBe(false);
 			if (result.ok) return;
-			expect(result.error).toMatch(/name/i);
+			expect(result.errors[0].message).toMatch(/name/i);
 		});
 
 		it('error result contains a descriptive message string', () => {
 			const result = parseBlock('not a valid block');
 			expect(result.ok).toBe(false);
 			if (result.ok) return;
-			expect(typeof result.error).toBe('string');
-			expect(result.error.length).toBeGreaterThan(0);
+			expect(result.errors.length).toBeGreaterThan(0);
+			expect(result.errors[0].message.length).toBeGreaterThan(0);
+		});
+
+		it('returns ok:false when columns field does not exist in field definitions', () => {
+			const result = parseBlock(`---
+title: Board
+fields:
+  - name: title, type: Text, label: Title
+---
+
+| _id | Title |
+|-----|-------|
+`);
+			expect(result.ok).toBe(false);
+			if (result.ok) return;
+			expect(result.errors[0].code).toBe('E_NO_STATUS_FIELD');
+		});
+	});
+
+	describe('warnings', () => {
+		it('returns an empty warnings array for a fully valid block', () => {
+			const result = parseBlock(MINIMAL_BLOCK);
+			if (!result.ok) throw new Error(result.errors[0].message);
+			expect(result.warnings).toEqual([]);
 		});
 	});
 });

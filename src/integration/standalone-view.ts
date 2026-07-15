@@ -62,7 +62,7 @@ export class FancyKanbanView extends ItemView {
 
 		if (!result.ok) {
 			const err = contentEl.createEl('p', { cls: 'fk-error' });
-			err.textContent = result.error;
+			err.textContent = result.errors.map(e => e.message).join('; ');
 			return;
 		}
 

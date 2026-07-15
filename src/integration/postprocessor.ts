@@ -21,7 +21,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 		if (!result.ok) {
 			const error = activeDocument.createElement('p');
 			error.classList.add('fk-error');
-			error.textContent = result.error;
+			error.textContent = result.errors.map(e => e.message).join('; ');
 			el.appendChild(error);
 			return;
 		}
@@ -36,7 +36,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 		if (result.readonly) {
 			const banner = activeDocument.createElement('p');
 			banner.classList.add('fk-banner', 'fk-banner--warning');
-			banner.textContent = result.readonlyReason;
+			banner.textContent = result.readonlyReason ?? '';
 			el.appendChild(banner);
 		}
 
