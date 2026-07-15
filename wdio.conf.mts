@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import { parseObsidianVersions } from 'wdio-obsidian-service';
 import { env } from 'process';
@@ -38,4 +39,17 @@ export const config: WebdriverIO.Config = {
         timeout: 60000,
     },
     logLevel: 'warn',
+
+    afterTest: async function () {
+        const coverage = await browser.execute(
+            () => (window as any).__coverage__ ?? null
+        );
+        if (!coverage) return;
+        const outDir = path.resolve('.nyc_output');
+        fs.mkdirSync(outDir, { recursive: true });
+        fs.writeFileSync(
+            path.join(outDir, `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}.json`),
+            JSON.stringify(coverage)
+        );
+    },
 };

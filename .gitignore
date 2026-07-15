@@ -3,6 +3,8 @@
 
 # Test coverage
 coverage/
+coverage-merged/
+.nyc_output/
 
 # Node
 node_modules/

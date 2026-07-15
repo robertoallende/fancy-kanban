@@ -6,10 +6,22 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "build:coverage": "node esbuild.config.mjs coverage && node scripts/instrument.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "wdio run ./wdio.conf.mts"
+    "test:e2e": "wdio run ./wdio.conf.mts",
+    "coverage:collect": "npm run test:coverage && cp coverage/coverage-final.json .nyc_output/unit.json",
+    "coverage:e2e": "npm run build:coverage && npm run test:e2e",
+    "coverage:report": "nyc report --reporter=text --reporter=lcov --report-dir=coverage-merged",
+    "coverage:all": "npm run coverage:collect && npm run coverage:e2e && npm run coverage:report"
+  },
+  "nyc": {
+    "temp-dir": ".nyc_output",
+    "report-dir": "coverage-merged",
+    "include": [
+      "src/**/*.ts"
+    ]
   },
   "keywords": [],
   "author": "Roberto Allende",
@@ -18,6 +30,7 @@
     "@types/jsdom": "^28.0.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.0.0",
+    "@vitest/coverage-istanbul": "^4.1.10",
     "@vitest/coverage-v8": "^4.1.10",
     "@wdio/cli": "^9.29.1",
     "@wdio/globals": "^9.29.1",
@@ -26,6 +39,7 @@
     "esbuild": "0.21.5",
     "jsdom": "^29.1.1",
     "mocha": "^11.7.6",
+    "nyc": "^18.0.0",
     "obsidian": "latest",
     "tslib": "2.6.0",
     "typescript": "^7.0.0",
