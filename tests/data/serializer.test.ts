@@ -266,5 +266,49 @@ describe('serializeBoard', () => {
 			if (!result.ok) throw new Error(result.error);
 			expect(result.board.cards[0].values['old_field']).toBe('keep me');
 		});
+
+		it('round-trips backslash characters', () => {
+			const board: Board = {
+				...MINIMAL_BOARD,
+				cards: [{ id: 'abc12345', values: { status: 'inbox', title: 'C:\\path\\file' } }],
+			};
+			const result = parseBlock(serializeBoard(board));
+			if (!result.ok) throw new Error(result.error);
+			expect(result.board.cards[0].values['title']).toBe('C:\\path\\file');
+		});
+	});
+});
+
+describe('duplicate _id resolution', () => {
+	it('assigns a new id to the second card when two share the same id', () => {
+		const board: Board = {
+			...MINIMAL_BOARD,
+			cards: [
+				{ id: 'dup00001', values: { status: 'inbox', title: 'First' } },
+				{ id: 'dup00001', values: { status: 'doing', title: 'Second' } },
+			],
+		};
+		const serialized = serializeBoard(board);
+		const result = parseBlock(serialized);
+		if (!result.ok) throw new Error(result.error);
+		const ids = result.board.cards.map(c => c.id);
+		expect(ids[0]).toBe('dup00001');
+		expect(ids[1]).not.toBe('dup00001');
+		expect(new Set(ids).size).toBe(2);
+	});
+
+	it('keeps all card data when resolving duplicates', () => {
+		const board: Board = {
+			...MINIMAL_BOARD,
+			cards: [
+				{ id: 'dup00001', values: { status: 'inbox', title: 'First' } },
+				{ id: 'dup00001', values: { status: 'doing', title: 'Second' } },
+			],
+		};
+		const result = parseBlock(serializeBoard(board));
+		if (!result.ok) throw new Error(result.error);
+		const titles = result.board.cards.map(c => c.values['title']);
+		expect(titles).toContain('First');
+		expect(titles).toContain('Second');
 	});
 });

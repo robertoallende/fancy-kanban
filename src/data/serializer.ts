@@ -58,13 +58,16 @@ function serializeTable(board: Board): string {
 	const header    = `| ${allLabels.join(' | ')} |`;
 	const separator = `| ${allLabels.map(() => '---').join(' | ')} |`;
 
-	const rows = board.cards.map(card => serializeRow(card, board, orphanedKeys));
+	const seenIds = new Set<string>();
+	const rows = board.cards.map(card => serializeRow(card, board, orphanedKeys, seenIds));
 
 	return [header, separator, ...rows].join('\n');
 }
 
-function serializeRow(card: Card, board: Board, orphanedKeys: Set<string>): string {
-	const id = card.id || generateId();
+function serializeRow(card: Card, board: Board, orphanedKeys: Set<string>, seenIds: Set<string>): string {
+	let id = card.id || generateId();
+	if (seenIds.has(id)) id = generateId();
+	seenIds.add(id);
 	const schemaCells = board.fields.map(f => escapeCell(card.values[f.name] ?? ''));
 	const orphanCells = [...orphanedKeys].map(key => escapeCell(card.values[key] ?? ''));
 	const cells = [id, ...schemaCells, ...orphanCells];
