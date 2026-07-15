@@ -26,7 +26,7 @@ export function parseConfig(configText: string): BoardSchema {
 		const value = trimmed.slice(colonIdx + 1).trim();
 
 		if (key === 'title') title = value;
-		else if (key === 'workflow') rawWorkflow = value;
+		else if (key === 'workflow') rawWorkflow = value.replace(/^"(.*)"$/, '$1');
 		else if (key === 'lanes') lanes = value;
 		else if (key === 'fields') inFields = true;
 	}

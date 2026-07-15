@@ -49,7 +49,7 @@ export class CardModal extends Modal {
 		saveBtn.addEventListener('click', () => {
 			const values = { ...this.values };
 			this.close();
-			this.containerEl.remove();
+			this.containerEl?.remove();
 			this.onConfirm(values);
 		});
 		footer.appendChild(saveBtn);
@@ -106,7 +106,7 @@ export class CardModal extends Modal {
 					e.stopPropagation();
 					const values = { ...this.values };
 					this.close();
-					this.containerEl.remove();
+					this.containerEl?.remove();
 					this.onConfirm(values);
 				}
 			});

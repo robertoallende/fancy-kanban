@@ -48,7 +48,7 @@ function parseConfig(configText) {
     const key = trimmed.slice(0, colonIdx).trim();
     const value = trimmed.slice(colonIdx + 1).trim();
     if (key === "title") title = value;
-    else if (key === "workflow") rawWorkflow = value;
+    else if (key === "workflow") rawWorkflow = value.replace(/^"(.*)"$/, "$1");
     else if (key === "lanes") lanes = value;
     else if (key === "fields") inFields = true;
   }
@@ -418,9 +418,10 @@ var CardModal = class extends import_obsidian.Modal {
     saveBtn.classList.add("fk-modal-save");
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => {
+      var _a2;
       const values = { ...this.values };
       this.close();
-      this.containerEl.remove();
+      (_a2 = this.containerEl) == null ? void 0 : _a2.remove();
       this.onConfirm(values);
     });
     footer.appendChild(saveBtn);
@@ -465,12 +466,13 @@ var CardModal = class extends import_obsidian.Modal {
       inp.value = initialValue;
       inp.addEventListener("input", () => onChange(inp.value));
       inp.addEventListener("keydown", (e) => {
+        var _a2;
         if (e.key === "Enter") {
           e.preventDefault();
           e.stopPropagation();
           const values = { ...this.values };
           this.close();
-          this.containerEl.remove();
+          (_a2 = this.containerEl) == null ? void 0 : _a2.remove();
           this.onConfirm(values);
         }
       });

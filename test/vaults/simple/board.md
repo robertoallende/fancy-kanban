@@ -2,17 +2,11 @@
 ---
 title: Simple Board
 fields:
-  - name: title
-    type: Text
-    label: Title
-  - name: status
-    type: Select
-    label: Status
-    options: [todo, done]
-    default: todo
+  - name: title, type: Text, label: Title
+  - name: status, type: Select, label: Status, options: todo|done, default: todo
 viewConfig:
   columns: status
-workflow: ""
+workflow:
 ---
 
 | _id | Title | Status |
