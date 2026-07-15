@@ -11,7 +11,8 @@
     "importHelpers": true,
     "isolatedModules": true,
     "strictNullChecks": true,
-    "lib": ["DOM", "ES2018"]
+    "lib": ["DOM", "ES2018"],
+    "types": ["@wdio/globals/types", "@wdio/mocha-framework", "wdio-obsidian-service"]
   },
   "include": ["**/*.ts"],
   "exclude": ["tests/**"]
