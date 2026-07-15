@@ -11,7 +11,7 @@ export function parseWorkflow(workflowString: string | undefined, statusOptions:
 	}
 
 	for (const pair of workflowString.split(',')) {
-		const [from, to] = pair.split('→').map(s => s.trim());
+		const [from, to] = pair.split(/->|→/).map(s => s.trim());
 		if (!from || !to) continue;
 		if (!map.has(from)) map.set(from, new Set());
 		map.get(from)!.add(to);

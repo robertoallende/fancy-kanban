@@ -51,6 +51,18 @@ describe('parseWorkflow', () => {
 		const map = parseWorkflow('inbox→doing', STATUS_OPTIONS);
 		expect(map.get('done')).toBeUndefined();
 	});
+
+	it('accepts ASCII arrow -> as equivalent to →', () => {
+		const map = parseWorkflow('inbox->doing, doing->done', STATUS_OPTIONS);
+		expect(map.get('inbox')).toEqual(new Set(['doing']));
+		expect(map.get('doing')).toEqual(new Set(['done']));
+	});
+
+	it('accepts mixed ASCII and Unicode arrows in the same string', () => {
+		const map = parseWorkflow('inbox->doing, doing→done', STATUS_OPTIONS);
+		expect(map.get('inbox')).toEqual(new Set(['doing']));
+		expect(map.get('doing')).toEqual(new Set(['done']));
+	});
 });
 
 describe('isTransitionAllowed', () => {
