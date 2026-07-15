@@ -48,7 +48,7 @@ jobs:
           sleep 1
 
       - name: Unit coverage
-        run: npm run coverage:collect
+        run: mkdir -p .nyc_output && npm run coverage:collect
 
       - name: E2E coverage build + run
         run: npm run coverage:e2e
