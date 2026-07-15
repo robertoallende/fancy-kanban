@@ -59,6 +59,14 @@ describe('escapeCell', () => {
 	it('returns empty string unchanged', () => {
 		expect(escapeCell('')).toBe('');
 	});
+
+	it('escapes backslash to \\\\', () => {
+		expect(escapeCell('a\\b')).toBe('a\\\\b');
+	});
+
+	it('escapes backslash before pipe so the pipe escape is unambiguous', () => {
+		expect(escapeCell('a\\|b')).toBe('a\\\\\\|b');
+	});
 });
 
 describe('generateId', () => {

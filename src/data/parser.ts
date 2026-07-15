@@ -16,8 +16,8 @@ export function splitRow(line: string): string[] {
 	if (line[0] === '|') i = 1;
 
 	while (i < line.length) {
-		if (line[i] === '\\' && line[i + 1] === '|') {
-			current += '\\|';
+		if (line[i] === '\\' && (line[i + 1] === '|' || line[i + 1] === '\\')) {
+			current += line[i] + line[i + 1];
 			i += 2;
 		} else if (line[i] === '|') {
 			cells.push(current);
@@ -35,12 +35,13 @@ export function splitRow(line: string): string[] {
 	return cells;
 }
 
-// Unescapes a single cell value: \| → |, <br> → newline. Trims whitespace.
+// Unescapes a single cell value: <br> → newline, \| → |, \\ → \. Trims whitespace.
 export function unescapeCell(cell: string): string {
 	return cell
 		.trim()
+		.replace(/<br\/?>/gi, '\n')
 		.replace(/\\[|]/g, '|')
-		.replace(/<br>/gi, '\n');
+		.replace(/\\\\/g, '\\');
 }
 
 export function parseTable(tableText: string, fields: FieldDefinition[]): Card[] {

@@ -69,4 +69,20 @@ describe('unescapeCell', () => {
 	it('trims whitespace after unescaping', () => {
 		expect(unescapeCell('  a\\|b  ')).toBe('a|b');
 	});
+
+	it('unescapes <br/> to newline', () => {
+		expect(unescapeCell('line1<br/>line2')).toBe('line1\nline2');
+	});
+
+	it('unescapes <BR> (uppercase) to newline', () => {
+		expect(unescapeCell('line1<BR>line2')).toBe('line1\nline2');
+	});
+
+	it('unescapes \\\\ to backslash', () => {
+		expect(unescapeCell('a\\\\b')).toBe('a\\b');
+	});
+
+	it('unescapes \\\\ and \\| in the correct order', () => {
+		expect(unescapeCell('a\\\\|b')).toBe('a\\|b');
+	});
 });

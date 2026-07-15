@@ -2,6 +2,7 @@ import type { Board, Card } from '../model/board';
 
 export function escapeCell(value: string): string {
 	return value
+		.replace(/\\/g, '\\\\')
 		.replace(/\|/g, '\\|')
 		.replace(/\n/g, '<br>');
 }
