@@ -7,9 +7,11 @@ const MOCK_FILE = {} as TFile;
 
 function makePlugin(filePath = 'note.md', file: TFile | null = MOCK_FILE): {
 	plugin: Plugin;
+	openLinkText: ReturnType<typeof vi.fn>;
 	getHandler: () => ((source: string, el: HTMLElement, ctx: unknown) => void);
 } {
 	let capturedHandler: ((source: string, el: HTMLElement, ctx: unknown) => void) | null = null;
+	const openLinkText = vi.fn();
 	const plugin = {
 		registerMarkdownCodeBlockProcessor: vi.fn((_, handler) => {
 			capturedHandler = handler;
@@ -19,10 +21,14 @@ function makePlugin(filePath = 'note.md', file: TFile | null = MOCK_FILE): {
 				getAbstractFileByPath: vi.fn(() => file),
 				process: vi.fn((_file: TFile, fn: (c: string) => string) => Promise.resolve(fn(''))),
 			},
+			workspace: {
+				openLinkText,
+			},
 		},
 	} as unknown as Plugin;
 	return {
 		plugin,
+		openLinkText,
 		getHandler: () => {
 			if (!capturedHandler) throw new Error('handler not registered');
 			return capturedHandler;
@@ -103,12 +109,12 @@ describe('registerPostProcessor', () => {
 	});
 
 	describe('handler — invalid source', () => {
-		it('appends a .fk-error element to el on parse failure', () => {
+		it('appends a .fk-error-panel element to el on parse failure', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
 			getHandler()(INVALID_SOURCE, el, makeCtx());
-			expect(el.querySelector('.fk-error')).not.toBeNull();
+			expect(el.querySelector('.fk-error-panel')).not.toBeNull();
 		});
 
 		it('el has exactly one child after handler runs on error', () => {
@@ -127,12 +133,42 @@ describe('registerPostProcessor', () => {
 			expect(el.querySelector('.fk-board')).toBeNull();
 		});
 
-		it('error element contains text from ParseResult.error', () => {
+		it('error panel contains a .fk-error message element with non-empty text', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
 			getHandler()(INVALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-error')!.textContent!.length).toBeGreaterThan(0);
+		});
+
+		it('error panel contains a pre element with the raw source text', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(INVALID_SOURCE, el, makeCtx());
+			const pre = el.querySelector('.fk-error-panel__source');
+			expect(pre).not.toBeNull();
+			expect(pre!.textContent).toBe(INVALID_SOURCE);
+		});
+
+		it('error panel contains a "Go to source" button', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(INVALID_SOURCE, el, makeCtx());
+			const btn = el.querySelector('.fk-error-panel__goto');
+			expect(btn).not.toBeNull();
+			expect(btn!.textContent).toBe('Go to source');
+		});
+
+		it('clicking "Go to source" calls openLinkText with the source path', () => {
+			const { plugin, openLinkText, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(INVALID_SOURCE, el, makeCtx());
+			const btn = el.querySelector<HTMLButtonElement>('.fk-error-panel__goto')!;
+			btn.click();
+			expect(openLinkText).toHaveBeenCalledWith('note.md', '', false);
 		});
 	});
 });

@@ -1,6 +1,7 @@
 import type { Plugin, MarkdownPostProcessorContext } from 'obsidian';
 import { TFile } from 'obsidian';
 import { parseBlock } from '../data/parser';
+import type { ParseIssue } from '../data/parser';
 import { mountBoard } from '../render/mount';
 import writeBack from './write-back';
 
@@ -15,14 +16,49 @@ export function blockIndexFromContext(ctx: MarkdownPostProcessorContext, el: HTM
 	return count;
 }
 
+function renderErrorPanel(
+	container: HTMLElement,
+	errors: ParseIssue[],
+	source: string,
+	onGoToSource: () => void,
+): void {
+	const panel = activeDocument.createElement('div');
+	panel.classList.add('fk-error-panel');
+
+	for (const err of errors) {
+		const msg = activeDocument.createElement('p');
+		msg.classList.add('fk-error');
+		msg.textContent = err.message;
+		if (err.hint) {
+			const hint = activeDocument.createElement('span');
+			hint.classList.add('fk-error-panel__hint');
+			hint.textContent = ` — ${err.hint}`;
+			msg.appendChild(hint);
+		}
+		panel.appendChild(msg);
+	}
+
+	const pre = activeDocument.createElement('pre');
+	pre.classList.add('fk-error-panel__source');
+	pre.textContent = source;
+	panel.appendChild(pre);
+
+	const btn = activeDocument.createElement('button');
+	btn.classList.add('fk-error-panel__goto');
+	btn.textContent = 'Go to source';
+	btn.addEventListener('click', onGoToSource);
+	panel.appendChild(btn);
+
+	container.appendChild(panel);
+}
+
 export function registerPostProcessor(plugin: Plugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('fancy-kanban', (source, el, ctx) => {
 		const result = parseBlock(source);
 		if (!result.ok) {
-			const error = activeDocument.createElement('p');
-			error.classList.add('fk-error');
-			error.textContent = result.errors.map(e => e.message).join('; ');
-			el.appendChild(error);
+			renderErrorPanel(el, result.errors, source, () => {
+				void plugin.app.workspace.openLinkText(ctx.sourcePath, '', false);
+			});
 			return;
 		}
 

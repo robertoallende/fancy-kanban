@@ -320,5 +320,35 @@
 .fk-error {
   color: var(--text-error);
   font-size: var(--font-smaller);
+  padding: 4px 0;
+  margin: 0;
+}
+
+.fk-error-panel {
+  border: 1px solid var(--background-modifier-error);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 4px 0;
+}
+
+.fk-error-panel__source {
+  background: var(--background-secondary);
+  border-radius: 4px;
   padding: 8px;
+  font-size: var(--font-smaller);
+  font-family: var(--font-monospace);
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 8px 0;
+}
+
+.fk-error-panel__hint {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.fk-error-panel__goto {
+  font-size: var(--font-smaller);
 }
