@@ -4,10 +4,10 @@ const VAULT = './test/vaults/simple';
 
 async function openInPreview(fileName: string): Promise<void> {
     await browser.reloadObsidian({ vault: VAULT });
-    await browser.executeObsidian(async ({ app }) => {
-        const file = app.vault.getAbstractFileByPath(fileName);
+    await browser.executeObsidian(async ({ app }, name) => {
+        const file = app.vault.getAbstractFileByPath(name as string);
         if (file) await app.workspace.getLeaf().openFile(file as any);
-    });
+    }, fileName);
     await browser.executeObsidian(async ({ app }) => {
         const leaf = app.workspace.activeLeaf;
         if (leaf?.view) {
