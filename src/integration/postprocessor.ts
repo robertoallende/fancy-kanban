@@ -52,6 +52,30 @@ function renderErrorPanel(
 	container.appendChild(panel);
 }
 
+function renderWarningBanner(container: HTMLElement, warnings: ParseIssue[]): void {
+	const banner = activeDocument.createElement('div');
+	banner.classList.add('fk-warning-banner');
+
+	const body = activeDocument.createElement('div');
+	body.classList.add('fk-warning-banner__body');
+	for (const w of warnings) {
+		const item = activeDocument.createElement('p');
+		item.classList.add('fk-warning-banner__item');
+		item.textContent = w.message;
+		body.appendChild(item);
+	}
+	banner.appendChild(body);
+
+	const dismiss = activeDocument.createElement('button');
+	dismiss.classList.add('fk-warning-banner__dismiss');
+	dismiss.textContent = '×';
+	dismiss.setAttribute('aria-label', 'Dismiss warnings');
+	dismiss.addEventListener('click', () => banner.remove());
+	banner.appendChild(dismiss);
+
+	container.appendChild(banner);
+}
+
 export function registerPostProcessor(plugin: Plugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('fancy-kanban', (source, el, ctx) => {
 		const result = parseBlock(source);
@@ -64,8 +88,12 @@ export function registerPostProcessor(plugin: Plugin): void {
 
 		const abstract = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
 		const file = abstract instanceof TFile ? abstract : null;
+
 		if (!file) {
-			mountBoard(el, result.board, () => Promise.resolve(), plugin.app);
+			if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
+			const boardWrapper = activeDocument.createElement('div');
+			el.appendChild(boardWrapper);
+			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app);
 			return;
 		}
 
@@ -76,11 +104,15 @@ export function registerPostProcessor(plugin: Plugin): void {
 			el.appendChild(banner);
 		}
 
+		if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
+
+		const boardWrapper = activeDocument.createElement('div');
+		el.appendChild(boardWrapper);
 		const blockIndex = blockIndexFromContext(ctx, el);
 		const save = result.readonly
 			? () => Promise.resolve()
 			: (b: typeof result.board) => writeBack(plugin.app.vault, file, blockIndex, b);
 
-		mountBoard(el, result.board, save, plugin.app);
+		mountBoard(boardWrapper, result.board, save, plugin.app);
 	});
 }

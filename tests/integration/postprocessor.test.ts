@@ -54,6 +54,17 @@ fields:
 |-----|-------|--------|
 | x1  | Task  | inbox  |`;
 
+const WARN_SOURCE = `---
+title: Warn Board
+fields:
+  - name: status, type: Select, options: inbox|done, label: Status, default: inbox
+---
+
+| _id | Status |
+|-----|--------|
+| x1  | inbox  |
+|`;
+
 const INVALID_SOURCE = 'not a valid block at all |||';
 
 describe('registerPostProcessor', () => {
@@ -105,6 +116,52 @@ describe('registerPostProcessor', () => {
 			const el = document.createElement('div');
 			getHandler()(VALID_SOURCE, el, makeCtx());
 			expect(el.querySelector('.fk-board')).not.toBeNull();
+		});
+	});
+
+	describe('handler — source with warnings', () => {
+		it('still renders .fk-board when there are recoverable warnings', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(WARN_SOURCE, el, makeCtx());
+			expect(el.querySelector('.fk-board')).not.toBeNull();
+		});
+
+		it('renders a .fk-warning-banner above the board', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(WARN_SOURCE, el, makeCtx());
+			expect(el.querySelector('.fk-warning-banner')).not.toBeNull();
+		});
+
+		it('warning banner contains the warning message text', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(WARN_SOURCE, el, makeCtx());
+			const banner = el.querySelector('.fk-warning-banner')!;
+			expect(banner.textContent!.length).toBeGreaterThan(0);
+		});
+
+		it('clicking dismiss removes the warning banner', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(WARN_SOURCE, el, makeCtx());
+			const dismiss = el.querySelector<HTMLButtonElement>('.fk-warning-banner__dismiss')!;
+			expect(dismiss).not.toBeNull();
+			dismiss.click();
+			expect(el.querySelector('.fk-warning-banner')).toBeNull();
+		});
+
+		it('does not render .fk-error-panel for recoverable warnings', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(WARN_SOURCE, el, makeCtx());
+			expect(el.querySelector('.fk-error-panel')).toBeNull();
 		});
 	});
 

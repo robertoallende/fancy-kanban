@@ -352,3 +352,50 @@
 .fk-error-panel__goto {
   font-size: var(--font-smaller);
 }
+
+.fk-banner {
+  font-size: var(--font-smaller);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.fk-banner--warning {
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}
+
+.fk-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--background-modifier-error);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: var(--font-smaller);
+}
+
+.fk-warning-banner__body {
+  flex: 1;
+}
+
+.fk-warning-banner__item {
+  margin: 0;
+  color: var(--text-on-accent);
+}
+
+.fk-warning-banner__dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: var(--font-small);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.fk-warning-banner__dismiss:hover {
+  opacity: 1;
+}
