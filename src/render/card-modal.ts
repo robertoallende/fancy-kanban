@@ -47,8 +47,10 @@ export class CardModal extends Modal {
 		saveBtn.classList.add('fk-modal-save');
 		saveBtn.textContent = 'Save';
 		saveBtn.addEventListener('click', () => {
+			const values = { ...this.values };
 			this.close();
-			this.onConfirm(this.values);
+			this.containerEl.remove();
+			this.onConfirm(values);
 		});
 		footer.appendChild(saveBtn);
 		contentEl.appendChild(footer);
@@ -99,7 +101,14 @@ export class CardModal extends Modal {
 			inp.value = initialValue;
 			inp.addEventListener('input', () => onChange(inp.value));
 			inp.addEventListener('keydown', (e: KeyboardEvent) => {
-				if (e.key === 'Enter') { this.close(); this.onConfirm(this.values); }
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					e.stopPropagation();
+					const values = { ...this.values };
+					this.close();
+					this.containerEl.remove();
+					this.onConfirm(values);
+				}
 			});
 			wrapper.appendChild(inp);
 		}
