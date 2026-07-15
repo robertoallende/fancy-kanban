@@ -18,44 +18,6 @@ async function openInPreview(fileName: string): Promise<void> {
 }
 
 describe('Error UI', function () {
-    describe('debug', function () {
-        it('dumps rendered HTML for error-board.md', async function () {
-            await openInPreview('error-board.md');
-            await browser.pause(2000);
-            const html = await browser.execute(() => {
-                const preview = document.querySelector('.markdown-preview-view');
-                const codeBlock = document.querySelector('.block-language-fancy-kanban');
-                return JSON.stringify({
-                    previewExists: !!preview,
-                    codeBlockExists: !!codeBlock,
-                    codeBlockHTML: codeBlock ? codeBlock.innerHTML.substring(0, 1000) : 'NOT FOUND',
-                    fkError: !!document.querySelector('.fk-error-panel'),
-                    fkBoard: !!document.querySelector('.fk-board'),
-                    fkAll: Array.from(document.querySelectorAll('[class*="fk-"]')).map(e => e.className).join(', '),
-                });
-            });
-            console.log('DEBUG error-board:', html);
-            expect(true).toBe(true);
-        });
-
-        it('dumps rendered HTML for warning-board.md', async function () {
-            await openInPreview('warning-board.md');
-            await browser.pause(2000);
-            const html = await browser.execute(() => {
-                const codeBlock = document.querySelector('.block-language-fancy-kanban');
-                return JSON.stringify({
-                    codeBlockExists: !!codeBlock,
-                    codeBlockHTML: codeBlock ? codeBlock.innerHTML.substring(0, 1000) : 'NOT FOUND',
-                    fkWarning: !!document.querySelector('.fk-warning-banner'),
-                    fkBoard: !!document.querySelector('.fk-board'),
-                    fkAll: Array.from(document.querySelectorAll('[class*="fk-"]')).map(e => e.className).join(', '),
-                });
-            });
-            console.log('DEBUG warning-board:', html);
-            expect(true).toBe(true);
-        });
-    });
-
     describe('fatal error panel', function () {
         beforeEach(async function () {
             await openInPreview('error-board.md');

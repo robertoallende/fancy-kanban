@@ -1,10 +1,12 @@
 # Changelog
 
+## 0.2.0 - 15/07/2026
 
+- Board format reliability and keyboard usability ([#3](https://github.com/robertoallende/fancy-kanban/issues/3))
 
 ## 0.1.4 - 15/07/2026
 
-- Close card modal automatically after saving a new card
+- Close card modal automatically after saving a new card ([#2](https://github.com/robertoallende/fancy-kanban/issues/2))
 
 ## 0.1.3 - 15/07/2026
 
