@@ -24,7 +24,15 @@ data.json
 .vscode/
 .idea/
 *.swp
-.obsidian
+
+# Obsidian vault state (root and samples — not the test vault)
+/.obsidian
+samples/.obsidian
+
+# Generated files inside test vaults (keep hand-crafted config)
+test/vaults/*/.obsidian/plugins/
+test/vaults/*/.obsidian/workspace*
+test/vaults/*/.obsidian/.trash/
 
 # OS
 .DS_Store
