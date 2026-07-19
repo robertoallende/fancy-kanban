@@ -16,6 +16,26 @@ const BOARD: Board = {
 	cards: [],
 };
 
+const LINK_BOARD: Board = {
+	title: 'Link Board',
+	fields: [
+		{ name: '_id', type: 'Text', label: 'ID' },
+		{ name: 'title', type: 'Text', label: 'Title' },
+		{ name: 'docs', type: 'Link', label: 'Docs' },
+		{ name: 'status', type: 'Select', label: 'Status', options: ['todo', 'done'], default: 'todo' },
+	],
+	viewConfig: { columns: 'status' },
+	rawWorkflow: '',
+	cards: [],
+};
+
+function makeLinkModal(docsValue: string, onConfirm = vi.fn()) {
+	const card: Card = { id: 'lk1', values: { _id: 'lk1', title: 'Task', docs: docsValue, status: 'todo' } };
+	const modal = new CardModal({} as never, LINK_BOARD, card, 'todo', onConfirm);
+	modal.open();
+	return { modal, onConfirm };
+}
+
 const CARD: Card = {
 	id: 'card1',
 	values: { _id: 'card1', title: 'My Task', notes: 'Some notes', status: 'doing' },
@@ -90,6 +110,69 @@ describe('CardModal — edit card', () => {
 		input.dispatchEvent(new Event('input'));
 		modal.contentEl.querySelector('button')!.click();
 		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Updated Task' }));
+	});
+});
+
+describe('CardModal — Link field', () => {
+	it('renders .fk-link-field instead of a bare input', () => {
+		const { modal } = makeLinkModal('');
+		expect(modal.contentEl.querySelector('.fk-link-field')).toBeTruthy();
+		// The docs field wrapper should contain .fk-link-field, not a bare input
+		const docsWrapper = Array.from(modal.contentEl.querySelectorAll('.fk-modal-field'))
+			.find(el => el.querySelector('label')?.textContent === 'Docs');
+		expect(docsWrapper?.querySelector('input:not(.fk-link-url-input input)')).toBeFalsy();
+	});
+
+	it('renders no items for an empty initial value', () => {
+		const { modal } = makeLinkModal('');
+		expect(modal.contentEl.querySelectorAll('.fk-link-item').length).toBe(0);
+	});
+
+	it('renders existing items from the initial value', () => {
+		const { modal } = makeLinkModal('notes/doc.pdf\nhttps://example.com');
+		const items = modal.contentEl.querySelectorAll('.fk-link-item');
+		expect(items.length).toBe(2);
+		expect(items[0].querySelector('.fk-link-item__value')?.textContent).toBe('notes/doc.pdf');
+		expect(items[1].querySelector('.fk-link-item__value')?.textContent).toBe('https://example.com');
+	});
+
+	it('clicking × removes the item and calls onChange via save', () => {
+		const { modal, onConfirm } = makeLinkModal('notes/doc.pdf\nhttps://example.com');
+		const removeBtn = modal.contentEl.querySelector('.fk-link-item__remove') as HTMLButtonElement;
+		removeBtn.click();
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ docs: 'https://example.com' }));
+	});
+
+	it('"Add URL" button toggles the inline input', () => {
+		const { modal } = makeLinkModal('');
+		const addUrlBtn = modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-add--url')!;
+		const urlInput = modal.contentEl.querySelector<HTMLElement>('.fk-link-url-input')!;
+		expect(urlInput.style.display).toBe('none');
+		addUrlBtn.click();
+		expect(urlInput.style.display).not.toBe('none');
+	});
+
+	it('confirming a valid URL adds it to the list', () => {
+		const { modal, onConfirm } = makeLinkModal('');
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-add--url')!.click();
+		const urlInput = modal.contentEl.querySelector<HTMLInputElement>('.fk-link-url-input input')!;
+		urlInput.value = 'https://obsidian.md';
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-url-confirm')!.click();
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ docs: 'https://obsidian.md' }));
+	});
+
+	it('confirming an invalid URL shows .fk-link-error and does not add the item', () => {
+		const { modal, onConfirm } = makeLinkModal('');
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-add--url')!.click();
+		const urlInput = modal.contentEl.querySelector<HTMLInputElement>('.fk-link-url-input input')!;
+		urlInput.value = '/absolute/path';
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-url-confirm')!.click();
+		const error = modal.contentEl.querySelector('.fk-link-error')!;
+		expect(error.textContent).toBeTruthy();
+		expect(modal.contentEl.querySelectorAll('.fk-link-item').length).toBe(0);
+		expect(onConfirm).not.toHaveBeenCalled();
 	});
 });
 

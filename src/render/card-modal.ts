@@ -1,6 +1,6 @@
 import { App, Modal, FuzzySuggestModal, TFile } from 'obsidian';
 import type { Board, Card, FieldDefinition } from '../model/board';
-import { splitLinks, joinLinks } from '../data/link';
+import { splitLinks, joinLinks, validateLinkItem } from '../data/link';
 
 class LinkFilePicker extends FuzzySuggestModal<TFile> {
 	constructor(app: App, private onSelect: (path: string) => void) {
@@ -137,8 +137,12 @@ export class CardModal extends Modal {
 	private renderLinkField(container: HTMLElement, _field: FieldDefinition, initialValue: string, onChange: (v: string) => void): void {
 		const items = splitLinks(initialValue);
 
+		const field = activeDocument.createElement('div');
+		field.classList.add('fk-link-field');
+		container.appendChild(field);
+
 		const itemList = activeDocument.createElement('div');
-		container.appendChild(itemList);
+		field.appendChild(itemList);
 
 		const renderItems = () => {
 			while (itemList.firstChild) itemList.removeChild(itemList.firstChild);
@@ -196,7 +200,12 @@ export class CardModal extends Modal {
 		urlConfirm.textContent = 'Add';
 		urlConfirm.addEventListener('click', () => {
 			const value = urlInput.value.trim();
-			if (!value) return;
+			const result = validateLinkItem(value);
+			if (!result.valid) {
+				urlError.textContent = result.error ?? '';
+				return;
+			}
+			urlError.textContent = '';
 			items.push(value);
 			onChange(joinLinks(items));
 			urlInput.value = '';
@@ -220,7 +229,7 @@ export class CardModal extends Modal {
 		controls.appendChild(addFileBtn);
 		controls.appendChild(addUrlBtn);
 		controls.appendChild(urlInputArea);
-		container.appendChild(controls);
+		field.appendChild(controls);
 	}
 
 	onClose(): void {
