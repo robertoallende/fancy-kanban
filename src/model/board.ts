@@ -21,7 +21,7 @@ export interface Card {
 	values: Record<string, string>;
 }
 
-export const SUPPORTED_VERSION = 1;
+export const SUPPORTED_VERSION = 2;
 
 export interface BoardSchema {
 	title: string;

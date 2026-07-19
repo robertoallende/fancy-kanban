@@ -99,7 +99,7 @@ describe('Error UI', function () {
             await openInPreview('readonly-board.md');
         });
 
-        it('renders .fk-banner--warning for a version 2 board', async function () {
+        it('renders .fk-banner--warning for a version 3 board', async function () {
             const banner = await $('.fk-banner--warning');
             await banner.waitForExist({ timeout: 5000 });
             expect(await banner.isExisting()).toBe(true);

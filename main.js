@@ -28,7 +28,7 @@ var import_obsidian5 = require("obsidian");
 var import_obsidian3 = require("obsidian");
 
 // src/model/board.ts
-var SUPPORTED_VERSION = 1;
+var SUPPORTED_VERSION = 2;
 
 // src/data/deprecations.ts
 var W_FIELD_TYPE_DEPRECATED = "W_FIELD_TYPE_DEPRECATED";
@@ -455,7 +455,7 @@ ${serializeBoard(board)}
 function serializeConfig(board) {
   var _a;
   const lines = [];
-  lines.push(`version: 1`);
+  lines.push(`version: 2`);
   lines.push(`title: ${board.title}`);
   lines.push("fields:");
   for (const field of board.fields) {

@@ -286,20 +286,29 @@ describe('version key', () => {
 		expect(result.readonly).toBe(false);
 	});
 
-	it('marks a version 2 board as readonly', () => {
+	it('parses an explicit version: 2 and is writable', () => {
 		const block = MINIMAL_BLOCK.replace('title: My Board', 'version: 2\ntitle: My Board');
+		const result = parseBlock(block);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.board.version).toBe(2);
+		expect(result.readonly).toBe(false);
+	});
+
+	it('marks a version 3 board as readonly', () => {
+		const block = MINIMAL_BLOCK.replace('title: My Board', 'version: 3\ntitle: My Board');
 		const result = parseBlock(block);
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.readonly).toBe(true);
 		if (!result.readonly) return;
-		expect(result.readonlyReason).toMatch(/version 2/);
+		expect(result.readonlyReason).toMatch(/version 3/);
 	});
 
-	it('serializer emits version: 1', () => {
+	it('serializer emits version: 2', () => {
 		const result = parseBlock(MINIMAL_BLOCK);
 		if (!result.ok) return;
 		const serialized = serializeBoard(result.board);
-		expect(serialized).toMatch(/^version: 1/m);
+		expect(serialized).toMatch(/^version: 2/m);
 	});
 });
