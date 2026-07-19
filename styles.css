@@ -416,14 +416,11 @@
 .fk-link-item {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
+  padding-right: 8px;
 }
 
 .fk-link-item__value {
-  background: none;
-  border: none;
-  padding: 0;
-  text-align: left;
   cursor: pointer;
   color: var(--link-color);
   font-size: var(--font-small);
@@ -435,12 +432,12 @@
 }
 
 .fk-link-item__remove {
-  background: none;
-  border: none;
   cursor: pointer;
-  padding: 0 2px;
   opacity: 0.5;
   flex-shrink: 0;
+  font-size: var(--font-smaller);
+  line-height: 1;
+  user-select: none;
 }
 
 .fk-link-item__remove:hover {

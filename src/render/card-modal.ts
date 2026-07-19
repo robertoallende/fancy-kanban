@@ -159,23 +159,37 @@ export class CardModal extends Modal {
 			for (const item of items) {
 				const row = activeDocument.createElement('div');
 				row.classList.add('fk-link-item');
-				const val = activeDocument.createElement('button');
-				val.classList.add('fk-link-item__value');
-				val.textContent = item;
-				val.addEventListener('click', () => openLink(item));
-				const remove = activeDocument.createElement('button');
+
+				const remove = activeDocument.createElement('span');
 				remove.classList.add('fk-link-item__remove');
+				remove.setAttribute('role', 'button');
+				remove.setAttribute('tabindex', '0');
 				remove.setAttribute('aria-label', 'Remove');
 				remove.textContent = '×';
-				remove.addEventListener('click', (e) => {
+				const doRemove = (e: Event) => {
 					e.stopPropagation();
 					const idx = items.indexOf(item);
 					if (idx > -1) items.splice(idx, 1);
 					onChange(joinLinks(items));
 					renderItems();
+				};
+				remove.addEventListener('click', doRemove);
+				remove.addEventListener('keydown', (e: KeyboardEvent) => {
+					if (e.key === 'Enter' || e.key === ' ') doRemove(e);
 				});
-				row.appendChild(val);
+
+				const val = activeDocument.createElement('span');
+				val.classList.add('fk-link-item__value');
+				val.setAttribute('role', 'button');
+				val.setAttribute('tabindex', '0');
+				val.textContent = item;
+				val.addEventListener('click', () => openLink(item));
+				val.addEventListener('keydown', (e: KeyboardEvent) => {
+					if (e.key === 'Enter' || e.key === ' ') openLink(item);
+				});
+
 				row.appendChild(remove);
+				row.appendChild(val);
 				itemList.appendChild(row);
 			}
 		};
