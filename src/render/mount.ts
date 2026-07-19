@@ -9,20 +9,20 @@ import { reconcileCards } from '../data/schema';
 
 export type SaveFn = (board: Board) => Promise<void>;
 
-export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: App): void {
+export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: App, sourcePath = ''): void {
 	while (el.firstChild) el.removeChild(el.firstChild);
 
 	const dispatch = (newBoard: Board): void => {
-		void save(newBoard).then(() => mountBoard(el, newBoard, save, app));
+		void save(newBoard).then(() => mountBoard(el, newBoard, save, app, sourcePath));
 	};
 
 	const boardEl = renderBoard(board);
 	attachDragDrop(boardEl, board, dispatch);
-	attachCardActions(boardEl, board, dispatch, app);
+	attachCardActions(boardEl, board, dispatch, app, sourcePath);
 	el.appendChild(boardEl);
 }
 
-function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void, app?: App): void {
+function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void, app?: App, sourcePath = ''): void {
 	boardEl.addEventListener('click', (e) => {
 		const target = e.target as HTMLElement;
 
@@ -42,7 +42,7 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 			if (app) {
 				new CardModal(app, board, null, columnValue, (values) => {
 					dispatch(createCard(board, columnValue, values));
-				}).open();
+				}, undefined, sourcePath).open();
 			} else {
 				dispatch(createCard(board, columnValue, {}));
 			}
@@ -59,7 +59,7 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 					dispatch(updateCard(board, cardId, values));
 				}, () => {
 					dispatch(deleteCard(board, cardId));
-				}).open();
+				}, sourcePath).open();
 			}
 		}
 	});

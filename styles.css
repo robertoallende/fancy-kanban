@@ -422,6 +422,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: var(--link-color);
+}
+
+.fk-link-item__value:hover {
+  text-decoration: underline;
 }
 
 .fk-link-item__remove {

@@ -59,7 +59,7 @@ describe('Link field', function () {
                 Array.from(document.querySelectorAll('.fk-link-item .fk-link-item__value'))
                     .map(el => el.textContent)
             );
-            expect(items).toContain('notes/file.md');
+            expect(items).toContain('notes/target.md');
             expect(items).toContain('https://example.com');
         });
 
@@ -114,6 +114,55 @@ describe('Link field', function () {
             });
 
             expect(content).toContain('https://obsidian.md');
+        });
+    });
+
+    describe('click to open', function () {
+        beforeEach(async function () {
+            await openInPreview('link-board.md');
+        });
+
+        it('clicking a vault path link closes the modal and opens the file in a new tab', async function () {
+            await openCardModal('lk1');
+            const itemsBefore = await browser.execute(() =>
+                document.querySelectorAll('.fk-link-item').length
+            );
+            expect(itemsBefore).toBe(2);
+
+            // Click the first item (notes/target.md)
+            await browser.execute(() => {
+                const btn = document.querySelector<HTMLButtonElement>('.fk-link-item__value');
+                btn?.click();
+            });
+            await browser.pause(1000);
+
+            // Modal should be gone
+            const modalGone = await browser.execute(() =>
+                document.querySelectorAll('.fk-link-item').length === 0
+            );
+            expect(modalGone).toBe(true);
+
+            // Active file in workspace should now be notes/target.md
+            const activeFile = await browser.executeObsidian(async ({ app }) => {
+                return app.workspace.getActiveFile()?.path ?? '';
+            });
+            expect(activeFile).toBe('notes/target.md');
+        });
+
+        it('vault path link opens in a new leaf (original board file is still open)', async function () {
+            await openCardModal('lk1');
+            await browser.execute(() => {
+                const btn = document.querySelector<HTMLButtonElement>('.fk-link-item__value');
+                btn?.click();
+            });
+            await browser.pause(1000);
+
+            const leafCount = await browser.executeObsidian(async ({ app }) => {
+                let count = 0;
+                app.workspace.iterateAllLeaves(() => { count++; });
+                return count;
+            });
+            expect(leafCount).toBeGreaterThanOrEqual(2);
         });
     });
 

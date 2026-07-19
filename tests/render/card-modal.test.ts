@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CardModal } from '../../src/render/card-modal';
 import type { Board, Card } from '../../src/model/board';
 
@@ -29,9 +29,14 @@ const LINK_BOARD: Board = {
 	cards: [],
 };
 
-function makeLinkModal(docsValue: string, onConfirm = vi.fn()) {
+const mockOpenLinkText = vi.fn();
+const mockApp = {
+	workspace: { openLinkText: mockOpenLinkText },
+} as never;
+
+function makeLinkModal(docsValue: string, onConfirm = vi.fn(), sourcePath = '') {
 	const card: Card = { id: 'lk1', values: { _id: 'lk1', title: 'Task', docs: docsValue, status: 'todo' } };
-	const modal = new CardModal({} as never, LINK_BOARD, card, 'todo', onConfirm);
+	const modal = new CardModal(mockApp, LINK_BOARD, card, 'todo', onConfirm, undefined, sourcePath);
 	modal.open();
 	return { modal, onConfirm };
 }
@@ -161,6 +166,53 @@ describe('CardModal — Link field', () => {
 		modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-url-confirm')!.click();
 		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
 		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ docs: 'https://obsidian.md' }));
+	});
+
+	describe('click to open', () => {
+		let windowOpenSpy: ReturnType<typeof vi.spyOn>;
+
+		beforeEach(() => {
+			mockOpenLinkText.mockReset();
+			windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+		});
+
+		afterEach(() => {
+			windowOpenSpy.mockRestore();
+		});
+
+		it('clicking a vault path calls openLinkText in a new tab', () => {
+			const { modal } = makeLinkModal('notes/doc.md', vi.fn(), 'board.md');
+			const btn = modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-item__value')!;
+			btn.click();
+			expect(mockOpenLinkText).toHaveBeenCalledWith('notes/doc.md', 'board.md', 'tab');
+		});
+
+		it('clicking a vault path closes the modal', () => {
+			const { modal } = makeLinkModal('notes/doc.md');
+			const closeSpy = vi.spyOn(modal, 'close');
+			modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-item__value')!.click();
+			expect(closeSpy).toHaveBeenCalled();
+		});
+
+		it('clicking an https:// URI calls window.open', () => {
+			const { modal } = makeLinkModal('https://obsidian.md');
+			modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-item__value')!.click();
+			expect(windowOpenSpy).toHaveBeenCalledWith('https://obsidian.md', '_blank');
+			expect(mockOpenLinkText).not.toHaveBeenCalled();
+		});
+
+		it('clicking a mailto: URI calls window.open', () => {
+			const { modal } = makeLinkModal('mailto:user@example.com');
+			modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-item__value')!.click();
+			expect(windowOpenSpy).toHaveBeenCalledWith('mailto:user@example.com', '_blank');
+		});
+
+		it('clicking a link does not call onConfirm', () => {
+			const onConfirm = vi.fn();
+			const { modal } = makeLinkModal('notes/doc.md', onConfirm);
+			modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-item__value')!.click();
+			expect(onConfirm).not.toHaveBeenCalled();
+		});
 	});
 
 	it('confirming an invalid URL shows .fk-link-error and does not add the item', () => {

@@ -93,7 +93,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 			if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
 			const boardWrapper = activeDocument.createElement('div');
 			el.appendChild(boardWrapper);
-			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app);
+			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
 			return;
 		}
 
@@ -113,6 +113,6 @@ export function registerPostProcessor(plugin: Plugin): void {
 			? () => Promise.resolve()
 			: (b: typeof result.board) => writeBack(plugin.app.vault, file, blockIndex, b);
 
-		mountBoard(boardWrapper, result.board, save, plugin.app);
+		mountBoard(boardWrapper, result.board, save, plugin.app, ctx.sourcePath);
 	});
 }

@@ -8,8 +8,8 @@ fields:
   - name: docs, type: Link, label: Docs
 ---
 
-| _id | Title    | Status | Docs                                         |
-|-----|----------|--------|----------------------------------------------|
-| lk1 | Card One | todo   | notes/file.md<br>https://example.com         |
-| lk2 | Card Two | done   |                                              |
+| _id | Title    | Status | Docs                                                    |
+|-----|----------|--------|---------------------------------------------------------|
+| lk1 | Card One | todo   | notes/target.md<br>https://example.com                  |
+| lk2 | Card Two | done   |                                                         |
 ```

@@ -27,6 +27,7 @@ export class CardModal extends Modal {
 		private columnValue: string,
 		private onConfirm: (values: Record<string, string>) => void,
 		private onDelete?: () => void,
+		private sourcePath: string = '',
 	) {
 		super(app);
 	}
@@ -144,19 +145,30 @@ export class CardModal extends Modal {
 		const itemList = activeDocument.createElement('div');
 		field.appendChild(itemList);
 
+		const openLink = (item: string) => {
+			this.close();
+			if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(item)) {
+				window.open(item, '_blank');
+			} else {
+				void (this.app as App).workspace.openLinkText(item, this.sourcePath, 'tab');
+			}
+		};
+
 		const renderItems = () => {
 			while (itemList.firstChild) itemList.removeChild(itemList.firstChild);
 			for (const item of items) {
 				const row = activeDocument.createElement('div');
 				row.classList.add('fk-link-item');
-				const val = activeDocument.createElement('span');
+				const val = activeDocument.createElement('button');
 				val.classList.add('fk-link-item__value');
 				val.textContent = item;
+				val.addEventListener('click', () => openLink(item));
 				const remove = activeDocument.createElement('button');
 				remove.classList.add('fk-link-item__remove');
 				remove.setAttribute('aria-label', 'Remove');
 				remove.textContent = '×';
-				remove.addEventListener('click', () => {
+				remove.addEventListener('click', (e) => {
+					e.stopPropagation();
 					const idx = items.indexOf(item);
 					if (idx > -1) items.splice(idx, 1);
 					onChange(joinLinks(items));
