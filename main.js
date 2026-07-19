@@ -587,11 +587,9 @@ var CardModal = class extends import_obsidian.Modal {
     contentEl.empty();
     this.titleEl.textContent = this.card ? "Edit card" : "Add card";
     const columnField = this.board.viewConfig.columns;
-    const editableFields = this.board.fields.filter(
-      (f) => f.name !== "_id" && f.name !== columnField
-    );
+    const editableFields = this.board.fields.filter((f) => f.name !== "_id");
     for (const field of editableFields) {
-      this.renderField(contentEl, field);
+      this.renderField(contentEl, field, field.name === columnField && !this.card ? this.columnValue : void 0);
     }
     const footer = activeDocument.createElement("div");
     footer.classList.add("fk-modal-footer");
@@ -619,9 +617,9 @@ var CardModal = class extends import_obsidian.Modal {
     contentEl.appendChild(footer);
     (_a = contentEl.querySelector("input, textarea, select")) == null ? void 0 : _a.focus();
   }
-  renderField(container, field) {
+  renderField(container, field, initialOverride) {
     var _a, _b;
-    const initialValue = this.card ? (_a = this.card.values[field.name]) != null ? _a : "" : (_b = field.default) != null ? _b : "";
+    const initialValue = initialOverride != null ? initialOverride : this.card ? (_a = this.card.values[field.name]) != null ? _a : "" : (_b = field.default) != null ? _b : "";
     this.values[field.name] = initialValue;
     const wrapper = activeDocument.createElement("div");
     wrapper.classList.add("fk-modal-field");

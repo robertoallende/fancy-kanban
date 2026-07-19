@@ -58,10 +58,10 @@ describe('CardModal — new card', () => {
 		expect(modal.titleEl.textContent).toBe('Add card');
 	});
 
-	it('renders an input for each editable field (excluding _id and status)', () => {
+	it('renders an input for each editable field (excluding _id, including status)', () => {
 		const { modal } = makeModal(null);
 		const inputs = modal.contentEl.querySelectorAll('input, textarea, select');
-		expect(inputs.length).toBe(2); // title (text) + notes (textarea)
+		expect(inputs.length).toBe(3); // title (text) + notes (textarea) + status (select)
 	});
 
 	it('pre-fills text fields with empty string', () => {
@@ -80,13 +80,19 @@ describe('CardModal — new card', () => {
 		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'New Task' }));
 	});
 
-	it('does not include status or _id in confirmed values', () => {
+	it('includes status in confirmed values and does not include _id', () => {
 		const { modal, onConfirm } = makeModal(null);
 		const saveBtn = modal.contentEl.querySelector('button') as HTMLButtonElement;
 		saveBtn.click();
 		const values = onConfirm.mock.calls[0][0];
-		expect(values).not.toHaveProperty('status');
+		expect(values).toHaveProperty('status');
 		expect(values).not.toHaveProperty('_id');
+	});
+
+	it('pre-selects status to the columnValue for a new card', () => {
+		const { modal } = makeModal(null);
+		const sel = modal.contentEl.querySelector<HTMLSelectElement>('select');
+		expect(sel?.value).toBe('todo'); // columnValue passed to makeModal
 	});
 });
 

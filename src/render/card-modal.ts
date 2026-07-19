@@ -38,12 +38,10 @@ export class CardModal extends Modal {
 		this.titleEl.textContent = this.card ? 'Edit card' : 'Add card';
 
 		const columnField = this.board.viewConfig.columns;
-		const editableFields = this.board.fields.filter(
-			f => f.name !== '_id' && f.name !== columnField,
-		);
+		const editableFields = this.board.fields.filter(f => f.name !== '_id');
 
 		for (const field of editableFields) {
-			this.renderField(contentEl, field);
+			this.renderField(contentEl, field, field.name === columnField && !this.card ? this.columnValue : undefined);
 		}
 
 		const footer = activeDocument.createElement('div');
@@ -75,10 +73,9 @@ export class CardModal extends Modal {
 		contentEl.querySelector<HTMLElement>('input, textarea, select')?.focus();
 	}
 
-	private renderField(container: HTMLElement, field: FieldDefinition): void {
-		const initialValue = this.card
-			? (this.card.values[field.name] ?? '')
-			: (field.default ?? '');
+	private renderField(container: HTMLElement, field: FieldDefinition, initialOverride?: string): void {
+		const initialValue = initialOverride
+			?? (this.card ? (this.card.values[field.name] ?? '') : (field.default ?? ''));
 		this.values[field.name] = initialValue;
 
 		const wrapper = activeDocument.createElement('div');

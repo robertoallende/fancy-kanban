@@ -4,6 +4,7 @@
 
 - Link field: attach files and URLs to cards, with add/remove list UI and click-to-open navigation
 - Card face fields: configure which fields appear on each card using `card_fields` in the board config; fields render in order with label and value; Link fields render as clickable inline links
+- Status dropdown in card editor: change a card's column directly from the editor without drag-and-drop
 
 ## 0.2.0 - 15/07/2026
 
