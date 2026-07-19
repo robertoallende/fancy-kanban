@@ -22,6 +22,7 @@ export class BoardConfigModal extends Modal {
 	private schema: BoardSchema;
 	private errorEl: HTMLElement | null = null;
 	private fieldListEl: HTMLElement | null = null;
+	private cardFieldListEl: HTMLElement | null = null;
 
 	constructor(
 		app: App,
@@ -44,6 +45,7 @@ export class BoardConfigModal extends Modal {
 		this.renderTitleInput(contentEl);
 		this.renderFieldsSection(contentEl);
 		this.renderViewConfig(contentEl);
+		this.renderCardDisplay(contentEl);
 		this.renderWorkflow(contentEl);
 
 		this.errorEl = activeDocument.createElement('p');
@@ -205,6 +207,108 @@ export class BoardConfigModal extends Modal {
 		container.appendChild(section);
 	}
 
+	private renderCardDisplay(container: HTMLElement): void {
+		const section = activeDocument.createElement('div');
+		section.classList.add('fk-modal-section');
+
+		const heading = activeDocument.createElement('p');
+		heading.classList.add('fk-modal-section-label');
+		heading.textContent = 'Card display';
+		section.appendChild(heading);
+
+		this.cardFieldListEl = activeDocument.createElement('div');
+		this.cardFieldListEl.classList.add('fk-modal-field-list');
+		section.appendChild(this.cardFieldListEl);
+		this.rerenderCardFieldList();
+
+		const addRow = activeDocument.createElement('div');
+		addRow.dataset.role = 'card-display-add';
+
+		const addSelect = activeDocument.createElement('select');
+		addSelect.classList.add('fk-modal-input-sm');
+		addSelect.dataset.role = 'card-display-select';
+		addRow.appendChild(addSelect);
+
+		const addBtn = activeDocument.createElement('button');
+		addBtn.classList.add('fk-modal-add-field');
+		addBtn.textContent = '+ Add field';
+		addBtn.addEventListener('click', () => {
+			const name = addSelect.value;
+			if (!name) return;
+			const current = this.schema.viewConfig.cardFields ?? [];
+			if (!current.includes(name)) {
+				this.schema.viewConfig.cardFields = [...current, name];
+				this.rerenderCardFieldList();
+				this.refreshCardDisplaySelect();
+			}
+		});
+		addRow.appendChild(addBtn);
+		section.appendChild(addRow);
+
+		container.appendChild(section);
+		this.refreshCardDisplaySelect();
+	}
+
+	private rerenderCardFieldList(): void {
+		if (!this.cardFieldListEl) return;
+		this.cardFieldListEl.innerHTML = '';
+		const cardFields = this.schema.viewConfig.cardFields ?? [];
+		cardFields.forEach((name, idx) => {
+			const field = this.schema.fields.find(f => f.name === name);
+			const row = activeDocument.createElement('div');
+			row.classList.add('fk-modal-field-row');
+
+			const labelEl = activeDocument.createElement('span');
+			labelEl.style.flex = '1';
+			labelEl.textContent = field?.label ?? name;
+			row.appendChild(labelEl);
+
+			const controls = activeDocument.createElement('div');
+			controls.classList.add('fk-modal-row-controls');
+
+			const upBtn = this.iconBtn(controls, '↑', idx === 0);
+			upBtn.addEventListener('click', () => {
+				const cf = [...(this.schema.viewConfig.cardFields ?? [])];
+				[cf[idx - 1], cf[idx]] = [cf[idx], cf[idx - 1]];
+				this.schema.viewConfig.cardFields = cf;
+				this.rerenderCardFieldList();
+			});
+
+			const downBtn = this.iconBtn(controls, '↓', idx === cardFields.length - 1);
+			downBtn.addEventListener('click', () => {
+				const cf = [...(this.schema.viewConfig.cardFields ?? [])];
+				[cf[idx], cf[idx + 1]] = [cf[idx + 1], cf[idx]];
+				this.schema.viewConfig.cardFields = cf;
+				this.rerenderCardFieldList();
+			});
+
+			const removeBtn = this.iconBtn(controls, '×', false);
+			removeBtn.addEventListener('click', () => {
+				const cf = (this.schema.viewConfig.cardFields ?? []).filter((_, i) => i !== idx);
+				this.schema.viewConfig.cardFields = cf.length ? cf : undefined;
+				this.rerenderCardFieldList();
+				this.refreshCardDisplaySelect();
+			});
+
+			row.appendChild(controls);
+			this.cardFieldListEl!.appendChild(row);
+		});
+	}
+
+	private refreshCardDisplaySelect(): void {
+		const select = this.contentEl.querySelector<HTMLSelectElement>('[data-role="card-display-select"]');
+		if (!select) return;
+		select.innerHTML = '';
+		const current = this.schema.viewConfig.cardFields ?? [];
+		const available = this.schema.fields.filter(f => f.name !== '_id' && !current.includes(f.name));
+		for (const f of available) {
+			const o = activeDocument.createElement('option');
+			o.value = f.name;
+			o.textContent = f.label || f.name;
+			select.appendChild(o);
+		}
+	}
+
 	private renderWorkflow(container: HTMLElement): void {
 		const wrap = this.field(container, 'Workflow (optional)');
 		const inp = activeDocument.createElement('input');
@@ -219,6 +323,8 @@ export class BoardConfigModal extends Modal {
 	private refreshViewConfig(): void {
 		const colSelect = this.contentEl.querySelector<HTMLSelectElement>('[data-role="columns"]');
 		if (colSelect) this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
+		this.rerenderCardFieldList();
+		this.refreshCardDisplaySelect();
 	}
 
 	private populateFieldSelect(select: HTMLSelectElement, current: string): void {
