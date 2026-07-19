@@ -1,4 +1,4 @@
-import { App, Workspace } from 'obsidian';
+import { App } from 'obsidian';
 import type { Board } from '../model/board';
 import { renderBoard } from './board';
 import { reorderCard, deleteCard, createCard, updateCard } from '../model/mutations';
@@ -33,7 +33,7 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 			if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(href)) {
 				window.open(href, '_blank');
 			} else if (app) {
-				void (app.workspace as Workspace).openLinkText(href, sourcePath, 'tab');
+				void app.workspace.openLinkText(href, sourcePath, 'tab');
 			}
 			return;
 		}

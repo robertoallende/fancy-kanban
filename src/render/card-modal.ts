@@ -7,7 +7,7 @@ class LinkFilePicker extends FuzzySuggestModal<TFile> {
 		super(app);
 	}
 	getItems(): TFile[] {
-		return (this.app as App).vault.getFiles();
+		return this.app.vault.getFiles();
 	}
 	getItemText(file: TFile): string {
 		return file.path;
@@ -147,7 +147,7 @@ export class CardModal extends Modal {
 			if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(item)) {
 				window.open(item, '_blank');
 			} else {
-				void (this.app as App).workspace.openLinkText(item, this.sourcePath, 'tab');
+				void this.app.workspace.openLinkText(item, this.sourcePath, 'tab');
 			}
 		};
 
@@ -200,7 +200,7 @@ export class CardModal extends Modal {
 		addFileBtn.classList.add('fk-link-add--file');
 		addFileBtn.textContent = '+ Add file';
 		addFileBtn.addEventListener('click', () => {
-			new LinkFilePicker(this.app as App, (path) => {
+			new LinkFilePicker(this.app, (path) => {
 				items.push(path);
 				onChange(joinLinks(items));
 				renderItems();
