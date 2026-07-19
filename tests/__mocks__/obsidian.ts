@@ -3,12 +3,11 @@ Object.assign(globalThis, { activeDocument: document });
 
 export class WorkspaceLeaf {}
 
+type ElOpts = { cls?: string | string[]; text?: string; type?: string; value?: string; placeholder?: string; attr?: Record<string, string> };
+
 class ObsidianHTMLElement extends HTMLElement {
 	empty(): void { this.innerHTML = ''; }
-	createEl<K extends keyof HTMLElementTagNameMap>(
-		tag: K,
-		opts?: { cls?: string | string[]; text?: string; type?: string; value?: string; placeholder?: string; attr?: Record<string, string> },
-	): HTMLElementTagNameMap[K] {
+	createEl<K extends keyof HTMLElementTagNameMap>(tag: K, opts?: ElOpts): HTMLElementTagNameMap[K] {
 		const el = document.createElement(tag);
 		if (opts?.cls) {
 			const classes = Array.isArray(opts.cls) ? opts.cls : [opts.cls];
@@ -24,6 +23,8 @@ class ObsidianHTMLElement extends HTMLElement {
 		this.appendChild(el);
 		return el;
 	}
+	createDiv(opts?: ElOpts): HTMLDivElement { return this.createEl('div', opts); }
+	createSpan(opts?: ElOpts): HTMLSpanElement { return this.createEl('span', opts); }
 }
 
 customElements.define('obsidian-content-el', ObsidianHTMLElement);

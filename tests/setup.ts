@@ -33,10 +33,22 @@ function createElImpl<K extends keyof HTMLElementTagNameMap>(
 	return el;
 }
 
-// Add createEl as a method on all HTMLElement instances (mirrors Obsidian's API)
+function createDivImpl(this: HTMLElement, opts?: CreateElOptions): HTMLDivElement {
+	return createElImpl.call(this, 'div', opts) as HTMLDivElement;
+}
+
+function createSpanImpl(this: HTMLElement, opts?: CreateElOptions): HTMLSpanElement {
+	return createElImpl.call(this, 'span', opts) as HTMLSpanElement;
+}
+
+// Add Obsidian DOM helpers as methods on all HTMLElement instances
 if (typeof HTMLElement !== 'undefined') {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	(HTMLElement.prototype as any).createEl = createElImpl;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	(HTMLElement.prototype as any).createDiv = createDivImpl;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	(HTMLElement.prototype as any).createSpan = createSpanImpl;
 }
 
 // Mirror Obsidian's standalone createEl global (creates without appending)
@@ -57,6 +69,24 @@ Object.assign(globalThis, {
 		if (opts?.attr) {
 			for (const [k, v] of Object.entries(opts.attr)) el.setAttribute(k, v);
 		}
+		return el;
+	},
+	createDiv(opts?: CreateElOptions): HTMLDivElement {
+		const el = document.createElement('div');
+		if (opts?.cls) {
+			const classes = Array.isArray(opts.cls) ? opts.cls : [opts.cls];
+			el.classList.add(...classes);
+		}
+		if (opts?.text !== undefined) el.textContent = opts.text;
+		return el;
+	},
+	createSpan(opts?: CreateElOptions): HTMLSpanElement {
+		const el = document.createElement('span');
+		if (opts?.cls) {
+			const classes = Array.isArray(opts.cls) ? opts.cls : [opts.cls];
+			el.classList.add(...classes);
+		}
+		if (opts?.text !== undefined) el.textContent = opts.text;
 		return el;
 	},
 });

@@ -22,12 +22,12 @@ function renderErrorPanel(
 	source: string,
 	onGoToSource: () => void,
 ): void {
-	const panel = container.createEl('div', { cls: 'fk-error-panel' });
+	const panel = container.createDiv({ cls: 'fk-error-panel' });
 
 	for (const err of errors) {
 		const msg = panel.createEl('p', { cls: 'fk-error', text: err.message });
 		if (err.hint) {
-			msg.createEl('span', { cls: 'fk-error-panel__hint', text: ` — ${err.hint}` });
+			msg.createSpan({ cls: 'fk-error-panel__hint', text: ` — ${err.hint}` });
 		}
 	}
 
@@ -38,9 +38,9 @@ function renderErrorPanel(
 }
 
 function renderWarningBanner(container: HTMLElement, warnings: ParseIssue[]): void {
-	const banner = container.createEl('div', { cls: 'fk-warning-banner' });
+	const banner = container.createDiv({ cls: 'fk-warning-banner' });
 
-	const body = banner.createEl('div', { cls: 'fk-warning-banner__body' });
+	const body = banner.createDiv({ cls: 'fk-warning-banner__body' });
 	for (const w of warnings) {
 		body.createEl('p', { cls: 'fk-warning-banner__item', text: w.message });
 	}
@@ -65,7 +65,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 
 		if (!file) {
 			if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-			const boardWrapper = el.createEl('div');
+			const boardWrapper = el.createDiv();
 			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
 			return;
 		}
@@ -76,7 +76,7 @@ export function registerPostProcessor(plugin: Plugin): void {
 
 		if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
 
-		const boardWrapper = el.createEl('div');
+		const boardWrapper = el.createDiv();
 		const blockIndex = blockIndexFromContext(ctx, el);
 		const save = result.readonly
 			? () => Promise.resolve()

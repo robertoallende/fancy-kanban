@@ -89,7 +89,7 @@ function updateDropIndicator(col: HTMLElement, insertBeforeId: string | null): v
 	col.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
 	const cardsEl = col.querySelector<HTMLElement>('.fk-column__cards');
 	if (!cardsEl) return;
-	const indicator = cardsEl.createEl('div', { cls: 'fk-drop-indicator' });
+	const indicator = cardsEl.createDiv({ cls: 'fk-drop-indicator' });
 	if (insertBeforeId !== null) {
 		const target = cardsEl.querySelector(`[data-card-id="${insertBeforeId}"]`);
 		if (target) cardsEl.insertBefore(indicator, target);
@@ -106,7 +106,7 @@ export function showTransitionBlockedToast(from: string, to: string): void {
 	const existing = activeDocument.querySelector('.fk-toast');
 	if (existing) existing.remove();
 
-	const toast = activeDocument.body.createEl('div', { cls: 'fk-toast', text: `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.` });
+	const toast = activeDocument.body.createDiv({ cls: 'fk-toast', text: `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.` });
 
 	window.setTimeout(() => {
 		toast.classList.add('fk-toast--hiding');

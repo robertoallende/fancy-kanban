@@ -8,14 +8,14 @@ export function renderColumn(
 	cards: Card[],
 	board: Board,
 ): HTMLElement {
-	const container = parent.createEl('div', { cls: 'fk-column' });
+	const container = parent.createDiv({ cls: 'fk-column' });
 	container.dataset.columnValue = name;
 
-	const header = container.createEl('div', { cls: 'fk-column__header' });
-	header.createEl('span', { cls: 'fk-column__title', text: label });
-	header.createEl('span', { cls: 'fk-column__count', text: String(cards.length) });
+	const header = container.createDiv({ cls: 'fk-column__header' });
+	header.createSpan({ cls: 'fk-column__title', text: label });
+	header.createSpan({ cls: 'fk-column__count', text: String(cards.length) });
 
-	const cardsContainer = container.createEl('div', { cls: 'fk-column__cards' });
+	const cardsContainer = container.createDiv({ cls: 'fk-column__cards' });
 
 	for (const card of cards) {
 		renderCard(cardsContainer, card, board);

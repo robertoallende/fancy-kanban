@@ -44,7 +44,7 @@ export class CardModal extends Modal {
 			this.renderField(contentEl, field, field.name === columnField && !this.card ? this.columnValue : undefined);
 		}
 
-		const footer = contentEl.createEl('div', { cls: 'fk-modal-footer' });
+		const footer = contentEl.createDiv({ cls: 'fk-modal-footer' });
 
 		if (this.onDelete) {
 			const deleteBtn = footer.createEl('button', { cls: 'fk-modal-delete', text: 'Delete' });
@@ -70,7 +70,7 @@ export class CardModal extends Modal {
 			?? (this.card ? (this.card.values[field.name] ?? '') : (field.default ?? ''));
 		this.values[field.name] = initialValue;
 
-		const wrapper = container.createEl('div', { cls: 'fk-modal-field' });
+		const wrapper = container.createDiv({ cls: 'fk-modal-field' });
 		wrapper.createEl('label', { text: field.label });
 
 		const onChange = (value: string) => { this.values[field.name] = value; };
@@ -113,8 +113,8 @@ export class CardModal extends Modal {
 	private renderLinkField(container: HTMLElement, _field: FieldDefinition, initialValue: string, onChange: (v: string) => void): void {
 		const items = splitLinks(initialValue);
 
-		const field = container.createEl('div', { cls: 'fk-link-field' });
-		const itemList = field.createEl('div');
+		const field = container.createDiv({ cls: 'fk-link-field' });
+		const itemList = field.createDiv();
 
 		const openLink = (item: string) => {
 			this.close();
@@ -128,9 +128,9 @@ export class CardModal extends Modal {
 		const renderItems = () => {
 			while (itemList.firstChild) itemList.removeChild(itemList.firstChild);
 			for (const item of items) {
-				const row = itemList.createEl('div', { cls: 'fk-link-item' });
+				const row = itemList.createDiv({ cls: 'fk-link-item' });
 
-				const remove = row.createEl('span', { cls: 'fk-link-item__remove' });
+				const remove = row.createSpan({ cls: 'fk-link-item__remove' });
 				remove.setAttribute('role', 'button');
 				remove.setAttribute('tabindex', '0');
 				remove.setAttribute('aria-label', 'Remove');
@@ -147,7 +147,7 @@ export class CardModal extends Modal {
 					if (e.key === 'Enter' || e.key === ' ') doRemove(e);
 				});
 
-				const val = row.createEl('span', { cls: 'fk-link-item__value' });
+				const val = row.createSpan({ cls: 'fk-link-item__value' });
 				val.setAttribute('role', 'button');
 				val.setAttribute('tabindex', '0');
 				val.textContent = item;
@@ -160,7 +160,7 @@ export class CardModal extends Modal {
 
 		renderItems();
 
-		const controls = field.createEl('div', { cls: 'fk-link-controls' });
+		const controls = field.createDiv({ cls: 'fk-link-controls' });
 
 		const addFileBtn = controls.createEl('button', { cls: 'fk-link-add--file', text: '+ Add file' });
 		addFileBtn.addEventListener('click', () => {
@@ -173,12 +173,12 @@ export class CardModal extends Modal {
 
 		const addUrlBtn = controls.createEl('button', { cls: 'fk-link-add--url', text: '+ Add URL' });
 
-		const urlInputArea = controls.createEl('div', { cls: ['fk-link-url-input', 'fk-hidden'] });
+		const urlInputArea = controls.createDiv({ cls: ['fk-link-url-input', 'fk-hidden'] });
 
 		const urlInput = urlInputArea.createEl('input', { type: 'text' });
 		urlInput.placeholder = 'https://…';
 
-		const urlError = urlInputArea.createEl('span', { cls: 'fk-link-error' });
+		const urlError = urlInputArea.createSpan({ cls: 'fk-link-error' });
 
 		const urlConfirm = urlInputArea.createEl('button', { cls: 'fk-link-url-confirm', text: 'Add' });
 		urlConfirm.addEventListener('click', () => {

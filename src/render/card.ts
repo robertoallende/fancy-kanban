@@ -21,12 +21,12 @@ export function effectiveCardFields(board: Board): string[] {
 }
 
 export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLElement {
-	const container = parent.createEl('div', { cls: ['fk-card', 'fk-card--draggable'] });
+	const container = parent.createDiv({ cls: ['fk-card', 'fk-card--draggable'] });
 	container.dataset.cardId = card.id;
 
 	const titleFieldName = effectiveCardTitle(board);
 	if (titleFieldName !== null) {
-		container.createEl('div', { cls: 'fk-card__title', text: card.values[titleFieldName] ?? '' });
+		container.createDiv({ cls: 'fk-card__title', text: card.values[titleFieldName] ?? '' });
 	}
 
 	const secondaryFields = effectiveCardFields(board)
@@ -34,27 +34,27 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 		.filter((f): f is NonNullable<typeof f> => f !== undefined);
 
 	if (secondaryFields.length) {
-		const fieldsEl = container.createEl('div', { cls: 'fk-card__fields' });
+		const fieldsEl = container.createDiv({ cls: 'fk-card__fields' });
 		const showLabels = board.viewConfig.cardLabels !== false;
 
 		for (const field of secondaryFields) {
 			const value = card.values[field.name] ?? '';
 			if (!value) continue;
 
-			const row = fieldsEl.createEl('div', { cls: 'fk-card__field' });
+			const row = fieldsEl.createDiv({ cls: 'fk-card__field' });
 
 			if (showLabels) {
-				row.createEl('span', { cls: 'fk-card__field-label', text: field.label });
+				row.createSpan({ cls: 'fk-card__field-label', text: field.label });
 			}
 
 			if (field.type === 'Link') {
-				const linksEl = row.createEl('span', { cls: 'fk-card__field-links' });
+				const linksEl = row.createSpan({ cls: 'fk-card__field-links' });
 				for (const item of splitLinks(value)) {
-					const span = linksEl.createEl('span', { cls: 'fk-card__field-link', text: item });
+					const span = linksEl.createSpan({ cls: 'fk-card__field-link', text: item });
 					span.dataset.href = item;
 				}
 			} else {
-				row.createEl('span', { cls: 'fk-card__field-value', text: value });
+				row.createSpan({ cls: 'fk-card__field-value', text: value });
 			}
 		}
 

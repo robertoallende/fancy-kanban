@@ -6,16 +6,16 @@ function capitalise(s: string): string {
 }
 
 export function renderBoard(parent: HTMLElement, board: Board): HTMLElement {
-	const wrapper = parent.createEl('div', { cls: 'fk-board' });
+	const wrapper = parent.createDiv({ cls: 'fk-board' });
 
-	const header = wrapper.createEl('div', { cls: 'fk-board__header' });
+	const header = wrapper.createDiv({ cls: 'fk-board__header' });
 
 	const settingsBtn = header.createEl('button', { cls: 'fk-board__settings', text: '⚙' });
 	settingsBtn.title = 'Board settings';
 
-	header.createEl('span', { cls: 'fk-board__title', text: board.title });
+	header.createSpan({ cls: 'fk-board__title', text: board.title });
 
-	const columnsContainer = wrapper.createEl('div', { cls: 'fk-board__columns' });
+	const columnsContainer = wrapper.createDiv({ cls: 'fk-board__columns' });
 
 	const columnField = board.fields.find(f => f.name === board.viewConfig.columns);
 

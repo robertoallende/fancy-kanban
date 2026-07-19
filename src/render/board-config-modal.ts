@@ -64,11 +64,11 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private renderFieldsSection(container: HTMLElement): void {
-		const section = container.createEl('div', { cls: 'fk-modal-section' });
+		const section = container.createDiv({ cls: 'fk-modal-section' });
 
 		section.createEl('p', { cls: 'fk-modal-section-label', text: 'Fields' });
 
-		this.fieldListEl = section.createEl('div', { cls: 'fk-modal-field-list' });
+		this.fieldListEl = section.createDiv({ cls: 'fk-modal-field-list' });
 
 		this.rerenderFieldList();
 
@@ -90,7 +90,7 @@ export class BoardConfigModal extends Modal {
 
 	renderFieldRow(parent: HTMLElement, field: FieldDefinition, idx: number): HTMLElement {
 		const total = this.schema.fields.length;
-		const row = parent.createEl('div', { cls: 'fk-modal-field-row' });
+		const row = parent.createDiv({ cls: 'fk-modal-field-row' });
 
 		const isNew = field.name === '';
 
@@ -140,7 +140,7 @@ export class BoardConfigModal extends Modal {
 		});
 
 		// Reorder / remove controls
-		const controls = row.createEl('div', { cls: 'fk-modal-row-controls' });
+		const controls = row.createDiv({ cls: 'fk-modal-row-controls' });
 
 		const upBtn = this.iconBtn(controls, '↑', idx === 0);
 		upBtn.addEventListener('click', () => {
@@ -167,7 +167,7 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private renderViewConfig(container: HTMLElement): void {
-		const section = container.createEl('div', { cls: 'fk-modal-section' });
+		const section = container.createDiv({ cls: 'fk-modal-section' });
 
 		const colWrap = this.field(section, 'Columns field');
 		const colSelect = colWrap.createEl('select', { cls: 'fk-modal-input' });
@@ -177,7 +177,7 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private renderCardDisplay(container: HTMLElement): void {
-		const section = container.createEl('div', { cls: 'fk-modal-section' });
+		const section = container.createDiv({ cls: 'fk-modal-section' });
 
 		section.createEl('p', { cls: 'fk-modal-section-label', text: 'Card display' });
 
@@ -204,10 +204,10 @@ export class BoardConfigModal extends Modal {
 			this.schema.viewConfig.cardLabels = labelsCheck.checked ? undefined : false;
 		});
 
-		this.cardFieldListEl = section.createEl('div', { cls: 'fk-modal-field-list' });
+		this.cardFieldListEl = section.createDiv({ cls: 'fk-modal-field-list' });
 		this.rerenderCardFieldList();
 
-		const addRow = section.createEl('div');
+		const addRow = section.createDiv();
 		addRow.dataset.role = 'card-display-add';
 
 		const addSelect = addRow.createEl('select', { cls: 'fk-modal-input-sm' });
@@ -234,11 +234,11 @@ export class BoardConfigModal extends Modal {
 		const cardFields = this.schema.viewConfig.cardFields ?? [];
 		cardFields.forEach((name, idx) => {
 			const field = this.schema.fields.find(f => f.name === name);
-			const row = this.cardFieldListEl!.createEl('div', { cls: 'fk-modal-field-row' });
+			const row = this.cardFieldListEl!.createDiv({ cls: 'fk-modal-field-row' });
 
-			row.createEl('span', { cls: 'fk-flex-1', text: field?.label ?? name });
+			row.createSpan({ cls: 'fk-flex-1', text: field?.label ?? name });
 
-			const controls = row.createEl('div', { cls: 'fk-modal-row-controls' });
+			const controls = row.createDiv({ cls: 'fk-modal-row-controls' });
 
 			const upBtn = this.iconBtn(controls, '↑', idx === 0);
 			upBtn.addEventListener('click', () => {
@@ -353,7 +353,7 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private field(container: HTMLElement, label: string): HTMLElement {
-		const wrap = container.createEl('div', { cls: 'fk-modal-field' });
+		const wrap = container.createDiv({ cls: 'fk-modal-field' });
 		wrap.createEl('label', { text: label });
 		return wrap;
 	}
