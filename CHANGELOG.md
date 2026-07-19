@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 - 19/07/2026
+
+- Link field: attach files and URLs to cards, with add/remove list UI and click-to-open navigation
+
 ## 0.2.0 - 15/07/2026
 
 - Board format reliability and keyboard usability ([#3](https://github.com/robertoallende/fancy-kanban/issues/3))
