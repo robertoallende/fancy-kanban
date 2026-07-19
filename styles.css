@@ -439,7 +439,7 @@
 }
 
 /* Utility */
-.fk-hidden { display: none !important; }
+.fk-hidden { display: none; }
 .fk-flex-1 { flex: 1; }
 
 /* Workflow transition blocked toast */
@@ -532,6 +532,8 @@
   flex-wrap: wrap;
   width: 100%;
 }
+
+.fk-link-url-input.fk-hidden { display: none; }
 
 .fk-link-url-input input {
   flex: 1;
