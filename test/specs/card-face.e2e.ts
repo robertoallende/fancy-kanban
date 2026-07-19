@@ -78,4 +78,58 @@ describe('Card face fields', function () {
             expect(hasSecondaryFields).toBe(false);
         });
     });
+
+    describe('card_title empty — no title element', function () {
+        beforeEach(async function () {
+            await openInPreview('card-face-no-title-board.md');
+        });
+
+        it('does not render .fk-card__title when card_title is empty', async function () {
+            const board = await $('.fk-board');
+            await board.waitForExist({ timeout: 5000 });
+            const hasTitleEl = await browser.execute(() => {
+                const card = document.querySelector('[data-card-id="nt1"]');
+                return card?.querySelector('.fk-card__title') !== null;
+            });
+            expect(hasTitleEl).toBe(false);
+        });
+
+        it('still renders secondary fields when card_title is empty', async function () {
+            const fieldCount = await browser.execute(() => {
+                const card = document.querySelector('[data-card-id="nt1"]');
+                return card?.querySelectorAll('.fk-card__field').length ?? 0;
+            });
+            expect(fieldCount).toBe(1);
+        });
+    });
+
+    describe('card_labels: false — secondary field labels hidden', function () {
+        beforeEach(async function () {
+            await openInPreview('card-face-no-labels-board.md');
+        });
+
+        it('renders the title element', async function () {
+            const board = await $('.fk-board');
+            await board.waitForExist({ timeout: 5000 });
+            const titleText = await browser.execute(() => {
+                const card = document.querySelector('[data-card-id="nl1"]');
+                return card?.querySelector('.fk-card__title')?.textContent ?? null;
+            });
+            expect(titleText).toBe('Design');
+        });
+
+        it('has secondary field rows but no label elements', async function () {
+            const result = await browser.execute(() => {
+                const card = document.querySelector('[data-card-id="nl1"]');
+                return {
+                    fields: card?.querySelectorAll('.fk-card__field').length ?? 0,
+                    labels: card?.querySelectorAll('.fk-card__field-label').length ?? 0,
+                    values: card?.querySelectorAll('.fk-card__field-value').length ?? 0,
+                };
+            });
+            expect(result.fields).toBe(1);
+            expect(result.labels).toBe(0);
+            expect(result.values).toBe(1);
+        });
+    });
 });
