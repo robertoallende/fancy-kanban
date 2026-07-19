@@ -5,8 +5,9 @@
 - Replaced DOM API calls with Obsidian helpers (`createEl`, `activeDocument`) to comply with plugin reviewer requirements
 - Replaced inline style assignments with CSS utility classes (`fk-hidden`, `fk-flex-1`)
 - Removed unnecessary type assertions flagged by the Obsidian linter
+- Removed `!important` from `.fk-hidden` — specificity now handled via a combined selector, satisfying the Obsidian reviewer requirement
 - Added workflow transition toast: blocked moves now show an actionable message explaining which transition to add to the workflow
-- Added `scripts/lint-obsidian.mjs` to catch the above violations in CI before submission
+- Extended `scripts/lint-obsidian.mjs`: catches `!important` in CSS, warns on vault enumeration calls, and covers `activeDocument.createElement` in addition to `document.createElement`
 
 ## 0.3.0 - 20/07/2026
 
