@@ -8,7 +8,8 @@ fields:
   - name: due, type: Date, label: Due
   - name: docs, type: Link, label: Docs
   - name: status, type: Select, label: Status, options: todo|done, default: todo
-card_fields: title, priority, due
+card_title: title
+card_fields: priority, due
 columns: status
 ---
 

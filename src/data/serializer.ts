@@ -38,7 +38,9 @@ function serializeConfig(board: Board): string {
 		lines.push(line);
 	}
 	if (board.viewConfig.lanes) lines.push(`lanes: ${board.viewConfig.lanes}`);
+	if (board.viewConfig.cardTitle !== undefined) lines.push(`card_title: ${board.viewConfig.cardTitle}`);
 	if (board.viewConfig.cardFields?.length) lines.push(`card_fields: ${board.viewConfig.cardFields.join(', ')}`);
+	if (board.viewConfig.cardLabels === false) lines.push(`card_labels: false`);
 	if (board.rawWorkflow) lines.push(`workflow: ${board.rawWorkflow}`);
 	return lines.join('\n');
 }

@@ -42,7 +42,9 @@ function parseConfig(configText) {
   let title = "";
   let rawWorkflow = "";
   let lanes;
+  let cardTitle;
   let cardFields;
+  let cardLabels;
   let version = 1;
   const fields = [];
   const warnings = [];
@@ -65,9 +67,12 @@ function parseConfig(configText) {
     else if (key === "version") version = parseInt(value, 10) || 1;
     else if (key === "workflow") rawWorkflow = value.replace(/^"(.*)"$/, "$1");
     else if (key === "lanes") lanes = value;
+    else if (key === "card_title") cardTitle = value;
     else if (key === "card_fields") {
       const parts = value.split(",").map((s) => s.trim()).filter(Boolean);
       if (parts.length) cardFields = parts;
+    } else if (key === "card_labels") {
+      if (value === "false") cardLabels = false;
     } else if (key === "fields") inFields = true;
   }
   return {
@@ -75,7 +80,7 @@ function parseConfig(configText) {
     fields,
     rawWorkflow,
     version,
-    viewConfig: { columns: "status", lanes, cardFields },
+    viewConfig: { columns: "status", lanes, cardTitle, cardFields, cardLabels },
     warnings
   };
 }
@@ -288,43 +293,53 @@ function validateLinkItem(raw) {
 }
 
 // src/render/card.ts
-function effectiveCardFields(board) {
+function effectiveCardTitle(board) {
   var _a;
-  const explicit = (_a = board.viewConfig.cardFields) == null ? void 0 : _a.filter(
-    (name) => board.fields.some((f) => f.name === name)
-  );
-  if (explicit == null ? void 0 : explicit.length) return explicit;
+  if (board.viewConfig.cardTitle !== void 0) {
+    const name = board.viewConfig.cardTitle;
+    if (!name) return null;
+    return board.fields.some((f) => f.name === name) ? name : null;
+  }
   const first = board.fields.find(
     (f) => f.name !== "_id" && f.name !== board.viewConfig.columns
   );
-  return first ? [first.name] : [];
+  return (_a = first == null ? void 0 : first.name) != null ? _a : null;
+}
+function effectiveCardFields(board) {
+  var _a;
+  return ((_a = board.viewConfig.cardFields) != null ? _a : []).filter(
+    (name) => board.fields.some((f) => f.name === name)
+  );
 }
 function renderCard(card, board) {
-  var _a, _b, _c;
+  var _a, _b;
   const container = activeDocument.createElement("div");
   container.classList.add("fk-card");
   container.classList.add("fk-card--draggable");
   container.dataset.cardId = card.id;
-  const cardFields = effectiveCardFields(board);
-  const [titleFieldName, ...secondaryNames] = cardFields;
-  const titleField = board.fields.find((f) => f.name === titleFieldName);
-  const title = activeDocument.createElement("div");
-  title.classList.add("fk-card__title");
-  title.textContent = (_b = card.values[(_a = titleField == null ? void 0 : titleField.name) != null ? _a : ""]) != null ? _b : "";
-  container.appendChild(title);
-  const secondaryFields = secondaryNames.map((name) => board.fields.find((f) => f.name === name)).filter((f) => f !== void 0);
+  const titleFieldName = effectiveCardTitle(board);
+  if (titleFieldName !== null) {
+    const title = activeDocument.createElement("div");
+    title.classList.add("fk-card__title");
+    title.textContent = (_a = card.values[titleFieldName]) != null ? _a : "";
+    container.appendChild(title);
+  }
+  const secondaryFields = effectiveCardFields(board).map((name) => board.fields.find((f) => f.name === name)).filter((f) => f !== void 0);
   if (secondaryFields.length) {
     const fieldsEl = activeDocument.createElement("div");
     fieldsEl.classList.add("fk-card__fields");
+    const showLabels = board.viewConfig.cardLabels !== false;
     for (const field of secondaryFields) {
-      const value = (_c = card.values[field.name]) != null ? _c : "";
+      const value = (_b = card.values[field.name]) != null ? _b : "";
       if (!value) continue;
       const row = activeDocument.createElement("div");
       row.classList.add("fk-card__field");
-      const labelEl = activeDocument.createElement("span");
-      labelEl.classList.add("fk-card__field-label");
-      labelEl.textContent = field.label;
-      row.appendChild(labelEl);
+      if (showLabels) {
+        const labelEl = activeDocument.createElement("span");
+        labelEl.classList.add("fk-card__field-label");
+        labelEl.textContent = field.label;
+        row.appendChild(labelEl);
+      }
       if (field.type === "Link") {
         const linksEl = activeDocument.createElement("span");
         linksEl.classList.add("fk-card__field-links");
@@ -450,7 +465,9 @@ function serializeConfig(board) {
     lines.push(line);
   }
   if (board.viewConfig.lanes) lines.push(`lanes: ${board.viewConfig.lanes}`);
+  if (board.viewConfig.cardTitle !== void 0) lines.push(`card_title: ${board.viewConfig.cardTitle}`);
   if ((_a = board.viewConfig.cardFields) == null ? void 0 : _a.length) lines.push(`card_fields: ${board.viewConfig.cardFields.join(", ")}`);
+  if (board.viewConfig.cardLabels === false) lines.push(`card_labels: false`);
   if (board.rawWorkflow) lines.push(`workflow: ${board.rawWorkflow}`);
   return lines.join("\n");
 }
@@ -894,7 +911,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     }
     row.appendChild(typeSelect);
     const isSelect = field.type === "Select";
-    const optionsInp = this.fixedInput(row, "a, b, c", ((_a = field.options) != null ? _a : []).join(", "), "fk-col-options");
+    const optionsInp = this.fixedInput(row, "a | b | c", ((_a = field.options) != null ? _a : []).join(", "), "fk-col-options");
     optionsInp.disabled = !isSelect;
     optionsInp.addEventListener("input", () => {
       field.options = optionsInp.value.split(",").map((s) => s.trim()).filter(Boolean);
@@ -952,12 +969,40 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     container.appendChild(section);
   }
   renderCardDisplay(container) {
+    var _a;
     const section = activeDocument.createElement("div");
     section.classList.add("fk-modal-section");
     const heading = activeDocument.createElement("p");
     heading.classList.add("fk-modal-section-label");
     heading.textContent = "Card display";
     section.appendChild(heading);
+    const titleWrap = this.field(section, "Card title");
+    const titleSelect = activeDocument.createElement("select");
+    titleSelect.classList.add("fk-modal-input");
+    titleSelect.dataset.role = "card-title-select";
+    const autoOpt = activeDocument.createElement("option");
+    autoOpt.value = "__auto__";
+    autoOpt.textContent = "(auto)";
+    titleSelect.appendChild(autoOpt);
+    const noneOpt = activeDocument.createElement("option");
+    noneOpt.value = "";
+    noneOpt.textContent = "(none)";
+    titleSelect.appendChild(noneOpt);
+    this.populateCardTitleSelect(titleSelect);
+    titleSelect.value = (_a = this.schema.viewConfig.cardTitle) != null ? _a : "__auto__";
+    titleSelect.addEventListener("change", () => {
+      const v = titleSelect.value;
+      this.schema.viewConfig.cardTitle = v === "__auto__" ? void 0 : v;
+    });
+    titleWrap.appendChild(titleSelect);
+    const labelsWrap = this.field(section, "Show labels");
+    const labelsCheck = activeDocument.createElement("input");
+    labelsCheck.type = "checkbox";
+    labelsCheck.checked = this.schema.viewConfig.cardLabels !== false;
+    labelsCheck.addEventListener("change", () => {
+      this.schema.viewConfig.cardLabels = labelsCheck.checked ? void 0 : false;
+    });
+    labelsWrap.appendChild(labelsCheck);
     this.cardFieldListEl = activeDocument.createElement("div");
     this.cardFieldListEl.classList.add("fk-modal-field-list");
     section.appendChild(this.cardFieldListEl);
@@ -972,10 +1017,10 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     addBtn.classList.add("fk-modal-add-field");
     addBtn.textContent = "+ Add field";
     addBtn.addEventListener("click", () => {
-      var _a;
+      var _a2;
       const name = addSelect.value;
       if (!name) return;
-      const current = (_a = this.schema.viewConfig.cardFields) != null ? _a : [];
+      const current = (_a2 = this.schema.viewConfig.cardFields) != null ? _a2 : [];
       if (!current.includes(name)) {
         this.schema.viewConfig.cardFields = [...current, name];
         this.rerenderCardFieldList();
@@ -1031,6 +1076,26 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
       this.cardFieldListEl.appendChild(row);
     });
   }
+  populateCardTitleSelect(select) {
+    const existing = Array.from(select.options).map((o) => o.value);
+    for (const f of this.schema.fields.filter((f2) => f2.name !== "_id")) {
+      if (!existing.includes(f.name)) {
+        const o = activeDocument.createElement("option");
+        o.value = f.name;
+        o.textContent = f.label || f.name;
+        select.appendChild(o);
+      }
+    }
+  }
+  refreshCardTitleSelect() {
+    var _a;
+    const select = this.contentEl.querySelector('[data-role="card-title-select"]');
+    if (!select) return;
+    const current = select.value;
+    while (select.options.length > 2) select.remove(2);
+    this.populateCardTitleSelect(select);
+    select.value = current in Array.from(select.options).map((o) => o.value) ? current : (_a = this.schema.viewConfig.cardTitle) != null ? _a : "__auto__";
+  }
   refreshCardDisplaySelect() {
     var _a;
     const select = this.contentEl.querySelector('[data-role="card-display-select"]');
@@ -1061,6 +1126,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
   refreshViewConfig() {
     const colSelect = this.contentEl.querySelector('[data-role="columns"]');
     if (colSelect) this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
+    this.refreshCardTitleSelect();
     this.rerenderCardFieldList();
     this.refreshCardDisplaySelect();
   }

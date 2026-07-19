@@ -198,6 +198,44 @@ describe('card_fields parsing', () => {
 	});
 });
 
+describe('card_title parsing', () => {
+	const base = `title: Board\nfields:\n  - name: status, type: Select, options: todo|done, label: Status\n  - name: title, type: Text, label: Title`;
+
+	it('parses card_title with a field name', () => {
+		const result = parseConfig(`${base}\ncard_title: title`);
+		expect(result.viewConfig.cardTitle).toBe('title');
+	});
+
+	it('parses card_title as empty string (no title)', () => {
+		const result = parseConfig(`${base}\ncard_title: `);
+		expect(result.viewConfig.cardTitle).toBe('');
+	});
+
+	it('leaves cardTitle undefined when key is absent', () => {
+		const result = parseConfig(base);
+		expect(result.viewConfig.cardTitle).toBeUndefined();
+	});
+});
+
+describe('card_labels parsing', () => {
+	const base = `title: Board\nfields:\n  - name: status, type: Select, options: todo|done, label: Status`;
+
+	it('parses card_labels: false', () => {
+		const result = parseConfig(`${base}\ncard_labels: false`);
+		expect(result.viewConfig.cardLabels).toBe(false);
+	});
+
+	it('leaves cardLabels undefined when key is absent', () => {
+		const result = parseConfig(base);
+		expect(result.viewConfig.cardLabels).toBeUndefined();
+	});
+
+	it('leaves cardLabels undefined when value is not false', () => {
+		const result = parseConfig(`${base}\ncard_labels: true`);
+		expect(result.viewConfig.cardLabels).toBeUndefined();
+	});
+});
+
 describe('reconcileCards', () => {
 	const fields = [
 		{ name: 'status', type: 'Select' as const, label: 'Status', options: ['inbox', 'done'], default: 'inbox' },

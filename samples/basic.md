@@ -9,6 +9,7 @@ title: To Do
 fields:
   - name: title, type: Text, label: Title
   - name: status, type: Select, label: Status, options: inbox|doing|done, default: inbox
+card_fields: title
 ---
 
 | _id | Title | Status |

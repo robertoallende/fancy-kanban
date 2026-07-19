@@ -11,7 +11,9 @@ export interface FieldDefinition {
 export interface ViewConfig {
 	columns: string;
 	lanes?: string;
-	cardFields?: string[];
+	cardTitle?: string;     // field name; '' = no title; undefined = auto-detect
+	cardFields?: string[];  // secondary fields only (title not included)
+	cardLabels?: boolean;   // false = hide labels on secondary fields; default true
 }
 
 export interface Card {

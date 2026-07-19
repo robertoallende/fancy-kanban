@@ -8,7 +8,9 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 	let title = '';
 	let rawWorkflow = '';
 	let lanes: string | undefined;
+	let cardTitle: string | undefined;
 	let cardFields: string[] | undefined;
+	let cardLabels: boolean | undefined;
 	let version = 1;
 	const fields: FieldDefinition[] = [];
 	const warnings: ConfigWarning[] = [];
@@ -37,9 +39,13 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 		else if (key === 'version') version = parseInt(value, 10) || 1;
 		else if (key === 'workflow') rawWorkflow = value.replace(/^"(.*)"$/, '$1');
 		else if (key === 'lanes') lanes = value;
+		else if (key === 'card_title') cardTitle = value;
 		else if (key === 'card_fields') {
 			const parts = value.split(',').map(s => s.trim()).filter(Boolean);
 			if (parts.length) cardFields = parts;
+		}
+		else if (key === 'card_labels') {
+			if (value === 'false') cardLabels = false;
 		}
 		else if (key === 'fields') inFields = true;
 	}
@@ -49,7 +55,7 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 		fields,
 		rawWorkflow,
 		version,
-		viewConfig: { columns: 'status', lanes, cardFields },
+		viewConfig: { columns: 'status', lanes, cardTitle, cardFields, cardLabels },
 		warnings,
 	};
 }

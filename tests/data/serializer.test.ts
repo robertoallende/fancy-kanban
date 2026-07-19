@@ -142,6 +142,48 @@ describe('serializeBoard', () => {
 			if (!result.ok) throw new Error(result.error);
 			expect(result.board.viewConfig.cardFields).toEqual(['title', 'priority']);
 		});
+
+		it('includes card_title when set to a field name', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardTitle: 'title' } };
+			const text = serializeBoard(board);
+			expect(text).toContain('card_title: title');
+		});
+
+		it('includes card_title when set to empty string (no title)', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardTitle: '' } };
+			const text = serializeBoard(board);
+			expect(text).toContain('card_title: ');
+		});
+
+		it('omits card_title when undefined', () => {
+			const text = serializeBoard(MINIMAL_BOARD);
+			expect(text).not.toContain('card_title');
+		});
+
+		it('round-trips card_title through serialize then parse', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardTitle: 'title' } };
+			const result = parseBlock(serializeBoard(board));
+			if (!result.ok) throw new Error(result.error);
+			expect(result.board.viewConfig.cardTitle).toBe('title');
+		});
+
+		it('includes card_labels: false when set', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardLabels: false } };
+			const text = serializeBoard(board);
+			expect(text).toContain('card_labels: false');
+		});
+
+		it('omits card_labels when undefined', () => {
+			const text = serializeBoard(MINIMAL_BOARD);
+			expect(text).not.toContain('card_labels');
+		});
+
+		it('round-trips card_labels: false through serialize then parse', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardLabels: false } };
+			const result = parseBlock(serializeBoard(board));
+			if (!result.ok) throw new Error(result.error);
+			expect(result.board.viewConfig.cardLabels).toBe(false);
+		});
 	});
 
 	describe('table header', () => {

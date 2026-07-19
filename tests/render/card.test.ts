@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { renderCard, effectiveCardFields } from '../../src/render/card';
+import { renderCard, effectiveCardTitle, effectiveCardFields } from '../../src/render/card';
 import type { Board, Card } from '../../src/model/board';
 
 const BASE_BOARD: Board = {
@@ -22,24 +22,45 @@ const CARD: Card = {
 	values: { title: 'Buy milk', status: 'inbox', due: '2026-08-01', docs: '' },
 };
 
+describe('effectiveCardTitle', () => {
+	it('returns the first non-_id non-column field when cardTitle is undefined', () => {
+		expect(effectiveCardTitle(BASE_BOARD)).toBe('title');
+	});
+
+	it('returns the explicit cardTitle field name', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'due' } };
+		expect(effectiveCardTitle(board)).toBe('due');
+	});
+
+	it('returns null when cardTitle is empty string', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: '' } };
+		expect(effectiveCardTitle(board)).toBeNull();
+	});
+
+	it('returns null when cardTitle names a field that does not exist', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'nonexistent' } };
+		expect(effectiveCardTitle(board)).toBeNull();
+	});
+});
+
 describe('effectiveCardFields', () => {
-	it('returns explicit cardFields filtered to known field names', () => {
-		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'due'] } };
-		expect(effectiveCardFields(board)).toEqual(['title', 'due']);
+	it('returns explicit secondary cardFields filtered to known field names', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['due'] } };
+		expect(effectiveCardFields(board)).toEqual(['due']);
 	});
 
-	it('filters out unknown field names from cardFields', () => {
-		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'nonexistent'] } };
-		expect(effectiveCardFields(board)).toEqual(['title']);
+	it('filters out unknown field names', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['due', 'nonexistent'] } };
+		expect(effectiveCardFields(board)).toEqual(['due']);
 	});
 
-	it('falls back to first non-_id non-column field when cardFields is undefined', () => {
-		expect(effectiveCardFields(BASE_BOARD)).toEqual(['title']);
+	it('returns empty array when cardFields is undefined', () => {
+		expect(effectiveCardFields(BASE_BOARD)).toEqual([]);
 	});
 
-	it('falls back when cardFields is empty array', () => {
+	it('returns empty array when cardFields is empty', () => {
 		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: [] } };
-		expect(effectiveCardFields(board)).toEqual(['title']);
+		expect(effectiveCardFields(board)).toEqual([]);
 	});
 });
 
@@ -57,14 +78,26 @@ describe('renderCard', () => {
 	});
 
 	describe('title field', () => {
-		it('renders the first non-id non-column field value as fk-card__title', () => {
+		it('renders the auto-detected title as fk-card__title', () => {
 			const el = renderCard(CARD, BASE_BOARD);
 			const title = el.querySelector('.fk-card__title');
 			expect(title).not.toBeNull();
 			expect(title!.textContent).toBe('Buy milk');
 		});
 
-		it('title element is present even when value is empty', () => {
+		it('renders the explicit cardTitle field', () => {
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'due' } };
+			const el = renderCard(CARD, board);
+			expect(el.querySelector('.fk-card__title')!.textContent).toBe('2026-08-01');
+		});
+
+		it('renders no title element when cardTitle is empty string', () => {
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: '' } };
+			const el = renderCard(CARD, board);
+			expect(el.querySelector('.fk-card__title')).toBeNull();
+		});
+
+		it('title element is present even when value is empty (auto-detect)', () => {
 			const card: Card = { id: 'x', values: { title: '', status: 'inbox', due: '', docs: '' } };
 			const el = renderCard(card, BASE_BOARD);
 			expect(el.querySelector('.fk-card__title')).not.toBeNull();
@@ -85,7 +118,7 @@ describe('renderCard', () => {
 	});
 
 	describe('secondary fields', () => {
-		it('does not render any .fk-card__field rows when only title in cardFields', () => {
+		it('does not render any secondary rows when cardFields is absent', () => {
 			const el = renderCard(CARD, BASE_BOARD);
 			expect(el.querySelectorAll('.fk-card__field').length).toBe(0);
 		});
@@ -103,25 +136,33 @@ describe('renderCard', () => {
 			expect(el.querySelector('.fk-card__title')!.textContent).toBe('Task');
 		});
 
-		it('renders secondary field rows when cardFields has multiple entries', () => {
-			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'due'] } };
-			const card: Card = { ...CARD, values: { ...CARD.values, due: '2026-08-01' } };
-			const el = renderCard(card, board);
+		it('renders secondary field rows with label and value', () => {
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] } };
+			const el = renderCard(CARD, board);
 			const rows = el.querySelectorAll('.fk-card__field');
 			expect(rows.length).toBe(1);
 			expect(rows[0].querySelector('.fk-card__field-label')!.textContent).toBe('Due date');
 			expect(rows[0].querySelector('.fk-card__field-value')!.textContent).toBe('2026-08-01');
 		});
 
+		it('hides labels when cardLabels is false', () => {
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'], cardLabels: false } };
+			const el = renderCard(CARD, board);
+			const rows = el.querySelectorAll('.fk-card__field');
+			expect(rows.length).toBe(1);
+			expect(rows[0].querySelector('.fk-card__field-label')).toBeNull();
+			expect(rows[0].querySelector('.fk-card__field-value')!.textContent).toBe('2026-08-01');
+		});
+
 		it('skips secondary fields with empty values', () => {
-			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'due'] } };
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] } };
 			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', due: '', docs: '' } };
 			const el = renderCard(card, board);
 			expect(el.querySelectorAll('.fk-card__field').length).toBe(0);
 		});
 
 		it('renders Link field items as .fk-card__field-link spans with data-href', () => {
-			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'docs'] } };
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['docs'] } };
 			const card: Card = { ...CARD, values: { ...CARD.values, docs: 'notes/spec.md\nhttps://example.com' } };
 			const el = renderCard(card, board);
 			const links = el.querySelectorAll<HTMLElement>('.fk-card__field-link');

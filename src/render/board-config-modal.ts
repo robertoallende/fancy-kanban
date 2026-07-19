@@ -216,6 +216,37 @@ export class BoardConfigModal extends Modal {
 		heading.textContent = 'Card display';
 		section.appendChild(heading);
 
+		// Card title dropdown
+		const titleWrap = this.field(section, 'Card title');
+		const titleSelect = activeDocument.createElement('select');
+		titleSelect.classList.add('fk-modal-input');
+		titleSelect.dataset.role = 'card-title-select';
+		const autoOpt = activeDocument.createElement('option');
+		autoOpt.value = '__auto__';
+		autoOpt.textContent = '(auto)';
+		titleSelect.appendChild(autoOpt);
+		const noneOpt = activeDocument.createElement('option');
+		noneOpt.value = '';
+		noneOpt.textContent = '(none)';
+		titleSelect.appendChild(noneOpt);
+		this.populateCardTitleSelect(titleSelect);
+		titleSelect.value = this.schema.viewConfig.cardTitle ?? '__auto__';
+		titleSelect.addEventListener('change', () => {
+			const v = titleSelect.value;
+			this.schema.viewConfig.cardTitle = v === '__auto__' ? undefined : v;
+		});
+		titleWrap.appendChild(titleSelect);
+
+		// Show labels checkbox
+		const labelsWrap = this.field(section, 'Show labels');
+		const labelsCheck = activeDocument.createElement('input');
+		labelsCheck.type = 'checkbox';
+		labelsCheck.checked = this.schema.viewConfig.cardLabels !== false;
+		labelsCheck.addEventListener('change', () => {
+			this.schema.viewConfig.cardLabels = labelsCheck.checked ? undefined : false;
+		});
+		labelsWrap.appendChild(labelsCheck);
+
 		this.cardFieldListEl = activeDocument.createElement('div');
 		this.cardFieldListEl.classList.add('fk-modal-field-list');
 		section.appendChild(this.cardFieldListEl);
@@ -295,6 +326,27 @@ export class BoardConfigModal extends Modal {
 		});
 	}
 
+	private populateCardTitleSelect(select: HTMLSelectElement): void {
+		const existing = Array.from(select.options).map(o => o.value);
+		for (const f of this.schema.fields.filter(f => f.name !== '_id')) {
+			if (!existing.includes(f.name)) {
+				const o = activeDocument.createElement('option');
+				o.value = f.name;
+				o.textContent = f.label || f.name;
+				select.appendChild(o);
+			}
+		}
+	}
+
+	private refreshCardTitleSelect(): void {
+		const select = this.contentEl.querySelector<HTMLSelectElement>('[data-role="card-title-select"]');
+		if (!select) return;
+		const current = select.value;
+		while (select.options.length > 2) select.remove(2); // keep (auto) and (none)
+		this.populateCardTitleSelect(select);
+		select.value = current in Array.from(select.options).map(o => o.value) ? current : (this.schema.viewConfig.cardTitle ?? '__auto__');
+	}
+
 	private refreshCardDisplaySelect(): void {
 		const select = this.contentEl.querySelector<HTMLSelectElement>('[data-role="card-display-select"]');
 		if (!select) return;
@@ -323,6 +375,7 @@ export class BoardConfigModal extends Modal {
 	private refreshViewConfig(): void {
 		const colSelect = this.contentEl.querySelector<HTMLSelectElement>('[data-role="columns"]');
 		if (colSelect) this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
+		this.refreshCardTitleSelect();
 		this.rerenderCardFieldList();
 		this.refreshCardDisplaySelect();
 	}

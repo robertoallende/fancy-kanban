@@ -1,15 +1,22 @@
 import type { Board, Card } from '../model/board';
 import { splitLinks } from '../data/link';
 
-export function effectiveCardFields(board: Board): string[] {
-	const explicit = board.viewConfig.cardFields?.filter(
-		name => board.fields.some(f => f.name === name),
-	);
-	if (explicit?.length) return explicit;
+export function effectiveCardTitle(board: Board): string | null {
+	if (board.viewConfig.cardTitle !== undefined) {
+		const name = board.viewConfig.cardTitle;
+		if (!name) return null;
+		return board.fields.some(f => f.name === name) ? name : null;
+	}
 	const first = board.fields.find(
 		f => f.name !== '_id' && f.name !== board.viewConfig.columns,
 	);
-	return first ? [first.name] : [];
+	return first?.name ?? null;
+}
+
+export function effectiveCardFields(board: Board): string[] {
+	return (board.viewConfig.cardFields ?? []).filter(
+		name => board.fields.some(f => f.name === name),
+	);
 }
 
 export function renderCard(card: Card, board: Board): HTMLElement {
@@ -18,22 +25,22 @@ export function renderCard(card: Card, board: Board): HTMLElement {
 	container.classList.add('fk-card--draggable');
 	container.dataset.cardId = card.id;
 
-	const cardFields = effectiveCardFields(board);
-	const [titleFieldName, ...secondaryNames] = cardFields;
+	const titleFieldName = effectiveCardTitle(board);
+	if (titleFieldName !== null) {
+		const title = activeDocument.createElement('div');
+		title.classList.add('fk-card__title');
+		title.textContent = card.values[titleFieldName] ?? '';
+		container.appendChild(title);
+	}
 
-	const titleField = board.fields.find(f => f.name === titleFieldName);
-	const title = activeDocument.createElement('div');
-	title.classList.add('fk-card__title');
-	title.textContent = card.values[titleField?.name ?? ''] ?? '';
-	container.appendChild(title);
-
-	const secondaryFields = secondaryNames
+	const secondaryFields = effectiveCardFields(board)
 		.map(name => board.fields.find(f => f.name === name))
 		.filter((f): f is NonNullable<typeof f> => f !== undefined);
 
 	if (secondaryFields.length) {
 		const fieldsEl = activeDocument.createElement('div');
 		fieldsEl.classList.add('fk-card__fields');
+		const showLabels = board.viewConfig.cardLabels !== false;
 
 		for (const field of secondaryFields) {
 			const value = card.values[field.name] ?? '';
@@ -42,10 +49,12 @@ export function renderCard(card: Card, board: Board): HTMLElement {
 			const row = activeDocument.createElement('div');
 			row.classList.add('fk-card__field');
 
-			const labelEl = activeDocument.createElement('span');
-			labelEl.classList.add('fk-card__field-label');
-			labelEl.textContent = field.label;
-			row.appendChild(labelEl);
+			if (showLabels) {
+				const labelEl = activeDocument.createElement('span');
+				labelEl.classList.add('fk-card__field-label');
+				labelEl.textContent = field.label;
+				row.appendChild(labelEl);
+			}
 
 			if (field.type === 'Link') {
 				const linksEl = activeDocument.createElement('span');
