@@ -1,8 +1,8 @@
 export const RULES = [
 	{
 		id: 'prefer-create-el',
-		pattern: /\bdocument\.createElement\b/,
-		message: 'Use createEl() instead of document.createElement()',
+		pattern: /\b(active)?[Dd]ocument\.createElement\b/,
+		message: 'Use createEl() instead of document.createElement() or activeDocument.createElement()',
 	},
 	{
 		id: 'prefer-active-doc',
@@ -21,5 +21,19 @@ export const RULES = [
 		// Narrowed: only flag `) as ObsidianType`
 		pattern: /\) as (App|Workspace|Vault|TFile|TFolder|Plugin)\b/,
 		message: 'Avoid unnecessary type assertion; use proper typing instead',
+	},
+	{
+		id: 'vault-enumeration',
+		pattern: /vault\.(getFiles|getMarkdownFiles)\(/,
+		message: 'Vault enumeration detected — document usage intent in Obsidian submission notes',
+		warn: true,
+	},
+];
+
+export const CSS_RULES = [
+	{
+		id: 'no-important',
+		pattern: /!important/,
+		message: 'Avoid !important — increase selector specificity instead',
 	},
 ];

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { RULES } from '../../scripts/lint-rules.mjs';
+import { RULES, CSS_RULES } from '../../scripts/lint-rules.mjs';
+
+function cssRuleById(id: string) {
+	const rule = CSS_RULES.find((r: { id: string }) => r.id === id);
+	if (!rule) throw new Error(`CSS rule not found: ${id}`);
+	return (rule as { pattern: RegExp }).pattern;
+}
 
 function ruleById(id: string) {
 	const rule = RULES.find(r => r.id === id);
@@ -18,9 +24,8 @@ describe('lint rule: prefer-create-el', () => {
 		expect(pat.test('const el = createEl("div");')).toBe(false);
 	});
 
-	it('does not flag activeDocument.createElement', () => {
-		// prefer-active-doc handles activeDocument; prefer-create-el only targets document.
-		expect(pat.test('activeDocument.createElement("div")')).toBe(false);
+	it('catches activeDocument.createElement', () => {
+		expect(pat.test('activeDocument.createElement("div")')).toBe(true);
 	});
 });
 
@@ -115,6 +120,34 @@ describe('lint rule: no-unnecessary-type-assertion', () => {
 
 	it('does not flag as in a type position', () => {
 		expect(pat.test('type Alias = Foo as unknown;')).toBe(false);
+	});
+});
+
+describe('lint rule: vault-enumeration', () => {
+	const pat = ruleById('vault-enumeration');
+
+	it('catches vault.getFiles()', () => {
+		expect(pat.test('return this.app.vault.getFiles();')).toBe(true);
+	});
+
+	it('catches vault.getMarkdownFiles()', () => {
+		expect(pat.test('return this.app.vault.getMarkdownFiles();')).toBe(true);
+	});
+
+	it('does not flag unrelated vault calls', () => {
+		expect(pat.test('this.app.vault.read(file);')).toBe(false);
+	});
+});
+
+describe('CSS rule: no-important', () => {
+	const pat = cssRuleById('no-important');
+
+	it('catches !important', () => {
+		expect(pat.test('.fk-hidden { display: none !important; }')).toBe(true);
+	});
+
+	it('does not flag rules without !important', () => {
+		expect(pat.test('.fk-hidden { display: none; }')).toBe(false);
 	});
 });
 
