@@ -10,6 +10,7 @@ fields:
   - name: title, type: Text, label: Title
   - name: status, type: Select, label: Status, options: inbox|doing|done, default: inbox
 card_fields: title
+card_labels: false
 ---
 
 | _id | Title | Status |
