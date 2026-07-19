@@ -1,6 +1,6 @@
 {
   "name": "fancy-kanban",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Embeddable kanban boards in any note, with native swimlanes and a relational field model.",
   "main": "main.js",
   "scripts": {
