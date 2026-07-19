@@ -48,57 +48,49 @@ export class BoardConfigModal extends Modal {
 		this.renderCardDisplay(contentEl);
 		this.renderWorkflow(contentEl);
 
-		this.errorEl = createEl('p', { cls: 'fk-modal-error' });
-		contentEl.appendChild(this.errorEl);
+		this.errorEl = contentEl.createEl('p', { cls: 'fk-modal-error' });
 
-		const saveBtn = createEl('button', { cls: 'fk-modal-save', text: 'Save' });
+		const saveBtn = contentEl.createEl('button', { cls: 'fk-modal-save', text: 'Save' });
 		saveBtn.addEventListener('click', () => this.submit());
-		contentEl.appendChild(saveBtn);
 
 		contentEl.querySelector<HTMLElement>('input')?.focus();
 	}
 
 	private renderTitleInput(container: HTMLElement): void {
 		const wrap = this.field(container, 'Board title');
-		const inp = createEl('input', { type: 'text', cls: 'fk-modal-input' });
+		const inp = wrap.createEl('input', { type: 'text', cls: 'fk-modal-input' });
 		inp.value = this.schema.title;
 		inp.addEventListener('input', () => { this.schema.title = inp.value; });
-		wrap.appendChild(inp);
 	}
 
 	private renderFieldsSection(container: HTMLElement): void {
-		const section = createEl('div', { cls: 'fk-modal-section' });
+		const section = container.createEl('div', { cls: 'fk-modal-section' });
 
-		const heading = createEl('p', { cls: 'fk-modal-section-label', text: 'Fields' });
-		section.appendChild(heading);
+		section.createEl('p', { cls: 'fk-modal-section-label', text: 'Fields' });
 
-		this.fieldListEl = createEl('div', { cls: 'fk-modal-field-list' });
-		section.appendChild(this.fieldListEl);
+		this.fieldListEl = section.createEl('div', { cls: 'fk-modal-field-list' });
 
 		this.rerenderFieldList();
 
-		const addBtn = createEl('button', { cls: 'fk-modal-add-field', text: '+ Add field' });
+		const addBtn = section.createEl('button', { cls: 'fk-modal-add-field', text: '+ Add field' });
 		addBtn.addEventListener('click', () => {
 			this.schema.fields.push({ name: '', type: 'Text', label: '' });
 			this.rerenderFieldList();
 			this.refreshViewConfig();
 		});
-		section.appendChild(addBtn);
-
-		container.appendChild(section);
 	}
 
 	private rerenderFieldList(): void {
 		if (!this.fieldListEl) return;
 		this.fieldListEl.innerHTML = '';
 		this.schema.fields.forEach((f, idx) => {
-			this.fieldListEl!.appendChild(this.renderFieldRow(f, idx));
+			this.renderFieldRow(this.fieldListEl!, f, idx);
 		});
 	}
 
-	renderFieldRow(field: FieldDefinition, idx: number): HTMLElement {
+	renderFieldRow(parent: HTMLElement, field: FieldDefinition, idx: number): HTMLElement {
 		const total = this.schema.fields.length;
-		const row = createEl('div', { cls: 'fk-modal-field-row' });
+		const row = parent.createEl('div', { cls: 'fk-modal-field-row' });
 
 		const isNew = field.name === '';
 
@@ -113,14 +105,12 @@ export class BoardConfigModal extends Modal {
 			}
 		});
 
-		const typeSelect = createEl('select', { cls: ['fk-modal-input-sm', 'fk-col-type'] });
+		const typeSelect = row.createEl('select', { cls: ['fk-modal-input-sm', 'fk-col-type'] });
 		for (const t of FIELD_TYPES) {
-			const o = createEl('option', { text: t });
+			const o = typeSelect.createEl('option', { text: t });
 			o.value = t;
 			if (t === field.type) o.selected = true;
-			typeSelect.appendChild(o);
 		}
-		row.appendChild(typeSelect);
 
 		const isSelect = field.type === 'Select';
 
@@ -150,7 +140,7 @@ export class BoardConfigModal extends Modal {
 		});
 
 		// Reorder / remove controls
-		const controls = createEl('div', { cls: 'fk-modal-row-controls' });
+		const controls = row.createEl('div', { cls: 'fk-modal-row-controls' });
 
 		const upBtn = this.iconBtn(controls, '↑', idx === 0);
 		upBtn.addEventListener('click', () => {
@@ -173,68 +163,57 @@ export class BoardConfigModal extends Modal {
 			this.refreshViewConfig();
 		});
 
-		row.appendChild(controls);
 		return row;
 	}
 
 	private renderViewConfig(container: HTMLElement): void {
-		const section = createEl('div', { cls: 'fk-modal-section' });
+		const section = container.createEl('div', { cls: 'fk-modal-section' });
 
 		const colWrap = this.field(section, 'Columns field');
-		const colSelect = createEl('select', { cls: 'fk-modal-input' });
+		const colSelect = colWrap.createEl('select', { cls: 'fk-modal-input' });
 		colSelect.dataset.role = 'columns';
 		this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
 		colSelect.addEventListener('change', () => { this.schema.viewConfig.columns = colSelect.value; });
-		colWrap.appendChild(colSelect);
-
-		container.appendChild(section);
 	}
 
 	private renderCardDisplay(container: HTMLElement): void {
-		const section = createEl('div', { cls: 'fk-modal-section' });
+		const section = container.createEl('div', { cls: 'fk-modal-section' });
 
-		const heading = createEl('p', { cls: 'fk-modal-section-label', text: 'Card display' });
-		section.appendChild(heading);
+		section.createEl('p', { cls: 'fk-modal-section-label', text: 'Card display' });
 
 		// Card title dropdown
 		const titleWrap = this.field(section, 'Card title');
-		const titleSelect = createEl('select', { cls: 'fk-modal-input' });
+		const titleSelect = titleWrap.createEl('select', { cls: 'fk-modal-input' });
 		titleSelect.dataset.role = 'card-title-select';
-		const autoOpt = createEl('option', { text: '(auto)' });
+		const autoOpt = titleSelect.createEl('option', { text: '(auto)' });
 		autoOpt.value = '__auto__';
-		titleSelect.appendChild(autoOpt);
-		const noneOpt = createEl('option', { text: '(none)' });
+		const noneOpt = titleSelect.createEl('option', { text: '(none)' });
 		noneOpt.value = '';
-		titleSelect.appendChild(noneOpt);
 		this.populateCardTitleSelect(titleSelect);
 		titleSelect.value = this.schema.viewConfig.cardTitle ?? '__auto__';
 		titleSelect.addEventListener('change', () => {
 			const v = titleSelect.value;
 			this.schema.viewConfig.cardTitle = v === '__auto__' ? undefined : v;
 		});
-		titleWrap.appendChild(titleSelect);
 
 		// Show labels checkbox
 		const labelsWrap = this.field(section, 'Show labels');
-		const labelsCheck = createEl('input', { type: 'checkbox' });
+		const labelsCheck = labelsWrap.createEl('input', { type: 'checkbox' });
 		labelsCheck.checked = this.schema.viewConfig.cardLabels !== false;
 		labelsCheck.addEventListener('change', () => {
 			this.schema.viewConfig.cardLabels = labelsCheck.checked ? undefined : false;
 		});
-		labelsWrap.appendChild(labelsCheck);
 
-		this.cardFieldListEl = createEl('div', { cls: 'fk-modal-field-list' });
-		section.appendChild(this.cardFieldListEl);
+		this.cardFieldListEl = section.createEl('div', { cls: 'fk-modal-field-list' });
 		this.rerenderCardFieldList();
 
-		const addRow = createEl('div');
+		const addRow = section.createEl('div');
 		addRow.dataset.role = 'card-display-add';
 
-		const addSelect = createEl('select', { cls: 'fk-modal-input-sm' });
+		const addSelect = addRow.createEl('select', { cls: 'fk-modal-input-sm' });
 		addSelect.dataset.role = 'card-display-select';
-		addRow.appendChild(addSelect);
 
-		const addBtn = createEl('button', { cls: 'fk-modal-add-field', text: '+ Add field' });
+		const addBtn = addRow.createEl('button', { cls: 'fk-modal-add-field', text: '+ Add field' });
 		addBtn.addEventListener('click', () => {
 			const name = addSelect.value;
 			if (!name) return;
@@ -245,10 +224,7 @@ export class BoardConfigModal extends Modal {
 				this.refreshCardDisplaySelect();
 			}
 		});
-		addRow.appendChild(addBtn);
-		section.appendChild(addRow);
 
-		container.appendChild(section);
 		this.refreshCardDisplaySelect();
 	}
 
@@ -258,12 +234,11 @@ export class BoardConfigModal extends Modal {
 		const cardFields = this.schema.viewConfig.cardFields ?? [];
 		cardFields.forEach((name, idx) => {
 			const field = this.schema.fields.find(f => f.name === name);
-			const row = createEl('div', { cls: 'fk-modal-field-row' });
+			const row = this.cardFieldListEl!.createEl('div', { cls: 'fk-modal-field-row' });
 
-			const labelEl = createEl('span', { cls: 'fk-flex-1', text: field?.label ?? name });
-			row.appendChild(labelEl);
+			row.createEl('span', { cls: 'fk-flex-1', text: field?.label ?? name });
 
-			const controls = createEl('div', { cls: 'fk-modal-row-controls' });
+			const controls = row.createEl('div', { cls: 'fk-modal-row-controls' });
 
 			const upBtn = this.iconBtn(controls, '↑', idx === 0);
 			upBtn.addEventListener('click', () => {
@@ -288,9 +263,6 @@ export class BoardConfigModal extends Modal {
 				this.rerenderCardFieldList();
 				this.refreshCardDisplaySelect();
 			});
-
-			row.appendChild(controls);
-			this.cardFieldListEl!.appendChild(row);
 		});
 	}
 
@@ -298,9 +270,8 @@ export class BoardConfigModal extends Modal {
 		const existing = Array.from(select.options).map(o => o.value);
 		for (const f of this.schema.fields.filter(f => f.name !== '_id')) {
 			if (!existing.includes(f.name)) {
-				const o = createEl('option', { text: f.label || f.name });
+				const o = select.createEl('option', { text: f.label || f.name });
 				o.value = f.name;
-				select.appendChild(o);
 			}
 		}
 	}
@@ -321,19 +292,17 @@ export class BoardConfigModal extends Modal {
 		const current = this.schema.viewConfig.cardFields ?? [];
 		const available = this.schema.fields.filter(f => f.name !== '_id' && !current.includes(f.name));
 		for (const f of available) {
-			const o = createEl('option', { text: f.label || f.name });
+			const o = select.createEl('option', { text: f.label || f.name });
 			o.value = f.name;
-			select.appendChild(o);
 		}
 	}
 
 	private renderWorkflow(container: HTMLElement): void {
 		const wrap = this.field(container, 'Workflow (optional)');
-		const inp = createEl('input', { type: 'text', cls: 'fk-modal-input' });
+		const inp = wrap.createEl('input', { type: 'text', cls: 'fk-modal-input' });
 		inp.placeholder = 'todo→doing, doing→done';
 		inp.value = this.schema.rawWorkflow ?? '';
 		inp.addEventListener('input', () => { this.schema.rawWorkflow = inp.value; });
-		wrap.appendChild(inp);
 	}
 
 	private refreshViewConfig(): void {
@@ -349,9 +318,8 @@ export class BoardConfigModal extends Modal {
 		const names = this.schema.fields.map(f => f.name).filter(n => n);
 		for (const name of names) {
 			if (!existing.includes(name)) {
-				const o = createEl('option', { text: name });
+				const o = select.createEl('option', { text: name });
 				o.value = name;
-				select.appendChild(o);
 			}
 		}
 		if (current) select.value = current;
@@ -385,33 +353,28 @@ export class BoardConfigModal extends Modal {
 	}
 
 	private field(container: HTMLElement, label: string): HTMLElement {
-		const wrap = createEl('div', { cls: 'fk-modal-field' });
-		const lbl = createEl('label', { text: label });
-		wrap.appendChild(lbl);
-		container.appendChild(wrap);
+		const wrap = container.createEl('div', { cls: 'fk-modal-field' });
+		wrap.createEl('label', { text: label });
 		return wrap;
 	}
 
 	private smallInput(container: HTMLElement, placeholder: string, value: string): HTMLInputElement {
-		const inp = createEl('input', { type: 'text', cls: 'fk-modal-input-sm' });
+		const inp = container.createEl('input', { type: 'text', cls: 'fk-modal-input-sm' });
 		inp.placeholder = placeholder;
 		inp.value = value;
-		container.appendChild(inp);
 		return inp;
 	}
 
 	private fixedInput(container: HTMLElement, placeholder: string, value: string, cls: string): HTMLInputElement {
-		const inp = createEl('input', { type: 'text', cls: ['fk-modal-input-sm', cls] });
+		const inp = container.createEl('input', { type: 'text', cls: ['fk-modal-input-sm', cls] });
 		inp.placeholder = placeholder;
 		inp.value = value;
-		container.appendChild(inp);
 		return inp;
 	}
 
 	private iconBtn(container: HTMLElement, label: string, disabled: boolean): HTMLButtonElement {
-		const btn = createEl('button', { cls: 'fk-modal-icon-btn', text: label });
+		const btn = container.createEl('button', { cls: 'fk-modal-icon-btn', text: label });
 		btn.disabled = disabled;
-		container.appendChild(btn);
 		return btn;
 	}
 

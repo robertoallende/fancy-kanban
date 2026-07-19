@@ -7,11 +7,20 @@ class ObsidianHTMLElement extends HTMLElement {
 	empty(): void { this.innerHTML = ''; }
 	createEl<K extends keyof HTMLElementTagNameMap>(
 		tag: K,
-		attrs?: { cls?: string; text?: string },
+		opts?: { cls?: string | string[]; text?: string; type?: string; value?: string; placeholder?: string; attr?: Record<string, string> },
 	): HTMLElementTagNameMap[K] {
 		const el = document.createElement(tag);
-		if (attrs?.cls) el.className = attrs.cls;
-		if (attrs?.text) el.textContent = attrs.text;
+		if (opts?.cls) {
+			const classes = Array.isArray(opts.cls) ? opts.cls : [opts.cls];
+			el.classList.add(...classes);
+		}
+		if (opts?.text !== undefined) el.textContent = opts.text;
+		if (opts?.type !== undefined) (el as HTMLInputElement).type = opts.type;
+		if (opts?.value !== undefined) (el as HTMLInputElement).value = opts.value;
+		if (opts?.placeholder !== undefined) (el as HTMLInputElement).placeholder = opts.placeholder;
+		if (opts?.attr) {
+			for (const [k, v] of Object.entries(opts.attr)) el.setAttribute(k, v);
+		}
 		this.appendChild(el);
 		return el;
 	}

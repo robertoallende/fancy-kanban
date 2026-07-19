@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3 - 20/07/2026
+
+- Migrated all standalone `createEl()` calls to the method form `parentEl.createEl()` across all render and integration files, satisfying the Obsidian reviewer `prefer-create-el` rule and ensuring correct document context in popout windows
+- Updated `renderBoard`, `renderColumn`, and `renderCard` signatures to accept a `parent: HTMLElement` first argument
+
 ## 0.3.2 - 20/07/2026
 
 - Removed `!important` from `.fk-hidden` — specificity now handled via a combined selector, satisfying the Obsidian reviewer requirement

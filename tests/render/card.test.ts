@@ -77,43 +77,50 @@ describe('effectiveCardFields', () => {
 describe('renderCard', () => {
 	describe('container', () => {
 		it('returns an HTMLElement', () => {
-			const el = renderCard(CARD, BASE_BOARD);
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
 			expect(el).toBeInstanceOf(HTMLElement);
 		});
 
 		it('container has class fk-card', () => {
-			const el = renderCard(CARD, BASE_BOARD);
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
 			expect(el.classList.contains('fk-card')).toBe(true);
 		});
 	});
 
 	describe('title field', () => {
 		it('renders the auto-detected title as fk-card__title', () => {
-			const el = renderCard(CARD, BASE_BOARD);
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
 			const title = el.querySelector('.fk-card__title');
 			expect(title).not.toBeNull();
 			expect(title!.textContent).toBe('Buy milk');
 		});
 
 		it('renders the explicit cardTitle field', () => {
+			const container = document.createElement('div');
 			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'due' } };
-			const el = renderCard(CARD, board);
+			const el = renderCard(container, CARD, board);
 			expect(el.querySelector('.fk-card__title')!.textContent).toBe('2026-08-01');
 		});
 
 		it('renders no title element when cardTitle is empty string', () => {
+			const container = document.createElement('div');
 			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: '' } };
-			const el = renderCard(CARD, board);
+			const el = renderCard(container, CARD, board);
 			expect(el.querySelector('.fk-card__title')).toBeNull();
 		});
 
 		it('title element is present even when value is empty (auto-detect)', () => {
+			const container = document.createElement('div');
 			const card: Card = { id: 'x', values: { title: '', status: 'inbox', due: '', docs: '' } };
-			const el = renderCard(card, BASE_BOARD);
+			const el = renderCard(container, card, BASE_BOARD);
 			expect(el.querySelector('.fk-card__title')).not.toBeNull();
 		});
 
 		it('uses the first non-id non-column field as title regardless of name', () => {
+			const container = document.createElement('div');
 			const board: Board = {
 				...BASE_BOARD,
 				fields: [
@@ -122,18 +129,20 @@ describe('renderCard', () => {
 				],
 			};
 			const card: Card = { id: 'x', values: { subject: 'My task', status: 'open' } };
-			const el = renderCard(card, board);
+			const el = renderCard(container, card, board);
 			expect(el.querySelector('.fk-card__title')!.textContent).toBe('My task');
 		});
 	});
 
 	describe('secondary fields', () => {
 		it('does not render any secondary rows when cardFields is absent', () => {
-			const el = renderCard(CARD, BASE_BOARD);
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
 			expect(el.querySelectorAll('.fk-card__field').length).toBe(0);
 		});
 
 		it('does not render _id in the output', () => {
+			const container = document.createElement('div');
 			const board: Board = {
 				...BASE_BOARD,
 				fields: [
@@ -142,13 +151,14 @@ describe('renderCard', () => {
 				],
 			};
 			const card: Card = { id: 'x', values: { _id: 'x', title: 'Task' } };
-			const el = renderCard(card, board);
+			const el = renderCard(container, card, board);
 			expect(el.querySelector('.fk-card__title')!.textContent).toBe('Task');
 		});
 
 		it('renders secondary field rows with label and value', () => {
+			const container = document.createElement('div');
 			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] } };
-			const el = renderCard(CARD, board);
+			const el = renderCard(container, CARD, board);
 			const rows = el.querySelectorAll('.fk-card__field');
 			expect(rows.length).toBe(1);
 			expect(rows[0].querySelector('.fk-card__field-label')!.textContent).toBe('Due date');
@@ -156,8 +166,9 @@ describe('renderCard', () => {
 		});
 
 		it('hides labels when cardLabels is false', () => {
+			const container = document.createElement('div');
 			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'], cardLabels: false } };
-			const el = renderCard(CARD, board);
+			const el = renderCard(container, CARD, board);
 			const rows = el.querySelectorAll('.fk-card__field');
 			expect(rows.length).toBe(1);
 			expect(rows[0].querySelector('.fk-card__field-label')).toBeNull();
@@ -165,16 +176,18 @@ describe('renderCard', () => {
 		});
 
 		it('skips secondary fields with empty values', () => {
+			const container = document.createElement('div');
 			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] } };
 			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', due: '', docs: '' } };
-			const el = renderCard(card, board);
+			const el = renderCard(container, card, board);
 			expect(el.querySelectorAll('.fk-card__field').length).toBe(0);
 		});
 
 		it('renders Link field items as .fk-card__field-link spans with data-href', () => {
+			const container = document.createElement('div');
 			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['docs'] } };
 			const card: Card = { ...CARD, values: { ...CARD.values, docs: 'notes/spec.md\nhttps://example.com' } };
-			const el = renderCard(card, board);
+			const el = renderCard(container, card, board);
 			const links = el.querySelectorAll<HTMLElement>('.fk-card__field-link');
 			expect(links.length).toBe(2);
 			expect(links[0].dataset.href).toBe('notes/spec.md');
@@ -184,7 +197,8 @@ describe('renderCard', () => {
 
 	describe('drag', () => {
 		it('has class fk-card--draggable', () => {
-			const el = renderCard(CARD, BASE_BOARD);
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
 			expect(el.classList.contains('fk-card--draggable')).toBe(true);
 		});
 	});

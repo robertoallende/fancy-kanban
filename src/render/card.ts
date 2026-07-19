@@ -20,14 +20,13 @@ export function effectiveCardFields(board: Board): string[] {
 	);
 }
 
-export function renderCard(card: Card, board: Board): HTMLElement {
-	const container = createEl('div', { cls: ['fk-card', 'fk-card--draggable'] });
+export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLElement {
+	const container = parent.createEl('div', { cls: ['fk-card', 'fk-card--draggable'] });
 	container.dataset.cardId = card.id;
 
 	const titleFieldName = effectiveCardTitle(board);
 	if (titleFieldName !== null) {
-		const title = createEl('div', { cls: 'fk-card__title', text: card.values[titleFieldName] ?? '' });
-		container.appendChild(title);
+		container.createEl('div', { cls: 'fk-card__title', text: card.values[titleFieldName] ?? '' });
 	}
 
 	const secondaryFields = effectiveCardFields(board)
@@ -35,37 +34,31 @@ export function renderCard(card: Card, board: Board): HTMLElement {
 		.filter((f): f is NonNullable<typeof f> => f !== undefined);
 
 	if (secondaryFields.length) {
-		const fieldsEl = createEl('div', { cls: 'fk-card__fields' });
+		const fieldsEl = container.createEl('div', { cls: 'fk-card__fields' });
 		const showLabels = board.viewConfig.cardLabels !== false;
 
 		for (const field of secondaryFields) {
 			const value = card.values[field.name] ?? '';
 			if (!value) continue;
 
-			const row = createEl('div', { cls: 'fk-card__field' });
+			const row = fieldsEl.createEl('div', { cls: 'fk-card__field' });
 
 			if (showLabels) {
-				const labelEl = createEl('span', { cls: 'fk-card__field-label', text: field.label });
-				row.appendChild(labelEl);
+				row.createEl('span', { cls: 'fk-card__field-label', text: field.label });
 			}
 
 			if (field.type === 'Link') {
-				const linksEl = createEl('span', { cls: 'fk-card__field-links' });
+				const linksEl = row.createEl('span', { cls: 'fk-card__field-links' });
 				for (const item of splitLinks(value)) {
-					const span = createEl('span', { cls: 'fk-card__field-link', text: item });
+					const span = linksEl.createEl('span', { cls: 'fk-card__field-link', text: item });
 					span.dataset.href = item;
-					linksEl.appendChild(span);
 				}
-				row.appendChild(linksEl);
 			} else {
-				const valueEl = createEl('span', { cls: 'fk-card__field-value', text: value });
-				row.appendChild(valueEl);
+				row.createEl('span', { cls: 'fk-card__field-value', text: value });
 			}
-
-			fieldsEl.appendChild(row);
 		}
 
-		if (fieldsEl.childElementCount) container.appendChild(fieldsEl);
+		if (!fieldsEl.childElementCount) fieldsEl.remove();
 	}
 
 	return container;

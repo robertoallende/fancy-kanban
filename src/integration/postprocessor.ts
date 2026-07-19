@@ -22,43 +22,32 @@ function renderErrorPanel(
 	source: string,
 	onGoToSource: () => void,
 ): void {
-	const panel = createEl('div', { cls: 'fk-error-panel' });
+	const panel = container.createEl('div', { cls: 'fk-error-panel' });
 
 	for (const err of errors) {
-		const msg = createEl('p', { cls: 'fk-error', text: err.message });
+		const msg = panel.createEl('p', { cls: 'fk-error', text: err.message });
 		if (err.hint) {
-			const hint = createEl('span', { cls: 'fk-error-panel__hint', text: ` — ${err.hint}` });
-			msg.appendChild(hint);
+			msg.createEl('span', { cls: 'fk-error-panel__hint', text: ` — ${err.hint}` });
 		}
-		panel.appendChild(msg);
 	}
 
-	const pre = createEl('pre', { cls: 'fk-error-panel__source', text: source });
-	panel.appendChild(pre);
+	panel.createEl('pre', { cls: 'fk-error-panel__source', text: source });
 
-	const btn = createEl('button', { cls: 'fk-error-panel__goto', text: 'Go to source' });
+	const btn = panel.createEl('button', { cls: 'fk-error-panel__goto', text: 'Go to source' });
 	btn.addEventListener('click', onGoToSource);
-	panel.appendChild(btn);
-
-	container.appendChild(panel);
 }
 
 function renderWarningBanner(container: HTMLElement, warnings: ParseIssue[]): void {
-	const banner = createEl('div', { cls: 'fk-warning-banner' });
+	const banner = container.createEl('div', { cls: 'fk-warning-banner' });
 
-	const body = createEl('div', { cls: 'fk-warning-banner__body' });
+	const body = banner.createEl('div', { cls: 'fk-warning-banner__body' });
 	for (const w of warnings) {
-		const item = createEl('p', { cls: 'fk-warning-banner__item', text: w.message });
-		body.appendChild(item);
+		body.createEl('p', { cls: 'fk-warning-banner__item', text: w.message });
 	}
-	banner.appendChild(body);
 
-	const dismiss = createEl('button', { cls: 'fk-warning-banner__dismiss', text: '×' });
+	const dismiss = banner.createEl('button', { cls: 'fk-warning-banner__dismiss', text: '×' });
 	dismiss.setAttribute('aria-label', 'Dismiss warnings');
 	dismiss.addEventListener('click', () => banner.remove());
-	banner.appendChild(dismiss);
-
-	container.appendChild(banner);
 }
 
 export function registerPostProcessor(plugin: Plugin): void {
@@ -76,21 +65,18 @@ export function registerPostProcessor(plugin: Plugin): void {
 
 		if (!file) {
 			if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-			const boardWrapper = createEl('div');
-			el.appendChild(boardWrapper);
+			const boardWrapper = el.createEl('div');
 			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
 			return;
 		}
 
 		if (result.readonly) {
-			const banner = createEl('p', { cls: ['fk-banner', 'fk-banner--warning'], text: result.readonlyReason ?? '' });
-			el.appendChild(banner);
+			el.createEl('p', { cls: ['fk-banner', 'fk-banner--warning'], text: result.readonlyReason ?? '' });
 		}
 
 		if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
 
-		const boardWrapper = createEl('div');
-		el.appendChild(boardWrapper);
+		const boardWrapper = el.createEl('div');
 		const blockIndex = blockIndexFromContext(ctx, el);
 		const save = result.readonly
 			? () => Promise.resolve()

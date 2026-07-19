@@ -16,10 +16,9 @@ export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: Ap
 		void save(newBoard).then(() => mountBoard(el, newBoard, save, app, sourcePath));
 	};
 
-	const boardEl = renderBoard(board);
+	const boardEl = renderBoard(el, board);
 	attachDragDrop(boardEl, board, dispatch);
 	attachCardActions(boardEl, board, dispatch, app, sourcePath);
-	el.appendChild(boardEl);
 }
 
 function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void, app?: App, sourcePath = ''): void {
@@ -88,15 +87,12 @@ function getInsertBeforeId(clientY: number, col: HTMLElement): string | null {
 
 function updateDropIndicator(col: HTMLElement, insertBeforeId: string | null): void {
 	col.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
-	const indicator = createEl('div', { cls: 'fk-drop-indicator' });
-	const cardsEl = col.querySelector('.fk-column__cards');
+	const cardsEl = col.querySelector<HTMLElement>('.fk-column__cards');
 	if (!cardsEl) return;
-	if (insertBeforeId === null) {
-		cardsEl.appendChild(indicator);
-	} else {
+	const indicator = cardsEl.createEl('div', { cls: 'fk-drop-indicator' });
+	if (insertBeforeId !== null) {
 		const target = cardsEl.querySelector(`[data-card-id="${insertBeforeId}"]`);
 		if (target) cardsEl.insertBefore(indicator, target);
-		else cardsEl.appendChild(indicator);
 	}
 }
 
@@ -110,8 +106,7 @@ export function showTransitionBlockedToast(from: string, to: string): void {
 	const existing = activeDocument.querySelector('.fk-toast');
 	if (existing) existing.remove();
 
-	const toast = createEl('div', { cls: 'fk-toast', text: `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.` });
-	activeDocument.body.appendChild(toast);
+	const toast = activeDocument.body.createEl('div', { cls: 'fk-toast', text: `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.` });
 
 	window.setTimeout(() => {
 		toast.classList.add('fk-toast--hiding');
