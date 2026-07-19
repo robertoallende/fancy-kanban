@@ -209,7 +209,7 @@ export class CardModal extends Modal {
 
 		const urlInputArea = activeDocument.createElement('div');
 		urlInputArea.classList.add('fk-link-url-input');
-		urlInputArea.style.display = 'none';
+		urlInputArea.classList.add('fk-hidden');
 
 		const urlInput = activeDocument.createElement('input');
 		urlInput.type = 'text';
@@ -232,7 +232,7 @@ export class CardModal extends Modal {
 			items.push(value);
 			onChange(joinLinks(items));
 			urlInput.value = '';
-			urlInputArea.style.display = 'none';
+			urlInputArea.classList.add('fk-hidden');
 			renderItems();
 		});
 
@@ -244,8 +244,8 @@ export class CardModal extends Modal {
 		addUrlBtn.classList.add('fk-link-add--url');
 		addUrlBtn.textContent = '+ Add URL';
 		addUrlBtn.addEventListener('click', () => {
-			const hidden = urlInputArea.style.display === 'none';
-			urlInputArea.style.display = hidden ? '' : 'none';
+			const hidden = urlInputArea.classList.contains('fk-hidden');
+			urlInputArea.classList.toggle('fk-hidden');
 			if (hidden) urlInput.focus();
 		});
 

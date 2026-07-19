@@ -159,9 +159,9 @@ describe('CardModal — Link field', () => {
 		const { modal } = makeLinkModal('');
 		const addUrlBtn = modal.contentEl.querySelector<HTMLButtonElement>('.fk-link-add--url')!;
 		const urlInput = modal.contentEl.querySelector<HTMLElement>('.fk-link-url-input')!;
-		expect(urlInput.style.display).toBe('none');
+		expect(urlInput.classList.contains('fk-hidden')).toBe(true);
 		addUrlBtn.click();
-		expect(urlInput.style.display).not.toBe('none');
+		expect(urlInput.classList.contains('fk-hidden')).toBe(false);
 	});
 
 	it('confirming a valid URL adds it to the list', () => {

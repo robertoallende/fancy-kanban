@@ -290,7 +290,7 @@ export class BoardConfigModal extends Modal {
 			row.classList.add('fk-modal-field-row');
 
 			const labelEl = activeDocument.createElement('span');
-			labelEl.style.flex = '1';
+			labelEl.classList.add('fk-flex-1');
 			labelEl.textContent = field?.label ?? name;
 			row.appendChild(labelEl);
 
