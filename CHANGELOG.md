@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.4 - 20/07/2026
+
+- Replaced `createEl('div', ...)` and `createEl('span', ...)` calls with the `createDiv()` and `createSpan()` shorthand helpers required by the Obsidian reviewer `prefer-create-el` rule
+
 ## 0.3.3 - 20/07/2026
 
 - Migrated all standalone `createEl()` calls to the method form `parentEl.createEl()` across all render and integration files, satisfying the Obsidian reviewer `prefer-create-el` rule and ensuring correct document context in popout windows
