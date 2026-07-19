@@ -1,5 +1,21 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, FuzzySuggestModal, TFile } from 'obsidian';
 import type { Board, Card, FieldDefinition } from '../model/board';
+import { splitLinks, joinLinks } from '../data/link';
+
+class LinkFilePicker extends FuzzySuggestModal<TFile> {
+	constructor(app: App, private onSelect: (path: string) => void) {
+		super(app);
+	}
+	getItems(): TFile[] {
+		return (this.app as App).vault.getFiles();
+	}
+	getItemText(file: TFile): string {
+		return file.path;
+	}
+	onChooseItem(file: TFile): void {
+		this.onSelect(file.path);
+	}
+}
 
 export class CardModal extends Modal {
 	private values: Record<string, string> = {};
@@ -73,7 +89,9 @@ export class CardModal extends Modal {
 
 		const onChange = (value: string) => { this.values[field.name] = value; };
 
-		if (field.type === 'Select' && field.options) {
+		if (field.type === 'Link') {
+			this.renderLinkField(wrapper, field, initialValue, onChange);
+		} else if (field.type === 'Select' && field.options) {
 			const sel = activeDocument.createElement('select');
 			sel.classList.add('fk-modal-input');
 			for (const opt of field.options) {
@@ -114,6 +132,95 @@ export class CardModal extends Modal {
 		}
 
 		container.appendChild(wrapper);
+	}
+
+	private renderLinkField(container: HTMLElement, _field: FieldDefinition, initialValue: string, onChange: (v: string) => void): void {
+		const items = splitLinks(initialValue);
+
+		const itemList = activeDocument.createElement('div');
+		container.appendChild(itemList);
+
+		const renderItems = () => {
+			while (itemList.firstChild) itemList.removeChild(itemList.firstChild);
+			for (const item of items) {
+				const row = activeDocument.createElement('div');
+				row.classList.add('fk-link-item');
+				const val = activeDocument.createElement('span');
+				val.classList.add('fk-link-item__value');
+				val.textContent = item;
+				const remove = activeDocument.createElement('button');
+				remove.classList.add('fk-link-item__remove');
+				remove.setAttribute('aria-label', 'Remove');
+				remove.textContent = '×';
+				remove.addEventListener('click', () => {
+					const idx = items.indexOf(item);
+					if (idx > -1) items.splice(idx, 1);
+					onChange(joinLinks(items));
+					renderItems();
+				});
+				row.appendChild(val);
+				row.appendChild(remove);
+				itemList.appendChild(row);
+			}
+		};
+
+		renderItems();
+
+		const controls = activeDocument.createElement('div');
+		controls.classList.add('fk-link-controls');
+
+		const addFileBtn = activeDocument.createElement('button');
+		addFileBtn.classList.add('fk-link-add--file');
+		addFileBtn.textContent = '+ Add file';
+		addFileBtn.addEventListener('click', () => {
+			new LinkFilePicker(this.app as App, (path) => {
+				items.push(path);
+				onChange(joinLinks(items));
+				renderItems();
+			}).open();
+		});
+
+		const urlInputArea = activeDocument.createElement('div');
+		urlInputArea.classList.add('fk-link-url-input');
+		urlInputArea.style.display = 'none';
+
+		const urlInput = activeDocument.createElement('input');
+		urlInput.type = 'text';
+		urlInput.placeholder = 'https://…';
+
+		const urlError = activeDocument.createElement('span');
+		urlError.classList.add('fk-link-error');
+
+		const urlConfirm = activeDocument.createElement('button');
+		urlConfirm.classList.add('fk-link-url-confirm');
+		urlConfirm.textContent = 'Add';
+		urlConfirm.addEventListener('click', () => {
+			const value = urlInput.value.trim();
+			if (!value) return;
+			items.push(value);
+			onChange(joinLinks(items));
+			urlInput.value = '';
+			urlInputArea.style.display = 'none';
+			renderItems();
+		});
+
+		urlInputArea.appendChild(urlInput);
+		urlInputArea.appendChild(urlError);
+		urlInputArea.appendChild(urlConfirm);
+
+		const addUrlBtn = activeDocument.createElement('button');
+		addUrlBtn.classList.add('fk-link-add--url');
+		addUrlBtn.textContent = '+ Add URL';
+		addUrlBtn.addEventListener('click', () => {
+			const hidden = urlInputArea.style.display === 'none';
+			urlInputArea.style.display = hidden ? '' : 'none';
+			if (hidden) urlInput.focus();
+		});
+
+		controls.appendChild(addFileBtn);
+		controls.appendChild(addUrlBtn);
+		controls.appendChild(urlInputArea);
+		container.appendChild(controls);
 	}
 
 	onClose(): void {

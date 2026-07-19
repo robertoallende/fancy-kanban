@@ -399,3 +399,74 @@
 .fk-warning-banner__dismiss:hover {
   opacity: 1;
 }
+
+/* Link field list UI */
+.fk-link-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fk-link-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.fk-link-item__value {
+  flex: 1;
+  font-size: var(--font-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fk-link-item__remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.fk-link-item__remove:hover {
+  opacity: 1;
+}
+
+.fk-link-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+.fk-link-add--file,
+.fk-link-add--url {
+  font-size: var(--font-smaller);
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.fk-link-url-input {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.fk-link-url-input input {
+  flex: 1;
+  min-width: 0;
+}
+
+.fk-link-error {
+  color: var(--text-error);
+  font-size: var(--font-smaller);
+  width: 100%;
+}

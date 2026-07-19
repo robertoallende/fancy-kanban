@@ -39,5 +39,15 @@ export class Modal {
 }
 
 export class Plugin {}
-export class TFile {}
+export class TFile { path = ''; }
 export class Notice { constructor(_msg: string) {} }
+
+export class FuzzySuggestModal<T> {
+	app: unknown;
+	constructor(app: unknown) { this.app = app; }
+	open(): void {}
+	close(): void {}
+	getItems(): T[] { return []; }
+	getItemText(_item: T): string { return ''; }
+	onChooseItem(_item: T): void {}
+}
