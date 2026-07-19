@@ -14,8 +14,9 @@ export function effectiveCardTitle(board: Board): string | null {
 }
 
 export function effectiveCardFields(board: Board): string[] {
+	const titleField = effectiveCardTitle(board);
 	return (board.viewConfig.cardFields ?? []).filter(
-		name => board.fields.some(f => f.name === name),
+		name => name !== titleField && board.fields.some(f => f.name === name),
 	);
 }
 

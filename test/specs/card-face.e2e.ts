@@ -132,4 +132,24 @@ describe('Card face fields', function () {
             expect(result.values).toBe(1);
         });
     });
+
+    describe('title field in card_fields is not duplicated', function () {
+        beforeEach(async function () {
+            await openInPreview('card-title-duplicate-board.md');
+        });
+
+        it('shows the title once (as .fk-card__title, not also as a secondary row)', async function () {
+            const board = await $('.fk-board');
+            await board.waitForExist({ timeout: 5000 });
+            const result = await browser.execute(() => {
+                const card = document.querySelector('[data-card-id="td1"]');
+                return {
+                    titleText: card?.querySelector('.fk-card__title')?.textContent ?? null,
+                    secondaryFieldCount: card?.querySelectorAll('.fk-card__field').length ?? 0,
+                };
+            });
+            expect(result.titleText).toBe('Buy milk');
+            expect(result.secondaryFieldCount).toBe(0);
+        });
+    });
 });

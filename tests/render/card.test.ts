@@ -62,6 +62,16 @@ describe('effectiveCardFields', () => {
 		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: [] } };
 		expect(effectiveCardFields(board)).toEqual([]);
 	});
+
+	it('filters out the card title field to avoid duplication', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'due'] } };
+		expect(effectiveCardFields(board)).toEqual(['due']);
+	});
+
+	it('filters out the explicit cardTitle field when present in cardFields', () => {
+		const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'due', cardFields: ['due', 'docs'] } };
+		expect(effectiveCardFields(board)).toEqual(['docs']);
+	});
 });
 
 describe('renderCard', () => {

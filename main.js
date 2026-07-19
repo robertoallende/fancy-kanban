@@ -307,8 +307,9 @@ function effectiveCardTitle(board) {
 }
 function effectiveCardFields(board) {
   var _a;
+  const titleField = effectiveCardTitle(board);
   return ((_a = board.viewConfig.cardFields) != null ? _a : []).filter(
-    (name) => board.fields.some((f) => f.name === name)
+    (name) => name !== titleField && board.fields.some((f) => f.name === name)
   );
 }
 function renderCard(card, board) {
