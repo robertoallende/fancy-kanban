@@ -1,5 +1,6 @@
 # Build output
 *.js.map
+specs/ 
 
 # Test coverage
 coverage/
