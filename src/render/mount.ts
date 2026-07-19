@@ -116,9 +116,9 @@ export function showTransitionBlockedToast(from: string, to: string): void {
 	toast.textContent = `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.`;
 	activeDocument.body.appendChild(toast);
 
-	setTimeout(() => {
+	window.setTimeout(() => {
 		toast.classList.add('fk-toast--hiding');
-		setTimeout(() => toast.remove(), 400);
+		window.setTimeout(() => toast.remove(), 400);
 	}, 3000);
 }
 

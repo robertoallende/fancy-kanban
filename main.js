@@ -1306,9 +1306,9 @@ function showTransitionBlockedToast(from, to) {
   toast.classList.add("fk-toast");
   toast.textContent = `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} \u2192 ${to}' to the workflow.`;
   activeDocument.body.appendChild(toast);
-  setTimeout(() => {
+  window.setTimeout(() => {
     toast.classList.add("fk-toast--hiding");
-    setTimeout(() => toast.remove(), 400);
+    window.setTimeout(() => toast.remove(), 400);
   }, 3e3);
 }
 function attachDragDrop(boardEl, board, dispatch) {
