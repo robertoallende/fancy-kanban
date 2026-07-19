@@ -118,6 +118,30 @@ describe('serializeBoard', () => {
 			const text = serializeBoard(MINIMAL_BOARD);
 			expect(text).not.toContain('lanes:');
 		});
+
+		it('includes card_fields when set', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'priority'] } };
+			const text = serializeBoard(board);
+			expect(text).toContain('card_fields: title, priority');
+		});
+
+		it('omits card_fields when undefined', () => {
+			const text = serializeBoard(MINIMAL_BOARD);
+			expect(text).not.toContain('card_fields');
+		});
+
+		it('omits card_fields when empty array', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardFields: [] } };
+			const text = serializeBoard(board);
+			expect(text).not.toContain('card_fields');
+		});
+
+		it('round-trips card_fields through serialize then parse', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardFields: ['title', 'priority'] } };
+			const result = parseBlock(serializeBoard(board));
+			if (!result.ok) throw new Error(result.error);
+			expect(result.board.viewConfig.cardFields).toEqual(['title', 'priority']);
+		});
 	});
 
 	describe('table header', () => {

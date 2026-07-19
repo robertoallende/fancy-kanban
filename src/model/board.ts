@@ -11,6 +11,7 @@ export interface FieldDefinition {
 export interface ViewConfig {
 	columns: string;
 	lanes?: string;
+	cardFields?: string[];
 }
 
 export interface Card {

@@ -169,6 +169,35 @@ fields:
 	});
 });
 
+describe('card_fields parsing', () => {
+	const base = `title: Board\nfields:\n  - name: status, type: Select, options: todo|done, label: Status\n  - name: title, type: Text, label: Title`;
+
+	it('parses card_fields with multiple entries', () => {
+		const result = parseConfig(`${base}\ncard_fields: title, priority, due`);
+		expect(result.viewConfig.cardFields).toEqual(['title', 'priority', 'due']);
+	});
+
+	it('parses card_fields with a single entry', () => {
+		const result = parseConfig(`${base}\ncard_fields: title`);
+		expect(result.viewConfig.cardFields).toEqual(['title']);
+	});
+
+	it('trims whitespace around names', () => {
+		const result = parseConfig(`${base}\ncard_fields:  title , priority `);
+		expect(result.viewConfig.cardFields).toEqual(['title', 'priority']);
+	});
+
+	it('treats empty card_fields value as absent', () => {
+		const result = parseConfig(`${base}\ncard_fields:`);
+		expect(result.viewConfig.cardFields).toBeUndefined();
+	});
+
+	it('leaves cardFields undefined when key is absent', () => {
+		const result = parseConfig(base);
+		expect(result.viewConfig.cardFields).toBeUndefined();
+	});
+});
+
 describe('reconcileCards', () => {
 	const fields = [
 		{ name: 'status', type: 'Select' as const, label: 'Status', options: ['inbox', 'done'], default: 'inbox' },
