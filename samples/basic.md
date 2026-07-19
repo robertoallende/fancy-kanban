@@ -4,6 +4,7 @@ A minimal board with a title field and a status column. Good for simple to-do li
 
 ```fancy-kanban
 ---
+version: 1
 title: To Do
 fields:
   - name: title, type: Text, label: Title
@@ -17,5 +18,5 @@ fields:
 | a3 | Read Thinking Fast | done |
 | a4 | Fix the bike | doing |
 | a5 | Something | inbox |
-| h3qpe4ry |  | inbox |
+| h3qpe4ry | Something | inbox |
 ```
