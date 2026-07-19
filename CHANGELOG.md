@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 - TBD
+
+- Card face fields: configure which fields appear on each card using `card_fields` in the board config; fields render in order with label and value; Link fields render as clickable inline links
+
 ## 0.3.0 - 19/07/2026
 
 - Link field: attach files and URLs to cards, with add/remove list UI and click-to-open navigation

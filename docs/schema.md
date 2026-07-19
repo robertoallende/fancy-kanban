@@ -31,6 +31,7 @@ fields:
   - name: effort,      type: Number,   label: Effort
   - name: docs,        type: Link,     label: Docs
   - name: team,        type: Select,   options: frontend|backend, label: Team
+card_fields: title, responsible, effort
 lanes: team
 workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing, done→inbox
 ---
@@ -69,8 +70,31 @@ YAML-like key-value pairs. Parsed line-by-line.
 |-----|----------|---------|-------------|
 | `title` | yes | — | Human-readable board name |
 | `fields` | yes | — | List of field definitions (see below) |
+| `card_fields` | no | first non-column field | Ordered list of fields to display on card faces |
 | `workflow` | no | all transitions allowed | Comma-separated `from→to` pairs |
 | `lanes` | no | none | Field name to use as the swimlane grouping dimension |
+
+### `card_fields`
+
+```yaml
+card_fields: title, priority, due
+```
+
+An ordered, comma-separated list of field names to display on each card face. The first entry is rendered as the card title; subsequent entries appear as labelled rows below the title.
+
+**Default behaviour**: when `card_fields` is absent or empty, only the first non-`_id`, non-column field is shown (typically the title field). Existing boards with no `card_fields` key are unaffected — they continue to show just the title.
+
+**Unknown names**: field names that do not match any defined field are silently ignored at render time. Removing a field from `fields:` automatically hides it from the card face without a parse error.
+
+**Link fields**: when a `Link` field is included in `card_fields`, its items are rendered as a horizontal list of clickable links on the card face. Vault paths open in a new tab; external URIs open in the browser.
+
+**Example** with multiple card face fields:
+
+```
+card_fields: title, priority, due, docs
+```
+
+This shows the title prominently, then a `Priority` row, a `Due` row, and a `Docs` row with clickable link items beneath it.
 
 ### `lanes`
 
