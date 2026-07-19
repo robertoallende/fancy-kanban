@@ -64,7 +64,7 @@ describe('parseBlock', () => {
 			expect(result.board.cards).toHaveLength(0);
 		});
 
-		it('parses all six field types from the full block', () => {
+		it('parses all six field types from the full block, coercing File to Link', () => {
 			const result = parseBlock(FULL_BLOCK);
 			if (!result.ok) throw new Error(result.errors[0].message);
 			const types = result.board.fields.map(f => f.type);
@@ -73,7 +73,8 @@ describe('parseBlock', () => {
 			expect(types).toContain('Date');
 			expect(types).toContain('Textarea');
 			expect(types).toContain('Number');
-			expect(types).toContain('File');
+			expect(types).toContain('Link');
+			expect(types).not.toContain('File');
 		});
 
 		it('parses all three data rows from the full block', () => {

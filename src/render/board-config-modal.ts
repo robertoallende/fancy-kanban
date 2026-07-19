@@ -5,7 +5,7 @@ function deriveFieldName(label: string): string {
 	return label.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
-const FIELD_TYPES: FieldType[] = ['Text', 'Textarea', 'Date', 'Number', 'Select', 'File'];
+const FIELD_TYPES: FieldType[] = ['Text', 'Textarea', 'Date', 'Number', 'Select', 'Link'];
 
 const DEFAULT_SCHEMA: BoardSchema = {
 	title: 'New Board',

@@ -1,12 +1,16 @@
 import type { BoardSchema, Card, FieldDefinition, FieldType } from '../model/board';
+import { DEPRECATED_FIELD_TYPES, W_FIELD_TYPE_DEPRECATED } from './deprecations';
 
-export function parseConfig(configText: string): BoardSchema {
+type ConfigWarning = { code: string; message: string; hint?: string };
+
+export function parseConfig(configText: string): BoardSchema & { warnings: ConfigWarning[] } {
 	const lines = configText.split('\n');
 	let title = '';
 	let rawWorkflow = '';
 	let lanes: string | undefined;
 	let version = 1;
 	const fields: FieldDefinition[] = [];
+	const warnings: ConfigWarning[] = [];
 	let inFields = false;
 
 	for (const line of lines) {
@@ -14,7 +18,9 @@ export function parseConfig(configText: string): BoardSchema {
 		if (!trimmed) continue;
 
 		if (inFields && trimmed.startsWith('- ')) {
-			fields.push(parseFieldLine(trimmed.slice(2)));
+			const { field, warning } = parseFieldLine(trimmed.slice(2));
+			fields.push(field);
+			if (warning) warnings.push(warning);
 			continue;
 		}
 
@@ -39,10 +45,11 @@ export function parseConfig(configText: string): BoardSchema {
 		rawWorkflow,
 		version,
 		viewConfig: { columns: 'status', lanes },
+		warnings,
 	};
 }
 
-function parseFieldLine(line: string): FieldDefinition {
+function parseFieldLine(line: string): { field: FieldDefinition; warning?: ConfigWarning } {
 	const kvs: Record<string, string> = {};
 	const parts = splitFieldParts(line);
 
@@ -57,16 +64,25 @@ function parseFieldLine(line: string): FieldDefinition {
 	if (!kvs['name']) throw new Error(`Field definition missing 'name': ${line}`);
 	if (!kvs['type']) throw new Error(`Field definition missing 'type': ${line}`);
 
+	const rawType = kvs['type'];
+	const deprecation = DEPRECATED_FIELD_TYPES[rawType];
+	const type: FieldType = deprecation ? (deprecation.replacement as FieldType) : (rawType as FieldType);
+	const warning: ConfigWarning | undefined = deprecation ? {
+		code: W_FIELD_TYPE_DEPRECATED,
+		message: `Field type '${rawType}' is deprecated, use '${deprecation.replacement}' instead (will be removed in ${deprecation.removeAt})`,
+		hint: `Replace 'type: ${rawType}' with 'type: ${deprecation.replacement}' in your board config`,
+	} : undefined;
+
 	const field: FieldDefinition = {
 		name: kvs['name'],
-		type: kvs['type'] as FieldType,
+		type,
 		label: kvs['label'] ?? kvs['name'],
 	};
 
 	if (kvs['options'] !== undefined) field.options = kvs['options'].split('|');
 	if (kvs['default'] !== undefined) field.default = kvs['default'];
 
-	return field;
+	return { field, warning };
 }
 
 function splitFieldParts(line: string): string[] {

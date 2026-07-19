@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseConfig, reconcileCards } from '../../src/data/schema';
+import { W_FIELD_TYPE_DEPRECATED } from '../../src/data/deprecations';
 import type { Card } from '../../src/model/board';
 
 const FULL_CONFIG = `
@@ -23,7 +24,7 @@ describe('parseConfig', () => {
 		expect(result.title).toBe('My Board');
 	});
 
-	it('parses all six field types', () => {
+	it('parses all six field types, coercing deprecated File to Link', () => {
 		const result = parseConfig(FULL_CONFIG);
 		const types = result.fields.map(f => f.type);
 		expect(types).toContain('Select');
@@ -31,7 +32,28 @@ describe('parseConfig', () => {
 		expect(types).toContain('Date');
 		expect(types).toContain('Textarea');
 		expect(types).toContain('Number');
-		expect(types).toContain('File');
+		expect(types).toContain('Link');
+		expect(types).not.toContain('File');
+	});
+
+	it('emits W_FIELD_TYPE_DEPRECATED warning for type: File', () => {
+		const result = parseConfig(FULL_CONFIG);
+		expect(result.warnings).toHaveLength(1);
+		expect(result.warnings[0].code).toBe(W_FIELD_TYPE_DEPRECATED);
+		expect(result.warnings[0].message).toContain('File');
+		expect(result.warnings[0].message).toContain('Link');
+		expect(result.warnings[0].hint).toBeDefined();
+	});
+
+	it('emits no warnings for a config with no deprecated types', () => {
+		const config = `
+title: Simple Board
+fields:
+  - name: status, type: Select, options: todo|done, label: Status
+  - name: title, type: Text, label: Title
+`.trim();
+		const result = parseConfig(config);
+		expect(result.warnings).toHaveLength(0);
 	});
 
 	it('parses field name, type, and label', () => {

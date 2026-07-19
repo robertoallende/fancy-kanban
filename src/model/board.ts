@@ -1,4 +1,4 @@
-export type FieldType = 'Text' | 'Textarea' | 'Date' | 'Number' | 'Select' | 'File';
+export type FieldType = 'Text' | 'Textarea' | 'Date' | 'Number' | 'Select' | 'Link';
 
 export interface FieldDefinition {
 	name: string;

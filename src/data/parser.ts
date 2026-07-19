@@ -1,6 +1,7 @@
 import type { Board, Card, FieldDefinition } from '../model/board';
 import { SUPPORTED_VERSION } from '../model/board';
 import { parseConfig, reconcileCards } from './schema';
+export { W_FIELD_TYPE_DEPRECATED } from './deprecations';
 
 export interface ParseIssue {
 	code: string;
@@ -117,7 +118,7 @@ export function parseBlock(blockText: string): ParseResult {
 		const configText = parts[1].trim();
 		const tableText = parts.slice(2).join('---');
 
-		const schema = parseConfig(configText);
+		const { warnings: configWarnings, ...schema } = parseConfig(configText);
 		if (!schema.title) {
 			return {
 				ok: false,
@@ -139,7 +140,8 @@ export function parseBlock(blockText: string): ParseResult {
 			};
 		}
 
-		const { cards: rawCards, warnings } = parseTable(tableText, schema.fields);
+		const { cards: rawCards, warnings: tableWarnings } = parseTable(tableText, schema.fields);
+		const warnings: ParseIssue[] = [...configWarnings, ...tableWarnings];
 		const cards = reconcileCards(schema.fields, rawCards);
 		const board: Board = { ...schema, cards };
 
