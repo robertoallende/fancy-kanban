@@ -438,6 +438,30 @@
   opacity: 1;
 }
 
+/* Workflow transition blocked toast */
+.fk-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: var(--font-smaller);
+  z-index: 9999;
+  max-width: 480px;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.fk-toast--hiding {
+  opacity: 0;
+}
+
 /* Link field list UI */
 .fk-link-field {
   display: flex;

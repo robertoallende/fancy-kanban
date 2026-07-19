@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { mountBoard } from '../../src/render/mount';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { mountBoard, showTransitionBlockedToast } from '../../src/render/mount';
 import type { Board, BoardSchema } from '../../src/model/board';
 import { BoardConfigModal } from '../../src/render/board-config-modal';
 
@@ -153,6 +153,45 @@ describe('mountBoard — settings button', () => {
 		const saved = save.mock.calls[0][0] as Board;
 		expect(saved.title).toBe('Renamed Board');
 		expect(saved.cards).toBeDefined();
+	});
+});
+
+describe('showTransitionBlockedToast', () => {
+	beforeEach(() => { document.querySelectorAll('.fk-toast').forEach(el => el.remove()); });
+	afterEach(() => { vi.useRealTimers(); document.querySelectorAll('.fk-toast').forEach(el => el.remove()); });
+
+	it('appends a .fk-toast to the document body', () => {
+		showTransitionBlockedToast('done', 'inbox');
+		expect(document.querySelector('.fk-toast')).not.toBeNull();
+	});
+
+	it('toast message contains from and to column names', () => {
+		showTransitionBlockedToast('done', 'inbox');
+		const text = document.querySelector('.fk-toast')?.textContent ?? '';
+		expect(text).toContain("'done'");
+		expect(text).toContain("'inbox'");
+		expect(text).toContain('done → inbox');
+	});
+
+	it('adds .fk-toast--hiding class after 3 seconds', () => {
+		vi.useFakeTimers();
+		showTransitionBlockedToast('done', 'inbox');
+		vi.advanceTimersByTime(3000);
+		expect(document.querySelector('.fk-toast')?.classList.contains('fk-toast--hiding')).toBe(true);
+	});
+
+	it('removes the toast after the fade completes', () => {
+		vi.useFakeTimers();
+		showTransitionBlockedToast('done', 'inbox');
+		vi.advanceTimersByTime(3400);
+		expect(document.querySelector('.fk-toast')).toBeNull();
+	});
+
+	it('replaces an existing toast instead of stacking', () => {
+		showTransitionBlockedToast('done', 'inbox');
+		showTransitionBlockedToast('inbox', 'done');
+		expect(document.querySelectorAll('.fk-toast').length).toBe(1);
+		expect(document.querySelector('.fk-toast')?.textContent).toContain("'inbox'");
 	});
 });
 

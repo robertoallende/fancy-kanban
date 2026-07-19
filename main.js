@@ -1299,6 +1299,18 @@ function clearDropState(boardEl) {
   boardEl.querySelectorAll(".fk-column--drag-over").forEach((c) => c.classList.remove("fk-column--drag-over"));
   boardEl.querySelectorAll(".fk-drop-indicator").forEach((el) => el.remove());
 }
+function showTransitionBlockedToast(from, to) {
+  const existing = activeDocument.querySelector(".fk-toast");
+  if (existing) existing.remove();
+  const toast = activeDocument.createElement("div");
+  toast.classList.add("fk-toast");
+  toast.textContent = `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} \u2192 ${to}' to the workflow.`;
+  activeDocument.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("fk-toast--hiding");
+    setTimeout(() => toast.remove(), 400);
+  }, 3e3);
+}
 function attachDragDrop(boardEl, board, dispatch) {
   var _a;
   const columnField = board.fields.find((f) => f.name === board.viewConfig.columns);
@@ -1352,6 +1364,8 @@ function attachDragDrop(boardEl, board, dispatch) {
         const fromValue = (_b = draggedCard == null ? void 0 : draggedCard.values[board.viewConfig.columns]) != null ? _b : "";
         if (fromValue === toValue || isTransitionAllowed(workflowMap, fromValue, toValue)) {
           dispatch(reorderCard(board, draggingCardId, toValue, insertBeforeId));
+        } else if (fromValue !== toValue) {
+          showTransitionBlockedToast(fromValue, toValue);
         }
       }
       draggingCardId = null;

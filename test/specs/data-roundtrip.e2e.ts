@@ -65,6 +65,17 @@ describe('Data roundtrip', function () {
             );
             expect(stillInDone).toBe(true);
         });
+
+        it('shows a toast with the blocked transition when a move is rejected', async function () {
+            await dragCard('wf2', 'todo');
+            const toastText = await browser.execute(() =>
+                document.querySelector('.fk-toast')?.textContent ?? null
+            );
+            expect(toastText).not.toBeNull();
+            expect(toastText).toContain("'done'");
+            expect(toastText).toContain("'todo'");
+            expect(toastText).toContain('done → todo');
+        });
     });
 
     describe('backslash value preservation', function () {
