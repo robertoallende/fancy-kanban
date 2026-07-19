@@ -4,6 +4,7 @@ A board showcasing every supported field type: Text, Textarea, Date, Number, Sel
 
 ```fancy-kanban
 ---
+version: 1
 title: Bug Tracker
 fields:
   - name: title, type: Text, label: Title
