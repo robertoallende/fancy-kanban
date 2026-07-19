@@ -14,7 +14,9 @@ fields:
   - name: priority, type: Select, label: Priority, options: low|medium|high, default: medium
   - name: spec, type: Link, label: Spec File
   - name: status, type: Select, label: Status, options: backlog|in-progress|done, default: backlog
-card_fields: title, spec, due
+card_title: title
+card_fields: spec, due
+card_labels: false
 ---
 
 | _id | Title | Description | Due Date | Estimate (h) | Priority | Spec File | Status |
