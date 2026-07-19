@@ -314,48 +314,35 @@ function effectiveCardFields(board) {
 }
 function renderCard(card, board) {
   var _a, _b;
-  const container = activeDocument.createElement("div");
-  container.classList.add("fk-card");
-  container.classList.add("fk-card--draggable");
+  const container = createEl("div", { cls: ["fk-card", "fk-card--draggable"] });
   container.dataset.cardId = card.id;
   const titleFieldName = effectiveCardTitle(board);
   if (titleFieldName !== null) {
-    const title = activeDocument.createElement("div");
-    title.classList.add("fk-card__title");
-    title.textContent = (_a = card.values[titleFieldName]) != null ? _a : "";
+    const title = createEl("div", { cls: "fk-card__title", text: (_a = card.values[titleFieldName]) != null ? _a : "" });
     container.appendChild(title);
   }
   const secondaryFields = effectiveCardFields(board).map((name) => board.fields.find((f) => f.name === name)).filter((f) => f !== void 0);
   if (secondaryFields.length) {
-    const fieldsEl = activeDocument.createElement("div");
-    fieldsEl.classList.add("fk-card__fields");
+    const fieldsEl = createEl("div", { cls: "fk-card__fields" });
     const showLabels = board.viewConfig.cardLabels !== false;
     for (const field of secondaryFields) {
       const value = (_b = card.values[field.name]) != null ? _b : "";
       if (!value) continue;
-      const row = activeDocument.createElement("div");
-      row.classList.add("fk-card__field");
+      const row = createEl("div", { cls: "fk-card__field" });
       if (showLabels) {
-        const labelEl = activeDocument.createElement("span");
-        labelEl.classList.add("fk-card__field-label");
-        labelEl.textContent = field.label;
+        const labelEl = createEl("span", { cls: "fk-card__field-label", text: field.label });
         row.appendChild(labelEl);
       }
       if (field.type === "Link") {
-        const linksEl = activeDocument.createElement("span");
-        linksEl.classList.add("fk-card__field-links");
+        const linksEl = createEl("span", { cls: "fk-card__field-links" });
         for (const item of splitLinks(value)) {
-          const span = activeDocument.createElement("span");
-          span.classList.add("fk-card__field-link");
+          const span = createEl("span", { cls: "fk-card__field-link", text: item });
           span.dataset.href = item;
-          span.textContent = item;
           linksEl.appendChild(span);
         }
         row.appendChild(linksEl);
       } else {
-        const valueEl = activeDocument.createElement("span");
-        valueEl.classList.add("fk-card__field-value");
-        valueEl.textContent = value;
+        const valueEl = createEl("span", { cls: "fk-card__field-value", text: value });
         row.appendChild(valueEl);
       }
       fieldsEl.appendChild(row);
@@ -367,27 +354,18 @@ function renderCard(card, board) {
 
 // src/render/column.ts
 function renderColumn(name, label, cards, board) {
-  const container = activeDocument.createElement("div");
-  container.classList.add("fk-column");
+  const container = createEl("div", { cls: "fk-column" });
   container.dataset.columnValue = name;
-  const header = activeDocument.createElement("div");
-  header.classList.add("fk-column__header");
-  const title = activeDocument.createElement("span");
-  title.classList.add("fk-column__title");
-  title.textContent = label;
-  const count = activeDocument.createElement("span");
-  count.classList.add("fk-column__count");
-  count.textContent = String(cards.length);
+  const header = createEl("div", { cls: "fk-column__header" });
+  const title = createEl("span", { cls: "fk-column__title", text: label });
+  const count = createEl("span", { cls: "fk-column__count", text: String(cards.length) });
   header.appendChild(title);
   header.appendChild(count);
-  const cardsContainer = activeDocument.createElement("div");
-  cardsContainer.classList.add("fk-column__cards");
+  const cardsContainer = createEl("div", { cls: "fk-column__cards" });
   for (const card of cards) {
     cardsContainer.appendChild(renderCard(card, board));
   }
-  const addBtn = activeDocument.createElement("button");
-  addBtn.classList.add("fk-col__add-btn");
-  addBtn.textContent = "+ Add card";
+  const addBtn = createEl("button", { cls: "fk-col__add-btn", text: "+ Add card" });
   container.appendChild(header);
   container.appendChild(cardsContainer);
   container.appendChild(addBtn);
@@ -399,22 +377,15 @@ function capitalise(s) {
   return s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);
 }
 function renderBoard(board) {
-  const wrapper = activeDocument.createElement("div");
-  wrapper.classList.add("fk-board");
-  const header = activeDocument.createElement("div");
-  header.classList.add("fk-board__header");
-  const settingsBtn = activeDocument.createElement("button");
-  settingsBtn.classList.add("fk-board__settings");
-  settingsBtn.textContent = "\u2699";
+  const wrapper = createEl("div", { cls: "fk-board" });
+  const header = createEl("div", { cls: "fk-board__header" });
+  const settingsBtn = createEl("button", { cls: "fk-board__settings", text: "\u2699" });
   settingsBtn.title = "Board settings";
   header.appendChild(settingsBtn);
-  const titleEl = activeDocument.createElement("span");
-  titleEl.classList.add("fk-board__title");
-  titleEl.textContent = board.title;
+  const titleEl = createEl("span", { cls: "fk-board__title", text: board.title });
   header.appendChild(titleEl);
   wrapper.appendChild(header);
-  const columnsContainer = activeDocument.createElement("div");
-  columnsContainer.classList.add("fk-board__columns");
+  const columnsContainer = createEl("div", { cls: "fk-board__columns" });
   const columnField = board.fields.find((f) => f.name === board.viewConfig.columns);
   if (columnField == null ? void 0 : columnField.options) {
     for (const option of columnField.options) {
@@ -609,21 +580,16 @@ var CardModal = class extends import_obsidian.Modal {
     for (const field of editableFields) {
       this.renderField(contentEl, field, field.name === columnField && !this.card ? this.columnValue : void 0);
     }
-    const footer = activeDocument.createElement("div");
-    footer.classList.add("fk-modal-footer");
+    const footer = createEl("div", { cls: "fk-modal-footer" });
     if (this.onDelete) {
-      const deleteBtn = activeDocument.createElement("button");
-      deleteBtn.classList.add("fk-modal-delete");
-      deleteBtn.textContent = "Delete";
+      const deleteBtn = createEl("button", { cls: "fk-modal-delete", text: "Delete" });
       deleteBtn.addEventListener("click", () => {
         this.onDelete();
         this.close();
       });
       footer.appendChild(deleteBtn);
     }
-    const saveBtn = activeDocument.createElement("button");
-    saveBtn.classList.add("fk-modal-save");
-    saveBtn.textContent = "Save";
+    const saveBtn = createEl("button", { cls: "fk-modal-save", text: "Save" });
     saveBtn.addEventListener("click", () => {
       var _a2;
       const values = { ...this.values };
@@ -639,10 +605,8 @@ var CardModal = class extends import_obsidian.Modal {
     var _a, _b;
     const initialValue = initialOverride != null ? initialOverride : this.card ? (_a = this.card.values[field.name]) != null ? _a : "" : (_b = field.default) != null ? _b : "";
     this.values[field.name] = initialValue;
-    const wrapper = activeDocument.createElement("div");
-    wrapper.classList.add("fk-modal-field");
-    const label = activeDocument.createElement("label");
-    label.textContent = field.label;
+    const wrapper = createEl("div", { cls: "fk-modal-field" });
+    const label = createEl("label", { text: field.label });
     wrapper.appendChild(label);
     const onChange = (value) => {
       this.values[field.name] = value;
@@ -650,27 +614,23 @@ var CardModal = class extends import_obsidian.Modal {
     if (field.type === "Link") {
       this.renderLinkField(wrapper, field, initialValue, onChange);
     } else if (field.type === "Select" && field.options) {
-      const sel = activeDocument.createElement("select");
-      sel.classList.add("fk-modal-input");
+      const sel = createEl("select", { cls: "fk-modal-input" });
       for (const opt of field.options) {
-        const o = activeDocument.createElement("option");
+        const o = createEl("option", { text: opt });
         o.value = opt;
-        o.textContent = opt;
         if (opt === initialValue) o.selected = true;
         sel.appendChild(o);
       }
       sel.addEventListener("change", () => onChange(sel.value));
       wrapper.appendChild(sel);
     } else if (field.type === "Textarea") {
-      const ta = activeDocument.createElement("textarea");
-      ta.classList.add("fk-modal-input");
+      const ta = createEl("textarea", { cls: "fk-modal-input" });
       ta.value = initialValue;
       ta.rows = 4;
       ta.addEventListener("input", () => onChange(ta.value));
       wrapper.appendChild(ta);
     } else {
-      const inp = activeDocument.createElement("input");
-      inp.classList.add("fk-modal-input");
+      const inp = createEl("input", { cls: "fk-modal-input" });
       inp.type = field.type === "Date" ? "date" : field.type === "Number" ? "number" : "text";
       inp.value = initialValue;
       inp.addEventListener("input", () => onChange(inp.value));
@@ -691,10 +651,9 @@ var CardModal = class extends import_obsidian.Modal {
   }
   renderLinkField(container, _field, initialValue, onChange) {
     const items = splitLinks(initialValue);
-    const field = activeDocument.createElement("div");
-    field.classList.add("fk-link-field");
+    const field = createEl("div", { cls: "fk-link-field" });
     container.appendChild(field);
-    const itemList = activeDocument.createElement("div");
+    const itemList = createEl("div");
     field.appendChild(itemList);
     const openLink = (item) => {
       this.close();
@@ -707,10 +666,8 @@ var CardModal = class extends import_obsidian.Modal {
     const renderItems = () => {
       while (itemList.firstChild) itemList.removeChild(itemList.firstChild);
       for (const item of items) {
-        const row = activeDocument.createElement("div");
-        row.classList.add("fk-link-item");
-        const remove = activeDocument.createElement("span");
-        remove.classList.add("fk-link-item__remove");
+        const row = createEl("div", { cls: "fk-link-item" });
+        const remove = createEl("span", { cls: "fk-link-item__remove" });
         remove.setAttribute("role", "button");
         remove.setAttribute("tabindex", "0");
         remove.setAttribute("aria-label", "Remove");
@@ -726,8 +683,7 @@ var CardModal = class extends import_obsidian.Modal {
         remove.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") doRemove(e);
         });
-        const val = activeDocument.createElement("span");
-        val.classList.add("fk-link-item__value");
+        const val = createEl("span", { cls: "fk-link-item__value" });
         val.setAttribute("role", "button");
         val.setAttribute("tabindex", "0");
         val.textContent = item;
@@ -741,11 +697,8 @@ var CardModal = class extends import_obsidian.Modal {
       }
     };
     renderItems();
-    const controls = activeDocument.createElement("div");
-    controls.classList.add("fk-link-controls");
-    const addFileBtn = activeDocument.createElement("button");
-    addFileBtn.classList.add("fk-link-add--file");
-    addFileBtn.textContent = "+ Add file";
+    const controls = createEl("div", { cls: "fk-link-controls" });
+    const addFileBtn = createEl("button", { cls: "fk-link-add--file", text: "+ Add file" });
     addFileBtn.addEventListener("click", () => {
       new LinkFilePicker(this.app, (path) => {
         items.push(path);
@@ -753,17 +706,11 @@ var CardModal = class extends import_obsidian.Modal {
         renderItems();
       }).open();
     });
-    const urlInputArea = activeDocument.createElement("div");
-    urlInputArea.classList.add("fk-link-url-input");
-    urlInputArea.classList.add("fk-hidden");
-    const urlInput = activeDocument.createElement("input");
-    urlInput.type = "text";
+    const urlInputArea = createEl("div", { cls: ["fk-link-url-input", "fk-hidden"] });
+    const urlInput = createEl("input", { type: "text" });
     urlInput.placeholder = "https://\u2026";
-    const urlError = activeDocument.createElement("span");
-    urlError.classList.add("fk-link-error");
-    const urlConfirm = activeDocument.createElement("button");
-    urlConfirm.classList.add("fk-link-url-confirm");
-    urlConfirm.textContent = "Add";
+    const urlError = createEl("span", { cls: "fk-link-error" });
+    const urlConfirm = createEl("button", { cls: "fk-link-url-confirm", text: "Add" });
     urlConfirm.addEventListener("click", () => {
       var _a;
       const value = urlInput.value.trim();
@@ -782,9 +729,7 @@ var CardModal = class extends import_obsidian.Modal {
     urlInputArea.appendChild(urlInput);
     urlInputArea.appendChild(urlError);
     urlInputArea.appendChild(urlConfirm);
-    const addUrlBtn = activeDocument.createElement("button");
-    addUrlBtn.classList.add("fk-link-add--url");
-    addUrlBtn.textContent = "+ Add URL";
+    const addUrlBtn = createEl("button", { cls: "fk-link-add--url", text: "+ Add URL" });
     addUrlBtn.addEventListener("click", () => {
       const hidden = urlInputArea.classList.contains("fk-hidden");
       urlInputArea.classList.toggle("fk-hidden");
@@ -835,21 +780,16 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     this.renderViewConfig(contentEl);
     this.renderCardDisplay(contentEl);
     this.renderWorkflow(contentEl);
-    this.errorEl = activeDocument.createElement("p");
-    this.errorEl.classList.add("fk-modal-error");
+    this.errorEl = createEl("p", { cls: "fk-modal-error" });
     contentEl.appendChild(this.errorEl);
-    const saveBtn = activeDocument.createElement("button");
-    saveBtn.classList.add("fk-modal-save");
-    saveBtn.textContent = "Save";
+    const saveBtn = createEl("button", { cls: "fk-modal-save", text: "Save" });
     saveBtn.addEventListener("click", () => this.submit());
     contentEl.appendChild(saveBtn);
     (_a = contentEl.querySelector("input")) == null ? void 0 : _a.focus();
   }
   renderTitleInput(container) {
     const wrap = this.field(container, "Board title");
-    const inp = activeDocument.createElement("input");
-    inp.type = "text";
-    inp.classList.add("fk-modal-input");
+    const inp = createEl("input", { type: "text", cls: "fk-modal-input" });
     inp.value = this.schema.title;
     inp.addEventListener("input", () => {
       this.schema.title = inp.value;
@@ -857,19 +797,13 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     wrap.appendChild(inp);
   }
   renderFieldsSection(container) {
-    const section = activeDocument.createElement("div");
-    section.classList.add("fk-modal-section");
-    const heading = activeDocument.createElement("p");
-    heading.classList.add("fk-modal-section-label");
-    heading.textContent = "Fields";
+    const section = createEl("div", { cls: "fk-modal-section" });
+    const heading = createEl("p", { cls: "fk-modal-section-label", text: "Fields" });
     section.appendChild(heading);
-    this.fieldListEl = activeDocument.createElement("div");
-    this.fieldListEl.classList.add("fk-modal-field-list");
+    this.fieldListEl = createEl("div", { cls: "fk-modal-field-list" });
     section.appendChild(this.fieldListEl);
     this.rerenderFieldList();
-    const addBtn = activeDocument.createElement("button");
-    addBtn.classList.add("fk-modal-add-field");
-    addBtn.textContent = "+ Add field";
+    const addBtn = createEl("button", { cls: "fk-modal-add-field", text: "+ Add field" });
     addBtn.addEventListener("click", () => {
       this.schema.fields.push({ name: "", type: "Text", label: "" });
       this.rerenderFieldList();
@@ -888,8 +822,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
   renderFieldRow(field, idx) {
     var _a, _b;
     const total = this.schema.fields.length;
-    const row = activeDocument.createElement("div");
-    row.classList.add("fk-modal-field-row");
+    const row = createEl("div", { cls: "fk-modal-field-row" });
     const isNew = field.name === "";
     const labelInp = this.fixedInput(row, "Label", field.label, "fk-col-label");
     if (!isNew) labelInp.title = `id: ${field.name}`;
@@ -901,12 +834,10 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
         this.refreshViewConfig();
       }
     });
-    const typeSelect = activeDocument.createElement("select");
-    typeSelect.classList.add("fk-modal-input-sm", "fk-col-type");
+    const typeSelect = createEl("select", { cls: ["fk-modal-input-sm", "fk-col-type"] });
     for (const t of FIELD_TYPES) {
-      const o = activeDocument.createElement("option");
+      const o = createEl("option", { text: t });
       o.value = t;
-      o.textContent = t;
       if (t === field.type) o.selected = true;
       typeSelect.appendChild(o);
     }
@@ -934,8 +865,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
         defaultInp.value = "";
       }
     });
-    const controls = activeDocument.createElement("div");
-    controls.classList.add("fk-modal-row-controls");
+    const controls = createEl("div", { cls: "fk-modal-row-controls" });
     const upBtn = this.iconBtn(controls, "\u2191", idx === 0);
     upBtn.addEventListener("click", () => {
       [this.schema.fields[idx - 1], this.schema.fields[idx]] = [this.schema.fields[idx], this.schema.fields[idx - 1]];
@@ -956,11 +886,9 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     return row;
   }
   renderViewConfig(container) {
-    const section = activeDocument.createElement("div");
-    section.classList.add("fk-modal-section");
+    const section = createEl("div", { cls: "fk-modal-section" });
     const colWrap = this.field(section, "Columns field");
-    const colSelect = activeDocument.createElement("select");
-    colSelect.classList.add("fk-modal-input");
+    const colSelect = createEl("select", { cls: "fk-modal-input" });
     colSelect.dataset.role = "columns";
     this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
     colSelect.addEventListener("change", () => {
@@ -971,23 +899,17 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
   }
   renderCardDisplay(container) {
     var _a;
-    const section = activeDocument.createElement("div");
-    section.classList.add("fk-modal-section");
-    const heading = activeDocument.createElement("p");
-    heading.classList.add("fk-modal-section-label");
-    heading.textContent = "Card display";
+    const section = createEl("div", { cls: "fk-modal-section" });
+    const heading = createEl("p", { cls: "fk-modal-section-label", text: "Card display" });
     section.appendChild(heading);
     const titleWrap = this.field(section, "Card title");
-    const titleSelect = activeDocument.createElement("select");
-    titleSelect.classList.add("fk-modal-input");
+    const titleSelect = createEl("select", { cls: "fk-modal-input" });
     titleSelect.dataset.role = "card-title-select";
-    const autoOpt = activeDocument.createElement("option");
+    const autoOpt = createEl("option", { text: "(auto)" });
     autoOpt.value = "__auto__";
-    autoOpt.textContent = "(auto)";
     titleSelect.appendChild(autoOpt);
-    const noneOpt = activeDocument.createElement("option");
+    const noneOpt = createEl("option", { text: "(none)" });
     noneOpt.value = "";
-    noneOpt.textContent = "(none)";
     titleSelect.appendChild(noneOpt);
     this.populateCardTitleSelect(titleSelect);
     titleSelect.value = (_a = this.schema.viewConfig.cardTitle) != null ? _a : "__auto__";
@@ -997,26 +919,21 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     });
     titleWrap.appendChild(titleSelect);
     const labelsWrap = this.field(section, "Show labels");
-    const labelsCheck = activeDocument.createElement("input");
-    labelsCheck.type = "checkbox";
+    const labelsCheck = createEl("input", { type: "checkbox" });
     labelsCheck.checked = this.schema.viewConfig.cardLabels !== false;
     labelsCheck.addEventListener("change", () => {
       this.schema.viewConfig.cardLabels = labelsCheck.checked ? void 0 : false;
     });
     labelsWrap.appendChild(labelsCheck);
-    this.cardFieldListEl = activeDocument.createElement("div");
-    this.cardFieldListEl.classList.add("fk-modal-field-list");
+    this.cardFieldListEl = createEl("div", { cls: "fk-modal-field-list" });
     section.appendChild(this.cardFieldListEl);
     this.rerenderCardFieldList();
-    const addRow = activeDocument.createElement("div");
+    const addRow = createEl("div");
     addRow.dataset.role = "card-display-add";
-    const addSelect = activeDocument.createElement("select");
-    addSelect.classList.add("fk-modal-input-sm");
+    const addSelect = createEl("select", { cls: "fk-modal-input-sm" });
     addSelect.dataset.role = "card-display-select";
     addRow.appendChild(addSelect);
-    const addBtn = activeDocument.createElement("button");
-    addBtn.classList.add("fk-modal-add-field");
-    addBtn.textContent = "+ Add field";
+    const addBtn = createEl("button", { cls: "fk-modal-add-field", text: "+ Add field" });
     addBtn.addEventListener("click", () => {
       var _a2;
       const name = addSelect.value;
@@ -1041,14 +958,10 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     cardFields.forEach((name, idx) => {
       var _a2;
       const field = this.schema.fields.find((f) => f.name === name);
-      const row = activeDocument.createElement("div");
-      row.classList.add("fk-modal-field-row");
-      const labelEl = activeDocument.createElement("span");
-      labelEl.classList.add("fk-flex-1");
-      labelEl.textContent = (_a2 = field == null ? void 0 : field.label) != null ? _a2 : name;
+      const row = createEl("div", { cls: "fk-modal-field-row" });
+      const labelEl = createEl("span", { cls: "fk-flex-1", text: (_a2 = field == null ? void 0 : field.label) != null ? _a2 : name });
       row.appendChild(labelEl);
-      const controls = activeDocument.createElement("div");
-      controls.classList.add("fk-modal-row-controls");
+      const controls = createEl("div", { cls: "fk-modal-row-controls" });
       const upBtn = this.iconBtn(controls, "\u2191", idx === 0);
       upBtn.addEventListener("click", () => {
         var _a3;
@@ -1081,9 +994,8 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     const existing = Array.from(select.options).map((o) => o.value);
     for (const f of this.schema.fields.filter((f2) => f2.name !== "_id")) {
       if (!existing.includes(f.name)) {
-        const o = activeDocument.createElement("option");
+        const o = createEl("option", { text: f.label || f.name });
         o.value = f.name;
-        o.textContent = f.label || f.name;
         select.appendChild(o);
       }
     }
@@ -1105,18 +1017,15 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     const current = (_a = this.schema.viewConfig.cardFields) != null ? _a : [];
     const available = this.schema.fields.filter((f) => f.name !== "_id" && !current.includes(f.name));
     for (const f of available) {
-      const o = activeDocument.createElement("option");
+      const o = createEl("option", { text: f.label || f.name });
       o.value = f.name;
-      o.textContent = f.label || f.name;
       select.appendChild(o);
     }
   }
   renderWorkflow(container) {
     var _a;
     const wrap = this.field(container, "Workflow (optional)");
-    const inp = activeDocument.createElement("input");
-    inp.type = "text";
-    inp.classList.add("fk-modal-input");
+    const inp = createEl("input", { type: "text", cls: "fk-modal-input" });
     inp.placeholder = "todo\u2192doing, doing\u2192done";
     inp.value = (_a = this.schema.rawWorkflow) != null ? _a : "";
     inp.addEventListener("input", () => {
@@ -1136,9 +1045,8 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     const names = this.schema.fields.map((f) => f.name).filter((n) => n);
     for (const name of names) {
       if (!existing.includes(name)) {
-        const o = activeDocument.createElement("option");
+        const o = createEl("option", { text: name });
         o.value = name;
-        o.textContent = name;
         select.appendChild(o);
       }
     }
@@ -1170,36 +1078,28 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     return null;
   }
   field(container, label) {
-    const wrap = activeDocument.createElement("div");
-    wrap.classList.add("fk-modal-field");
-    const lbl = activeDocument.createElement("label");
-    lbl.textContent = label;
+    const wrap = createEl("div", { cls: "fk-modal-field" });
+    const lbl = createEl("label", { text: label });
     wrap.appendChild(lbl);
     container.appendChild(wrap);
     return wrap;
   }
   smallInput(container, placeholder, value) {
-    const inp = activeDocument.createElement("input");
-    inp.type = "text";
-    inp.classList.add("fk-modal-input-sm");
+    const inp = createEl("input", { type: "text", cls: "fk-modal-input-sm" });
     inp.placeholder = placeholder;
     inp.value = value;
     container.appendChild(inp);
     return inp;
   }
   fixedInput(container, placeholder, value, cls) {
-    const inp = activeDocument.createElement("input");
-    inp.type = "text";
-    inp.classList.add("fk-modal-input-sm", cls);
+    const inp = createEl("input", { type: "text", cls: ["fk-modal-input-sm", cls] });
     inp.placeholder = placeholder;
     inp.value = value;
     container.appendChild(inp);
     return inp;
   }
   iconBtn(container, label, disabled) {
-    const btn = activeDocument.createElement("button");
-    btn.classList.add("fk-modal-icon-btn");
-    btn.textContent = label;
+    const btn = createEl("button", { cls: "fk-modal-icon-btn", text: label });
     btn.disabled = disabled;
     container.appendChild(btn);
     return btn;
@@ -1282,8 +1182,7 @@ function getInsertBeforeId(clientY, col) {
 }
 function updateDropIndicator(col, insertBeforeId) {
   col.querySelectorAll(".fk-drop-indicator").forEach((el) => el.remove());
-  const indicator = activeDocument.createElement("div");
-  indicator.classList.add("fk-drop-indicator");
+  const indicator = createEl("div", { cls: "fk-drop-indicator" });
   const cardsEl = col.querySelector(".fk-column__cards");
   if (!cardsEl) return;
   if (insertBeforeId === null) {
@@ -1302,9 +1201,7 @@ function clearDropState(boardEl) {
 function showTransitionBlockedToast(from, to) {
   const existing = activeDocument.querySelector(".fk-toast");
   if (existing) existing.remove();
-  const toast = activeDocument.createElement("div");
-  toast.classList.add("fk-toast");
-  toast.textContent = `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} \u2192 ${to}' to the workflow.`;
+  const toast = createEl("div", { cls: "fk-toast", text: `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} \u2192 ${to}' to the workflow.` });
   activeDocument.body.appendChild(toast);
   window.setTimeout(() => {
     toast.classList.add("fk-toast--hiding");
@@ -1414,46 +1311,31 @@ function blockIndexFromContext(ctx, el) {
   return count;
 }
 function renderErrorPanel(container, errors, source, onGoToSource) {
-  const panel = activeDocument.createElement("div");
-  panel.classList.add("fk-error-panel");
+  const panel = createEl("div", { cls: "fk-error-panel" });
   for (const err of errors) {
-    const msg = activeDocument.createElement("p");
-    msg.classList.add("fk-error");
-    msg.textContent = err.message;
+    const msg = createEl("p", { cls: "fk-error", text: err.message });
     if (err.hint) {
-      const hint = activeDocument.createElement("span");
-      hint.classList.add("fk-error-panel__hint");
-      hint.textContent = ` \u2014 ${err.hint}`;
+      const hint = createEl("span", { cls: "fk-error-panel__hint", text: ` \u2014 ${err.hint}` });
       msg.appendChild(hint);
     }
     panel.appendChild(msg);
   }
-  const pre = activeDocument.createElement("pre");
-  pre.classList.add("fk-error-panel__source");
-  pre.textContent = source;
+  const pre = createEl("pre", { cls: "fk-error-panel__source", text: source });
   panel.appendChild(pre);
-  const btn = activeDocument.createElement("button");
-  btn.classList.add("fk-error-panel__goto");
-  btn.textContent = "Go to source";
+  const btn = createEl("button", { cls: "fk-error-panel__goto", text: "Go to source" });
   btn.addEventListener("click", onGoToSource);
   panel.appendChild(btn);
   container.appendChild(panel);
 }
 function renderWarningBanner(container, warnings) {
-  const banner = activeDocument.createElement("div");
-  banner.classList.add("fk-warning-banner");
-  const body = activeDocument.createElement("div");
-  body.classList.add("fk-warning-banner__body");
+  const banner = createEl("div", { cls: "fk-warning-banner" });
+  const body = createEl("div", { cls: "fk-warning-banner__body" });
   for (const w of warnings) {
-    const item = activeDocument.createElement("p");
-    item.classList.add("fk-warning-banner__item");
-    item.textContent = w.message;
+    const item = createEl("p", { cls: "fk-warning-banner__item", text: w.message });
     body.appendChild(item);
   }
   banner.appendChild(body);
-  const dismiss = activeDocument.createElement("button");
-  dismiss.classList.add("fk-warning-banner__dismiss");
-  dismiss.textContent = "\xD7";
+  const dismiss = createEl("button", { cls: "fk-warning-banner__dismiss", text: "\xD7" });
   dismiss.setAttribute("aria-label", "Dismiss warnings");
   dismiss.addEventListener("click", () => banner.remove());
   banner.appendChild(dismiss);
@@ -1473,19 +1355,17 @@ function registerPostProcessor(plugin) {
     const file = abstract instanceof import_obsidian3.TFile ? abstract : null;
     if (!file) {
       if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-      const boardWrapper2 = activeDocument.createElement("div");
+      const boardWrapper2 = createEl("div");
       el.appendChild(boardWrapper2);
       mountBoard(boardWrapper2, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
       return;
     }
     if (result.readonly) {
-      const banner = activeDocument.createElement("p");
-      banner.classList.add("fk-banner", "fk-banner--warning");
-      banner.textContent = (_a = result.readonlyReason) != null ? _a : "";
+      const banner = createEl("p", { cls: ["fk-banner", "fk-banner--warning"], text: (_a = result.readonlyReason) != null ? _a : "" });
       el.appendChild(banner);
     }
     if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-    const boardWrapper = activeDocument.createElement("div");
+    const boardWrapper = createEl("div");
     el.appendChild(boardWrapper);
     const blockIndex = blockIndexFromContext(ctx, el);
     const save = result.readonly ? () => Promise.resolve() : (b) => writeBack(plugin.app.vault, file, blockIndex, b);

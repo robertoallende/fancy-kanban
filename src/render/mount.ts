@@ -88,8 +88,7 @@ function getInsertBeforeId(clientY: number, col: HTMLElement): string | null {
 
 function updateDropIndicator(col: HTMLElement, insertBeforeId: string | null): void {
 	col.querySelectorAll('.fk-drop-indicator').forEach(el => el.remove());
-	const indicator = activeDocument.createElement('div');
-	indicator.classList.add('fk-drop-indicator');
+	const indicator = createEl('div', { cls: 'fk-drop-indicator' });
 	const cardsEl = col.querySelector('.fk-column__cards');
 	if (!cardsEl) return;
 	if (insertBeforeId === null) {
@@ -111,9 +110,7 @@ export function showTransitionBlockedToast(from: string, to: string): void {
 	const existing = activeDocument.querySelector('.fk-toast');
 	if (existing) existing.remove();
 
-	const toast = activeDocument.createElement('div');
-	toast.classList.add('fk-toast');
-	toast.textContent = `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.`;
+	const toast = createEl('div', { cls: 'fk-toast', text: `Cannot move from '${from}' to '${to}'. To allow this transition, add '${from} → ${to}' to the workflow.` });
 	activeDocument.body.appendChild(toast);
 
 	window.setTimeout(() => {

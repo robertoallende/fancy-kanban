@@ -21,16 +21,12 @@ export function effectiveCardFields(board: Board): string[] {
 }
 
 export function renderCard(card: Card, board: Board): HTMLElement {
-	const container = activeDocument.createElement('div');
-	container.classList.add('fk-card');
-	container.classList.add('fk-card--draggable');
+	const container = createEl('div', { cls: ['fk-card', 'fk-card--draggable'] });
 	container.dataset.cardId = card.id;
 
 	const titleFieldName = effectiveCardTitle(board);
 	if (titleFieldName !== null) {
-		const title = activeDocument.createElement('div');
-		title.classList.add('fk-card__title');
-		title.textContent = card.values[titleFieldName] ?? '';
+		const title = createEl('div', { cls: 'fk-card__title', text: card.values[titleFieldName] ?? '' });
 		container.appendChild(title);
 	}
 
@@ -39,39 +35,30 @@ export function renderCard(card: Card, board: Board): HTMLElement {
 		.filter((f): f is NonNullable<typeof f> => f !== undefined);
 
 	if (secondaryFields.length) {
-		const fieldsEl = activeDocument.createElement('div');
-		fieldsEl.classList.add('fk-card__fields');
+		const fieldsEl = createEl('div', { cls: 'fk-card__fields' });
 		const showLabels = board.viewConfig.cardLabels !== false;
 
 		for (const field of secondaryFields) {
 			const value = card.values[field.name] ?? '';
 			if (!value) continue;
 
-			const row = activeDocument.createElement('div');
-			row.classList.add('fk-card__field');
+			const row = createEl('div', { cls: 'fk-card__field' });
 
 			if (showLabels) {
-				const labelEl = activeDocument.createElement('span');
-				labelEl.classList.add('fk-card__field-label');
-				labelEl.textContent = field.label;
+				const labelEl = createEl('span', { cls: 'fk-card__field-label', text: field.label });
 				row.appendChild(labelEl);
 			}
 
 			if (field.type === 'Link') {
-				const linksEl = activeDocument.createElement('span');
-				linksEl.classList.add('fk-card__field-links');
+				const linksEl = createEl('span', { cls: 'fk-card__field-links' });
 				for (const item of splitLinks(value)) {
-					const span = activeDocument.createElement('span');
-					span.classList.add('fk-card__field-link');
+					const span = createEl('span', { cls: 'fk-card__field-link', text: item });
 					span.dataset.href = item;
-					span.textContent = item;
 					linksEl.appendChild(span);
 				}
 				row.appendChild(linksEl);
 			} else {
-				const valueEl = activeDocument.createElement('span');
-				valueEl.classList.add('fk-card__field-value');
-				valueEl.textContent = value;
+				const valueEl = createEl('span', { cls: 'fk-card__field-value', text: value });
 				row.appendChild(valueEl);
 			}
 

@@ -22,30 +22,21 @@ function renderErrorPanel(
 	source: string,
 	onGoToSource: () => void,
 ): void {
-	const panel = activeDocument.createElement('div');
-	panel.classList.add('fk-error-panel');
+	const panel = createEl('div', { cls: 'fk-error-panel' });
 
 	for (const err of errors) {
-		const msg = activeDocument.createElement('p');
-		msg.classList.add('fk-error');
-		msg.textContent = err.message;
+		const msg = createEl('p', { cls: 'fk-error', text: err.message });
 		if (err.hint) {
-			const hint = activeDocument.createElement('span');
-			hint.classList.add('fk-error-panel__hint');
-			hint.textContent = ` — ${err.hint}`;
+			const hint = createEl('span', { cls: 'fk-error-panel__hint', text: ` — ${err.hint}` });
 			msg.appendChild(hint);
 		}
 		panel.appendChild(msg);
 	}
 
-	const pre = activeDocument.createElement('pre');
-	pre.classList.add('fk-error-panel__source');
-	pre.textContent = source;
+	const pre = createEl('pre', { cls: 'fk-error-panel__source', text: source });
 	panel.appendChild(pre);
 
-	const btn = activeDocument.createElement('button');
-	btn.classList.add('fk-error-panel__goto');
-	btn.textContent = 'Go to source';
+	const btn = createEl('button', { cls: 'fk-error-panel__goto', text: 'Go to source' });
 	btn.addEventListener('click', onGoToSource);
 	panel.appendChild(btn);
 
@@ -53,22 +44,16 @@ function renderErrorPanel(
 }
 
 function renderWarningBanner(container: HTMLElement, warnings: ParseIssue[]): void {
-	const banner = activeDocument.createElement('div');
-	banner.classList.add('fk-warning-banner');
+	const banner = createEl('div', { cls: 'fk-warning-banner' });
 
-	const body = activeDocument.createElement('div');
-	body.classList.add('fk-warning-banner__body');
+	const body = createEl('div', { cls: 'fk-warning-banner__body' });
 	for (const w of warnings) {
-		const item = activeDocument.createElement('p');
-		item.classList.add('fk-warning-banner__item');
-		item.textContent = w.message;
+		const item = createEl('p', { cls: 'fk-warning-banner__item', text: w.message });
 		body.appendChild(item);
 	}
 	banner.appendChild(body);
 
-	const dismiss = activeDocument.createElement('button');
-	dismiss.classList.add('fk-warning-banner__dismiss');
-	dismiss.textContent = '×';
+	const dismiss = createEl('button', { cls: 'fk-warning-banner__dismiss', text: '×' });
 	dismiss.setAttribute('aria-label', 'Dismiss warnings');
 	dismiss.addEventListener('click', () => banner.remove());
 	banner.appendChild(dismiss);
@@ -91,22 +76,20 @@ export function registerPostProcessor(plugin: Plugin): void {
 
 		if (!file) {
 			if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-			const boardWrapper = activeDocument.createElement('div');
+			const boardWrapper = createEl('div');
 			el.appendChild(boardWrapper);
 			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
 			return;
 		}
 
 		if (result.readonly) {
-			const banner = activeDocument.createElement('p');
-			banner.classList.add('fk-banner', 'fk-banner--warning');
-			banner.textContent = result.readonlyReason ?? '';
+			const banner = createEl('p', { cls: ['fk-banner', 'fk-banner--warning'], text: result.readonlyReason ?? '' });
 			el.appendChild(banner);
 		}
 
 		if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
 
-		const boardWrapper = activeDocument.createElement('div');
+		const boardWrapper = createEl('div');
 		el.appendChild(boardWrapper);
 		const blockIndex = blockIndexFromContext(ctx, el);
 		const save = result.readonly
