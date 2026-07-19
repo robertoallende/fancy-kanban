@@ -1,11 +1,11 @@
-import type { Card, FieldDefinition } from '../model/board';
+import type { Board, Card } from '../model/board';
 import { renderCard } from './card';
 
 export function renderColumn(
 	name: string,
 	label: string,
 	cards: Card[],
-	fields: FieldDefinition[],
+	board: Board,
 ): HTMLElement {
 	const container = activeDocument.createElement('div');
 	container.classList.add('fk-column');
@@ -29,7 +29,7 @@ export function renderColumn(
 	cardsContainer.classList.add('fk-column__cards');
 
 	for (const card of cards) {
-		cardsContainer.appendChild(renderCard(card, fields));
+		cardsContainer.appendChild(renderCard(card, board));
 	}
 
 	const addBtn = activeDocument.createElement('button');

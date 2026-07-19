@@ -1,4 +1,4 @@
-import { App } from 'obsidian';
+import { App, Workspace } from 'obsidian';
 import type { Board } from '../model/board';
 import { renderBoard } from './board';
 import { reorderCard, deleteCard, createCard, updateCard } from '../model/mutations';
@@ -25,6 +25,18 @@ export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: Ap
 function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void, app?: App, sourcePath = ''): void {
 	boardEl.addEventListener('click', (e) => {
 		const target = e.target as HTMLElement;
+
+		const linkEl = target.closest<HTMLElement>('.fk-card__field-link');
+		if (linkEl) {
+			e.stopPropagation();
+			const href = linkEl.dataset.href ?? '';
+			if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(href)) {
+				window.open(href, '_blank');
+			} else if (app) {
+				void (app.workspace as Workspace).openLinkText(href, sourcePath, 'tab');
+			}
+			return;
+		}
 
 		const settingsBtn = target.closest<HTMLElement>('.fk-board__settings');
 		if (settingsBtn && app) {

@@ -33,7 +33,7 @@ export function renderBoard(board: Board): HTMLElement {
 	if (columnField?.options) {
 		for (const option of columnField.options) {
 			const cards = board.cards.filter(c => c.values[columnField.name] === option);
-			columnsContainer.appendChild(renderColumn(option, capitalise(option), cards, board.fields));
+			columnsContainer.appendChild(renderColumn(option, capitalise(option), cards, board));
 		}
 	}
 

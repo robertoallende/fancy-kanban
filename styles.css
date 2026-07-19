@@ -136,6 +136,46 @@
   font-weight: var(--font-normal);
 }
 
+.fk-card__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.fk-card__field {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: var(--font-smaller);
+}
+
+.fk-card__field-label {
+  opacity: var(--fk-opacity-field-label);
+  flex-shrink: 0;
+}
+
+.fk-card__field-value {
+  opacity: var(--fk-opacity-field-value);
+  word-break: break-word;
+}
+
+.fk-card__field-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+
+.fk-card__field-link {
+  cursor: pointer;
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+.fk-card__field-link:hover {
+  color: var(--link-color-hover);
+}
+
 
 .fk-board .fk-col__add-btn {
   width: 100%;
