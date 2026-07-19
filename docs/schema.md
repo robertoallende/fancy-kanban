@@ -29,7 +29,7 @@ fields:
   - name: start_date,  type: Date,     label: Start Date
   - name: notes,       type: Textarea, label: Notes
   - name: effort,      type: Number,   label: Effort
-  - name: docs,        type: File,     label: Docs
+  - name: docs,        type: Link,     label: Docs
   - name: team,        type: Select,   options: frontend|backend, label: Team
 lanes: team
 workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing, done→inbox
@@ -96,7 +96,7 @@ fields:
 | Property | Required | Description |
 |----------|----------|-------------|
 | `name` | yes | Internal identifier. Lowercase, underscores for spaces. |
-| `type` | yes | One of: `Text`, `Textarea`, `Date`, `Number`, `Select`, `File` |
+| `type` | yes | One of: `Text`, `Textarea`, `Date`, `Number`, `Select`, `Link` |
 | `label` | yes | Human-readable column header. Must match the markdown table header exactly. |
 | `options` | Select only | Pipe-separated (`\|`) list of allowed values |
 | `default` | no | Default value for new cards |
@@ -110,7 +110,7 @@ fields:
 | `Date` | `YYYY-MM-DD` | Calendar date |
 | `Number` | Integer or decimal string | Numeric value |
 | `Select` | One of the `options` values | Constrained choice |
-| `File` | Pipe-separated filenames (`a.md\|b.md`) | References to other `.md` files |
+| `Link` | `<br>`-separated list of paths or URIs | Vault-root-relative paths (`notes/doc.pdf`) or external URIs (`https://…`, `ftp://…`, `mailto:…`) |
 
 ### Special Field Names
 
@@ -246,3 +246,7 @@ workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing
 - The markdown table inside the block is valid markdown and readable in any text editor
 - The config section follows YAML conventions familiar to static site generators and note-taking apps
 - Removing the plugin leaves all data intact and recoverable
+
+## Deprecated Features
+
+See [docs/deprecations.md](deprecations.md) for the full list of deprecated field types and config keys, their replacements, and planned removal versions.
