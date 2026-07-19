@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 - TBD
+
+- Replaced DOM API calls with Obsidian helpers (`createEl`, `activeDocument`) to comply with plugin reviewer requirements
+- Replaced inline style assignments with CSS utility classes (`fk-hidden`, `fk-flex-1`)
+- Removed unnecessary type assertions flagged by the Obsidian linter
+- Added workflow transition toast: blocked moves now show an actionable message explaining which transition to add to the workflow
+- Added `scripts/lint-obsidian.mjs` to catch the above violations in CI before submission
+
 ## 0.3.0 - TBD
 
 - Link field: attach files and URLs to cards, with add/remove list UI and click-to-open navigation
