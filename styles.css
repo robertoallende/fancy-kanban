@@ -404,34 +404,34 @@
 .fk-link-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+.fk-link-field > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
 }
 
 .fk-link-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px;
-  background: var(--background-secondary);
-  border-radius: 4px;
+  gap: 2px;
 }
 
 .fk-link-item__value {
-  flex: 1;
-  font-size: var(--font-small);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   background: none;
   border: none;
   padding: 0;
   text-align: left;
   cursor: pointer;
   color: var(--link-color);
+  font-size: var(--font-small);
+  text-decoration: underline;
 }
 
 .fk-link-item__value:hover {
-  text-decoration: underline;
+  color: var(--link-color-hover);
 }
 
 .fk-link-item__remove {
