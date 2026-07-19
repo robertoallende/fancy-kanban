@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
+    "lint": "node scripts/lint-obsidian.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "build:coverage": "node esbuild.config.mjs coverage && node scripts/instrument.mjs",
     "test": "vitest run",
