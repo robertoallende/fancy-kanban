@@ -138,7 +138,7 @@ export class BoardConfigModal extends Modal {
 
 		const isSelect = field.type === 'Select';
 
-		const optionsInp = this.fixedInput(row, 'a, b, c', (field.options ?? []).join(', '), 'fk-col-options');
+		const optionsInp = this.fixedInput(row, 'a | b | c', (field.options ?? []).join(', '), 'fk-col-options');
 		optionsInp.disabled = !isSelect;
 		optionsInp.addEventListener('input', () => {
 			field.options = optionsInp.value.split(',').map(s => s.trim()).filter(Boolean);
