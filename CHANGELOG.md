@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 - 21/07/2026
+
+- Fixed promise-in-void-context warning: `loadIfDeferred()` return value is now explicitly discarded with `void` in the `forEach` callback
+
 ## 0.4.0 - 21/07/2026
 
 - Swapped Save and Delete button positions in the card editor modal — Save is now on the left, Delete on the right
