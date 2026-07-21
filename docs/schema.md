@@ -23,24 +23,24 @@ The block contains two sections separated by `---`:
 ---
 title: My Board
 fields:
-  - name: status,      type: Select,   options: inbox|doing|done, label: Status, default: inbox
   - name: title,       type: Text,     label: Title
+  - name: status,      type: Select,   options: inbox|doing|done, label: Status, default: inbox
   - name: responsible, type: Text,     label: Responsible
   - name: start_date,  type: Date,     label: Start Date
   - name: notes,       type: Textarea, label: Notes
   - name: effort,      type: Number,   label: Effort
   - name: docs,        type: Link,     label: Docs
   - name: team,        type: Select,   options: frontend|backend, label: Team
-card_fields: title, responsible, effort
+card_fields: responsible, effort
 lanes: team
 workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing, done→inbox
 ---
 
-| _id    | Status | Title          | Responsible | Start Date | Notes                      | Effort | Docs                  | Team     |
-|--------|--------|----------------|-------------|------------|----------------------------|--------|-----------------------|----------|
-| x7k2a1 | inbox  | Fix login bug  | Alice       | 2026-01-15 | Needs investigation        | 3      |                       | backend  |
-| m3p9b2 | doing  | Refactor auth  | Bob         |            | Multi-line\<br\>content here | 5      | design.md             | backend  |
-| q1r4c3 | done   | Setup CI       |             | 2026-01-01 |                            | 1      | setup.md\|guide.md    | frontend |
+| _id    | Title          | Status | Responsible | Start Date | Notes                      | Effort | Docs                  | Team     |
+|--------|----------------|--------|-------------|------------|----------------------------|--------|-----------------------|----------|
+| x7k2a1 | Fix login bug  | inbox  | Alice       | 2026-01-15 | Needs investigation        | 3      |                       | backend  |
+| m3p9b2 | Refactor auth  | doing  | Bob         |            | Multi-line\<br\>content here | 5      | design.md             | backend  |
+| q1r4c3 | Setup CI       | done   |             | 2026-01-01 |                            | 1      | setup.md\|guide.md    | frontend |
 ```
 ````
 
@@ -70,31 +70,46 @@ YAML-like key-value pairs. Parsed line-by-line.
 |-----|----------|---------|-------------|
 | `title` | yes | — | Human-readable board name |
 | `fields` | yes | — | List of field definitions (see below) |
-| `card_fields` | no | first non-column field | Ordered list of fields to display on card faces |
+| `version` | no | `1` | Format version written by the plugin; boards with a version higher than the current plugin supports open in read-only mode |
 | `workflow` | no | all transitions allowed | Comma-separated `from→to` pairs |
 | `lanes` | no | none | Field name to use as the swimlane grouping dimension |
+| `card_title` | no | auto-detect | Field name to use as the card heading; set to empty string to show no heading |
+| `card_fields` | no | none | Ordered comma-separated list of secondary fields to display below the card heading |
+| `card_labels` | no | `true` | Set to `false` to hide the label prefix on secondary card fields |
+
+### `card_title`
+
+```yaml
+card_title: summary
+```
+
+Controls which field is rendered as the card heading:
+
+- **Absent** (default): the first non-`_id`, non-column field is used automatically
+- **Set to a field name**: that field's value appears as the heading
+- **Set to empty string** (`card_title: `): no heading is shown; the card displays only secondary fields
 
 ### `card_fields`
 
 ```yaml
-card_fields: title, priority, due
+card_fields: priority, due, docs
 ```
 
-An ordered, comma-separated list of field names to display on each card face. The first entry is rendered as the card title; subsequent entries appear as labelled rows below the title.
+An ordered, comma-separated list of **secondary** field names to display below the card heading. These appear as labelled rows beneath the title.
 
-**Default behaviour**: when `card_fields` is absent or empty, only the first non-`_id`, non-column field is shown (typically the title field). Existing boards with no `card_fields` key are unaffected — they continue to show just the title.
+**Default behaviour**: when `card_fields` is absent the card shows only the heading field. Existing boards with no `card_fields` key are unaffected.
 
 **Unknown names**: field names that do not match any defined field are silently ignored at render time. Removing a field from `fields:` automatically hides it from the card face without a parse error.
 
 **Link fields**: when a `Link` field is included in `card_fields`, its items are rendered as a horizontal list of clickable links on the card face. Vault paths open in a new tab; external URIs open in the browser.
 
-**Example** with multiple card face fields:
+### `card_labels`
 
-```
-card_fields: title, priority, due, docs
+```yaml
+card_labels: false
 ```
 
-This shows the title prominently, then a `Priority` row, a `Due` row, and a `Docs` row with clickable link items beneath it.
+When set to `false`, the label prefix is omitted from secondary field rows on the card face — only the value is shown. Defaults to `true` (labels visible). The key is only written to the config when its value is `false`.
 
 ### `lanes`
 
@@ -111,9 +126,11 @@ Each entry in the `fields` list is a comma-separated set of `key: value` pairs o
 
 ```yaml
 fields:
-  - name: status, type: Select, options: inbox|doing|done, label: Status, default: inbox
   - name: title, type: Text, label: Title
+  - name: status, type: Select, options: inbox|doing|done, label: Status, default: inbox
 ```
+
+**Field ordering convention**: list `title` first, then `status`, then additional fields. The table column order in the data section mirrors the field definition order, and the auto-detected card heading resolves to the first non-`_id`, non-column field — so placing `title` first ensures predictable heading resolution without needing an explicit `card_title` key.
 
 ### Field Properties
 
@@ -140,10 +157,10 @@ fields:
 
 | Name | Role |
 |------|------|
+| `title` | **Primary display field.** Should be listed first in `fields:`. Used as the auto-detected card heading when `card_title` is not set. |
 | `status` | **Required. Kanban column field.** Must be `type: Select`. Cards are grouped into columns by this value. Column order follows `options` order. |
-| `title` | **Primary display field.** Shown as the card heading. If absent, the first `Text` field is used. |
 
-All other fields are secondary — displayed as card metadata.
+All other fields are secondary — displayed as card metadata when listed in `card_fields`.
 
 ## Item Identity
 
@@ -223,7 +240,7 @@ When writing: `|` → `\|`, any newline → `<br>`.
 1. Extract the raw string between the opening and closing fences of the `fancy-kanban` block
 2. Split on the first `---` line to locate the config section start
 3. Split on the second `---` line to separate config from table
-4. Parse config line-by-line: extract `title`, `fields`, `workflow`, `lanes`
+4. Parse config line-by-line: extract `title`, `version`, `fields`, `workflow`, `lanes`, `card_title`, `card_fields`, `card_labels`
 5. For `fields`, collect lines starting with `- ` and parse each as comma-separated `key: value` pairs
 6. Find table lines in the body (lines starting with `|`)
 7. First table line is the header row — extract column labels; `_id` is always first
@@ -254,13 +271,13 @@ When writing: `|` → `\|`, any newline → `<br>`.
 ---
 title: My Board
 fields:
-  - name: status, type: Select, options: inbox|doing|done, label: Status, default: inbox
   - name: title, type: Text, label: Title
+  - name: status, type: Select, options: inbox|doing|done, label: Status, default: inbox
 workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing, done→inbox
 ---
 
-| _id | Status | Title |
-|-----|--------|-------|
+| _id | Title | Status |
+|-----|-------|--------|
 ```
 ```
 

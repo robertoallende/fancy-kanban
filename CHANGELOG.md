@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 - 21/07/2026
+
+- Swapped Save and Delete button positions in the card editor modal — Save is now on the left, Delete on the right
+- Updated `docs/schema.md`: documented `version`, `card_title`, `card_labels` config keys; corrected `card_fields` description (secondary fields only); reordered all examples to list `title` before `status`; added field ordering convention
+- Fixed standalone board view not rendering on Obsidian startup or tab restore: deferred leaves now materialize via `onLayoutReady`, and the view persists the open file path across sessions via `getState`/`setState`
+
 ## 0.3.4 - 20/07/2026
 
 - Replaced `createEl('div', ...)` and `createEl('span', ...)` calls with the `createDiv()` and `createSpan()` shorthand helpers required by the Obsidian reviewer `prefer-create-el` rule

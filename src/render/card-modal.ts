@@ -46,14 +46,6 @@ export class CardModal extends Modal {
 
 		const footer = contentEl.createDiv({ cls: 'fk-modal-footer' });
 
-		if (this.onDelete) {
-			const deleteBtn = footer.createEl('button', { cls: 'fk-modal-delete', text: 'Delete' });
-			deleteBtn.addEventListener('click', () => {
-				this.onDelete!();
-				this.close();
-			});
-		}
-
 		const saveBtn = footer.createEl('button', { cls: 'fk-modal-save', text: 'Save' });
 		saveBtn.addEventListener('click', () => {
 			const values = { ...this.values };
@@ -61,6 +53,14 @@ export class CardModal extends Modal {
 			this.containerEl?.remove();
 			this.onConfirm(values);
 		});
+
+		if (this.onDelete) {
+			const deleteBtn = footer.createEl('button', { cls: 'fk-modal-delete', text: 'Delete' });
+			deleteBtn.addEventListener('click', () => {
+				this.onDelete!();
+				this.close();
+			});
+		}
 
 		contentEl.querySelector<HTMLElement>('input, textarea, select')?.focus();
 	}
