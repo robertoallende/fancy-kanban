@@ -23,7 +23,7 @@ export default class FancyKanbanPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.getLeavesOfType(VIEW_TYPE_FANCY_KANBAN)
-				.forEach(leaf => leaf.loadIfDeferred());
+				.forEach(leaf => { void leaf.loadIfDeferred(); });
 		});
 
 		registerPostProcessor(this);

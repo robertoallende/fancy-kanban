@@ -1361,7 +1361,9 @@ var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
     registerIcon();
     this.registerView(VIEW_TYPE_FANCY_KANBAN, (leaf) => new FancyKanbanView(leaf));
     this.app.workspace.onLayoutReady(() => {
-      this.app.workspace.getLeavesOfType(VIEW_TYPE_FANCY_KANBAN).forEach((leaf) => leaf.loadIfDeferred());
+      this.app.workspace.getLeavesOfType(VIEW_TYPE_FANCY_KANBAN).forEach((leaf) => {
+        void leaf.loadIfDeferred();
+      });
     });
     registerPostProcessor(this);
     this.addRibbonIcon(FANCY_KANBAN_ICON, "New Fancy Kanban board", () => {
