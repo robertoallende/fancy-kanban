@@ -1,4 +1,5 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { ItemView, TFile, WorkspaceLeaf } from 'obsidian';
+import type { ViewStateResult } from 'obsidian';
 import { parseBlock } from '../data/parser';
 import { locateBlock } from './write-back';
 import writeBack from './write-back';
@@ -20,6 +21,7 @@ fields:
 
 export class FancyKanbanView extends ItemView {
 	private boardTitle = 'Fancy Kanban';
+	private filePath = '';
 
 	constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
@@ -37,22 +39,34 @@ export class FancyKanbanView extends ItemView {
 		return 'layout-kanban';
 	}
 
+	getState(): Record<string, unknown> {
+		return { filePath: this.filePath };
+	}
+
+	async setState(state: Record<string, unknown>, result: ViewStateResult): Promise<void> {
+		if (typeof state.filePath === 'string') this.filePath = state.filePath;
+		await super.setState(state, result);
+	}
+
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		const file = this.app.workspace.getActiveFile();
+		const path = this.filePath || this.app.workspace.getActiveFile()?.path || '';
+		const abstract = path ? this.app.vault.getAbstractFileByPath(path) : null;
+		const file = abstract instanceof TFile ? abstract : null;
+
 		if (!file) {
-			const err = contentEl.createEl('p', { cls: 'fk-error' });
-			err.textContent = 'No file is open.';
+			contentEl.createEl('p', { cls: 'fk-error', text: 'No file is open.' });
 			return;
 		}
+
+		this.filePath = file.path;
 
 		const content = await this.app.vault.read(file);
 		const location = locateBlock(content, 0);
 		if (!location) {
-			const err = contentEl.createEl('p', { cls: 'fk-error' });
-			err.textContent = 'No fancy-kanban block found in this file.';
+			contentEl.createEl('p', { cls: 'fk-error', text: 'No fancy-kanban block found in this file.' });
 			return;
 		}
 
@@ -61,8 +75,7 @@ export class FancyKanbanView extends ItemView {
 		const result = parseBlock(inner);
 
 		if (!result.ok) {
-			const err = contentEl.createEl('p', { cls: 'fk-error' });
-			err.textContent = result.errors.map(e => e.message).join('; ');
+			contentEl.createEl('p', { cls: 'fk-error', text: result.errors.map(e => e.message).join('; ') });
 			return;
 		}
 

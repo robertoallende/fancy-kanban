@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 import { FancyKanbanView, VIEW_TYPE_FANCY_KANBAN, BOARD_TEMPLATE } from '../../src/integration/standalone-view';
+import { TFile } from 'obsidian';
 
 const VALID_FILE_CONTENT = `\`\`\`fancy-kanban
 ---
@@ -19,11 +20,16 @@ fields:
 const INVALID_FILE_CONTENT = 'just a regular note';
 
 function makeLeaf(fileContent: string | null = VALID_FILE_CONTENT) {
-	const mockFile = fileContent !== null ? { path: 'board.md', name: 'board.md' } : null;
+	let mockFile: TFile | null = null;
+	if (fileContent !== null) {
+		mockFile = new TFile();
+		mockFile.path = 'board.md';
+	}
 
 	const vault = {
 		read: vi.fn().mockResolvedValue(fileContent ?? ''),
 		process: vi.fn((_f: unknown, fn: (c: string) => string) => Promise.resolve(fn(fileContent ?? ''))),
+		getAbstractFileByPath: vi.fn().mockReturnValue(mockFile),
 	};
 
 	const workspace = {

@@ -566,13 +566,6 @@ var CardModal = class extends import_obsidian.Modal {
       this.renderField(contentEl, field, field.name === columnField && !this.card ? this.columnValue : void 0);
     }
     const footer = contentEl.createDiv({ cls: "fk-modal-footer" });
-    if (this.onDelete) {
-      const deleteBtn = footer.createEl("button", { cls: "fk-modal-delete", text: "Delete" });
-      deleteBtn.addEventListener("click", () => {
-        this.onDelete();
-        this.close();
-      });
-    }
     const saveBtn = footer.createEl("button", { cls: "fk-modal-save", text: "Save" });
     saveBtn.addEventListener("click", () => {
       var _a2;
@@ -581,6 +574,13 @@ var CardModal = class extends import_obsidian.Modal {
       (_a2 = this.containerEl) == null ? void 0 : _a2.remove();
       this.onConfirm(values);
     });
+    if (this.onDelete) {
+      const deleteBtn = footer.createEl("button", { cls: "fk-modal-delete", text: "Delete" });
+      deleteBtn.addEventListener("click", () => {
+        this.onDelete();
+        this.close();
+      });
+    }
     (_a = contentEl.querySelector("input, textarea, select")) == null ? void 0 : _a.focus();
   }
   renderField(container, field, initialOverride) {
@@ -1293,6 +1293,7 @@ var FancyKanbanView = class extends import_obsidian4.ItemView {
   constructor(leaf) {
     super(leaf);
     this.boardTitle = "Fancy Kanban";
+    this.filePath = "";
   }
   getViewType() {
     return VIEW_TYPE_FANCY_KANBAN;
@@ -1303,28 +1304,36 @@ var FancyKanbanView = class extends import_obsidian4.ItemView {
   getIcon() {
     return "layout-kanban";
   }
+  getState() {
+    return { filePath: this.filePath };
+  }
+  async setState(state, result) {
+    if (typeof state.filePath === "string") this.filePath = state.filePath;
+    await super.setState(state, result);
+  }
   async onOpen() {
+    var _a;
     const { contentEl } = this;
     contentEl.empty();
-    const file = this.app.workspace.getActiveFile();
+    const path = this.filePath || ((_a = this.app.workspace.getActiveFile()) == null ? void 0 : _a.path) || "";
+    const abstract = path ? this.app.vault.getAbstractFileByPath(path) : null;
+    const file = abstract instanceof import_obsidian4.TFile ? abstract : null;
     if (!file) {
-      const err = contentEl.createEl("p", { cls: "fk-error" });
-      err.textContent = "No file is open.";
+      contentEl.createEl("p", { cls: "fk-error", text: "No file is open." });
       return;
     }
+    this.filePath = file.path;
     const content = await this.app.vault.read(file);
     const location = locateBlock(content, 0);
     if (!location) {
-      const err = contentEl.createEl("p", { cls: "fk-error" });
-      err.textContent = "No fancy-kanban block found in this file.";
+      contentEl.createEl("p", { cls: "fk-error", text: "No fancy-kanban block found in this file." });
       return;
     }
     const blockText = content.slice(location.start, location.end);
     const inner = blockText.replace(/^```fancy-kanban\n/, "").replace(/\n```$/, "");
     const result = parseBlock(inner);
     if (!result.ok) {
-      const err = contentEl.createEl("p", { cls: "fk-error" });
-      err.textContent = result.errors.map((e) => e.message).join("; ");
+      contentEl.createEl("p", { cls: "fk-error", text: result.errors.map((e) => e.message).join("; ") });
       return;
     }
     this.boardTitle = result.board.title;
@@ -1351,6 +1360,9 @@ var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
   async onload() {
     registerIcon();
     this.registerView(VIEW_TYPE_FANCY_KANBAN, (leaf) => new FancyKanbanView(leaf));
+    this.app.workspace.onLayoutReady(() => {
+      this.app.workspace.getLeavesOfType(VIEW_TYPE_FANCY_KANBAN).forEach((leaf) => leaf.loadIfDeferred());
+    });
     registerPostProcessor(this);
     this.addRibbonIcon(FANCY_KANBAN_ICON, "New Fancy Kanban board", () => {
       this.newBoard();

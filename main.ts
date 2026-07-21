@@ -21,6 +21,11 @@ export default class FancyKanbanPlugin extends Plugin {
 		registerIcon();
 		this.registerView(VIEW_TYPE_FANCY_KANBAN, (leaf) => new FancyKanbanView(leaf));
 
+		this.app.workspace.onLayoutReady(() => {
+			this.app.workspace.getLeavesOfType(VIEW_TYPE_FANCY_KANBAN)
+				.forEach(leaf => leaf.loadIfDeferred());
+		});
+
 		registerPostProcessor(this);
 
 		this.addRibbonIcon(FANCY_KANBAN_ICON, 'New Fancy Kanban board', () => {
