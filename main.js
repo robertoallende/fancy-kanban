@@ -739,7 +739,7 @@ var CardModal = class extends import_obsidian.Modal {
 // src/render/board-config-modal.ts
 var import_obsidian2 = require("obsidian");
 function deriveFieldName(label) {
-  return label.toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return label.toLowerCase().trim().replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "");
 }
 var FIELD_TYPES = ["Text", "Textarea", "Date", "Number", "Select", "Link"];
 var DEFAULT_SCHEMA = {

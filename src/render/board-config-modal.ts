@@ -2,7 +2,7 @@ import { App, Modal } from 'obsidian';
 import type { BoardSchema, FieldDefinition, FieldType } from '../model/board';
 
 function deriveFieldName(label: string): string {
-	return label.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+	return label.toLowerCase().trim().replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '');
 }
 
 const FIELD_TYPES: FieldType[] = ['Text', 'Textarea', 'Date', 'Number', 'Select', 'Link'];
