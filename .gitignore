@@ -1,6 +1,6 @@
 # Build output
 *.js.map
-specs/ 
+/specs/
 
 # Test coverage
 coverage/
