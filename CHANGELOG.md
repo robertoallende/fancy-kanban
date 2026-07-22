@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 - 22/07/2026
+
+- Fixed renaming a column (status option) via board settings causing all cards in that column to disappear — cards are now migrated to the new option name on save
+
 ## 0.4.1 - 21/07/2026
 
 - Fixed promise-in-void-context warning: `loadIfDeferred()` return value is now explicitly discarded with `void` in the `forEach` callback
