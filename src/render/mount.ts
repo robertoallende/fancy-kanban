@@ -5,7 +5,7 @@ import { reorderCard, deleteCard, createCard, updateCard } from '../model/mutati
 import { parseWorkflow, isTransitionAllowed } from '../data/workflow';
 import { CardModal } from './card-modal';
 import { BoardConfigModal } from './board-config-modal';
-import { reconcileCards } from '../data/schema';
+import { reconcileCards, migrateSelectRenames } from '../data/schema';
 
 export type SaveFn = (board: Board) => Promise<void>;
 
@@ -40,7 +40,8 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 		const settingsBtn = target.closest<HTMLElement>('.fk-board__settings');
 		if (settingsBtn && app) {
 			new BoardConfigModal(app, board, (schema) => {
-				const reconciledCards = reconcileCards(schema.fields, board.cards);
+				const migrated = migrateSelectRenames(board.fields, schema.fields, board.cards);
+				const reconciledCards = reconcileCards(schema.fields, migrated);
 				dispatch({ ...schema, cards: reconciledCards });
 			}).open();
 			return;

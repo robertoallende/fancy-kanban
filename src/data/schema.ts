@@ -113,3 +113,41 @@ export function reconcileCards(fields: FieldDefinition[], cards: Card[]): Card[]
 		return { ...card, values };
 	});
 }
+
+// When a Select field's options are renamed (same count, different values), migrate
+// card values at each position from the old option name to the new one.
+export function migrateSelectRenames(
+	oldFields: FieldDefinition[],
+	newFields: FieldDefinition[],
+	cards: Card[],
+): Card[] {
+	const renameMaps: Record<string, Record<string, string>> = {};
+
+	for (const newField of newFields) {
+		if (newField.type !== 'Select') continue;
+		const oldField = oldFields.find(f => f.name === newField.name);
+		if (!oldField?.options || !newField.options) continue;
+		if (oldField.options.length !== newField.options.length) continue;
+
+		const map: Record<string, string> = {};
+		for (let i = 0; i < oldField.options.length; i++) {
+			if (oldField.options[i] !== newField.options[i]) {
+				map[oldField.options[i]] = newField.options[i];
+			}
+		}
+		if (Object.keys(map).length > 0) renameMaps[newField.name] = map;
+	}
+
+	if (Object.keys(renameMaps).length === 0) return cards;
+
+	return cards.map(card => {
+		const values = { ...card.values };
+		for (const [fieldName, map] of Object.entries(renameMaps)) {
+			const current = values[fieldName];
+			if (current !== undefined && map[current] !== undefined) {
+				values[fieldName] = map[current];
+			}
+		}
+		return { ...card, values };
+	});
+}

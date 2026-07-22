@@ -129,6 +129,33 @@ function reconcileCards(fields, cards) {
     return { ...card, values };
   });
 }
+function migrateSelectRenames(oldFields, newFields, cards) {
+  const renameMaps = {};
+  for (const newField of newFields) {
+    if (newField.type !== "Select") continue;
+    const oldField = oldFields.find((f) => f.name === newField.name);
+    if (!(oldField == null ? void 0 : oldField.options) || !newField.options) continue;
+    if (oldField.options.length !== newField.options.length) continue;
+    const map = {};
+    for (let i = 0; i < oldField.options.length; i++) {
+      if (oldField.options[i] !== newField.options[i]) {
+        map[oldField.options[i]] = newField.options[i];
+      }
+    }
+    if (Object.keys(map).length > 0) renameMaps[newField.name] = map;
+  }
+  if (Object.keys(renameMaps).length === 0) return cards;
+  return cards.map((card) => {
+    const values = { ...card.values };
+    for (const [fieldName, map] of Object.entries(renameMaps)) {
+      const current = values[fieldName];
+      if (current !== void 0 && map[current] !== void 0) {
+        values[fieldName] = map[current];
+      }
+    }
+    return { ...card, values };
+  });
+}
 
 // src/data/parser.ts
 var E_NO_DELIMITERS = "E_NO_DELIMITERS";
@@ -1067,7 +1094,8 @@ function attachCardActions(boardEl, board, dispatch, app, sourcePath = "") {
     const settingsBtn = target.closest(".fk-board__settings");
     if (settingsBtn && app) {
       new BoardConfigModal(app, board, (schema) => {
-        const reconciledCards = reconcileCards(schema.fields, board.cards);
+        const migrated = migrateSelectRenames(board.fields, schema.fields, board.cards);
+        const reconciledCards = reconcileCards(schema.fields, migrated);
         dispatch({ ...schema, cards: reconciledCards });
       }).open();
       return;

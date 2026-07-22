@@ -93,6 +93,29 @@ describe('Rename column', function () {
         expect(titles).toContain('Done');
     });
 
+    it('cards in the renamed column are preserved after rename', async function () {
+        await openSettingsModal();
+        await renameColumn('todo', 'backlog');
+
+        const backlogCount = await browser.execute(() => {
+            const columns = Array.from(document.querySelectorAll('.fk-column'));
+            const backlog = columns.find(col =>
+                col.querySelector('.fk-column__title')?.textContent === 'Backlog'
+            );
+            return backlog?.querySelectorAll('.fk-card').length ?? 0;
+        });
+        expect(backlogCount).toBe(2);
+    });
+
+    it('card values are migrated to the new option name in the file', async function () {
+        await openSettingsModal();
+        await renameColumn('todo', 'backlog');
+
+        const content = await readBoardFile();
+        expect(content).toContain('backlog');
+        expect(content).not.toMatch(/\| todo \|/);
+    });
+
     it('renaming a column persists the new option to the file', async function () {
         await openSettingsModal();
         await renameColumn('todo', 'backlog');
