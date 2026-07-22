@@ -17,7 +17,7 @@ card_fields: language
 | --- | --- | --- | --- |
 | ru1 | Мастер и Маргарита | done | Russian |
 | ru2 | Преступление и наказание | reading | Russian |
-| ru3 | Война и мир | want-to-read | Russian |
+| ru3 | Война и мир asdf | want-to-read | Russian |
 | ja1 | 雪国 | done | Japanese |
 | ja2 | ノルウェイの森 | reading | Japanese |
 | ja3 | 斜陽 | want-to-read | Japanese |
@@ -27,4 +27,5 @@ card_fields: language
 | ko1 | 채식주의자 | done | Korean |
 | ko2 | 82년생 김지영 | reading | Korean |
 | ko3 | 아몬드 | want-to-read | Korean |
+| kfebabpa | Война | want-to-read | Russian |
 ```
