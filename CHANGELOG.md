@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3 - 22/07/2026
+
+- Fixed non-Latin field labels (Cyrillic, CJK, Hangul, Arabic, etc.) collapsing to an empty name when added via the board settings modal — `deriveFieldName` now uses Unicode property escapes (`\p{L}\p{N}`) instead of the ASCII-only `[a-z0-9]` character class
+- Added multilingual sample board (`samples/multilingual.md`) with cards in Russian, Japanese, Chinese, and Korean
+
 ## 0.4.2 - 22/07/2026
 
 - Fixed renaming a column (status option) via board settings causing all cards in that column to disappear — cards are now migrated to the new option name on save

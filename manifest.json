@@ -1,7 +1,7 @@
 {
   "id": "fancy-kanban",
   "name": "Fancy Kanban",
-  "version": "0.5.0",
+  "version": "0.4.3",
   "minAppVersion": "1.7.2",
   "description": "Embeddable kanban boards in any note, with native swimlanes and a relational field model.",
   "author": "Roberto Allende",
