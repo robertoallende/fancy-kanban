@@ -563,9 +563,8 @@
 
 .fk-card__checkbox {
   flex-shrink: 0;
-  margin: 0;
-  margin-top: 2px;
   cursor: pointer;
+  transform: translateY(2px);
 }
 
 .fk-card__checklist-text {
