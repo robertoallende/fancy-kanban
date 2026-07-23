@@ -15,7 +15,8 @@ export function parseChecklistValue(value: string): ChecklistLine[] {
 
 export function toggleCheckboxLine(value: string, lineIndex: number, checked: boolean): string {
 	const lines = value.split('\n');
-	const line = lines[lineIndex] ?? '';
+	if (lineIndex < 0 || lineIndex >= lines.length) return value;
+	const line = lines[lineIndex];
 	lines[lineIndex] = checked
 		? line.replace(/^- \[ \]/, '- [x]')
 		: line.replace(/^- \[x\]/, '- [ ]');
