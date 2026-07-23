@@ -43,6 +43,8 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 	boardEl.addEventListener('click', (e) => {
 		const target = e.target as HTMLElement;
 
+		if (target.closest('.fk-card__checklist-item')) return;
+
 		const linkEl = target.closest<HTMLElement>('.fk-card__field-link');
 		if (linkEl) {
 			e.stopPropagation();
