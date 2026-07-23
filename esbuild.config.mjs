@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import { builtinModules } from "module";
+import { copyFileSync, existsSync } from "fs";
 
 const prod = process.argv[2] === 'production';
 const cov  = process.argv[2] === 'coverage';
@@ -32,8 +33,17 @@ const context = await esbuild.context({
   outfile: "main.js",
 });
 
+const PLUGIN_DIR = ".obsidian/plugins/fancy-kanban";
+
+function syncToVault() {
+  if (!existsSync(PLUGIN_DIR)) return;
+  copyFileSync("main.js", `${PLUGIN_DIR}/main.js`);
+  copyFileSync("styles.css", `${PLUGIN_DIR}/styles.css`);
+}
+
 if (prod || cov) {
   await context.rebuild();
+  syncToVault();
   process.exit(0);
 } else {
   await context.watch();
