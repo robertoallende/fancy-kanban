@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 - 23/07/2026
+
+- Removed the `File` field type — boards using `type: File` now fail to parse with an explicit error message; migrate to `Link` fields which have supported file attachments since 0.3.0
+- Added checklist support for `Textarea` fields: lines beginning with `- [ ]` or `- [x]` render as interactive checkboxes directly on the card face; toggling a checkbox persists the updated state to the board file; plain-text lines within the same field render as non-interactive text
+
 ## 0.4.3 - 22/07/2026
 
 - Fixed non-Latin field labels (Cyrillic, CJK, Hangul, Arabic, etc.) collapsing to an empty name when added via the board settings modal — `deriveFieldName` now uses Unicode property escapes (`\p{L}\p{N}`) instead of the ASCII-only `[a-z0-9]` character class
