@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 - 24/07/2026
+
+- Fixed checklist checkboxes not rendering in real vaults: build output (`main.js`, `styles.css`) is now automatically copied to `.obsidian/plugins/fancy-kanban/` after every production build
+- Fixed card editor modal opening when clicking a checklist checkbox
+- Fixed checklist checkbox vertical alignment with label text
+
 ## 0.5.0 - 23/07/2026
 
 - Removed the `File` field type — boards using `type: File` now fail to parse with an explicit error message; migrate to `Link` fields which have supported file attachments since 0.3.0
