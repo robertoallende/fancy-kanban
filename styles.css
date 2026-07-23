@@ -556,7 +556,7 @@
 
 .fk-card__checklist-item {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 5px;
   cursor: pointer;
 }
