@@ -32,8 +32,9 @@ var SUPPORTED_VERSION = 2;
 
 // src/data/deprecations.ts
 var W_FIELD_TYPE_DEPRECATED = "W_FIELD_TYPE_DEPRECATED";
-var DEPRECATED_FIELD_TYPES = {
-  File: { replacement: "Link", removeAt: "0.5.0" }
+var DEPRECATED_FIELD_TYPES = {};
+var REMOVED_FIELD_TYPES = {
+  File: "Field type 'File' was removed in 0.5.0. Replace 'type: File' with 'type: Link' in your board config."
 };
 
 // src/data/schema.ts
@@ -98,6 +99,8 @@ function parseFieldLine(line) {
   if (!kvs["name"]) throw new Error(`Field definition missing 'name': ${line}`);
   if (!kvs["type"]) throw new Error(`Field definition missing 'type': ${line}`);
   const rawType = kvs["type"];
+  const removed = REMOVED_FIELD_TYPES[rawType];
+  if (removed) throw new Error(removed);
   const deprecation = DEPRECATED_FIELD_TYPES[rawType];
   const type = deprecation ? deprecation.replacement : rawType;
   const warning = deprecation ? {

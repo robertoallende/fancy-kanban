@@ -1,5 +1,5 @@
 import type { BoardSchema, Card, FieldDefinition, FieldType } from '../model/board';
-import { DEPRECATED_FIELD_TYPES, W_FIELD_TYPE_DEPRECATED } from './deprecations';
+import { DEPRECATED_FIELD_TYPES, REMOVED_FIELD_TYPES, W_FIELD_TYPE_DEPRECATED } from './deprecations';
 
 type ConfigWarning = { code: string; message: string; hint?: string };
 
@@ -76,6 +76,8 @@ function parseFieldLine(line: string): { field: FieldDefinition; warning?: Confi
 	if (!kvs['type']) throw new Error(`Field definition missing 'type': ${line}`);
 
 	const rawType = kvs['type'];
+	const removed = REMOVED_FIELD_TYPES[rawType];
+	if (removed) throw new Error(removed);
 	const deprecation = DEPRECATED_FIELD_TYPES[rawType];
 	const type: FieldType = deprecation ? (deprecation.replacement as FieldType) : (rawType as FieldType);
 	const warning: ConfigWarning | undefined = deprecation ? {

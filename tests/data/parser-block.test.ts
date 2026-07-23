@@ -25,7 +25,7 @@ fields:
   - name: start_date,  type: Date,     label: Start Date
   - name: notes,       type: Textarea, label: Notes
   - name: effort,      type: Number,   label: Effort
-  - name: docs,        type: File,     label: Docs
+  - name: docs,        type: Link,     label: Docs
   - name: team,        type: Select,   options: frontend|backend, label: Team
 lanes: team
 workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing, done→inbox
@@ -64,7 +64,7 @@ describe('parseBlock', () => {
 			expect(result.board.cards).toHaveLength(0);
 		});
 
-		it('parses all six field types from the full block, coercing File to Link', () => {
+		it('parses all six field types from the full block', () => {
 			const result = parseBlock(FULL_BLOCK);
 			if (!result.ok) throw new Error(result.errors[0].message);
 			const types = result.board.fields.map(f => f.type);
@@ -74,7 +74,6 @@ describe('parseBlock', () => {
 			expect(types).toContain('Textarea');
 			expect(types).toContain('Number');
 			expect(types).toContain('Link');
-			expect(types).not.toContain('File');
 		});
 
 		it('parses all three data rows from the full block', () => {

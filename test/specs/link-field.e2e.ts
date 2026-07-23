@@ -166,30 +166,30 @@ describe('Link field', function () {
         });
     });
 
-    describe('deprecation warning', function () {
+    describe('File type removed', function () {
         beforeEach(async function () {
             await openInPreview('file-deprecated-board.md');
         });
 
-        it('renders a warning banner for type: File', async function () {
-            const banner = await $('.fk-warning-banner');
-            await banner.waitForExist({ timeout: 5000 });
-            expect(await banner.isExisting()).toBe(true);
+        it('renders an error panel for type: File', async function () {
+            const panel = await $('.fk-error-panel');
+            await panel.waitForExist({ timeout: 5000 });
+            expect(await panel.isExisting()).toBe(true);
         });
 
-        it('warning banner mentions File and Link', async function () {
-            const banner = await $('.fk-warning-banner');
-            await banner.waitForExist({ timeout: 5000 });
-            const text = await banner.getText();
+        it('error panel mentions File and Link', async function () {
+            const panel = await $('.fk-error-panel');
+            await panel.waitForExist({ timeout: 5000 });
+            const text = await panel.getText();
             expect(text).toContain('File');
             expect(text).toContain('Link');
         });
 
-        it('still renders the board despite the deprecation warning', async function () {
-            const banner = await $('.fk-warning-banner');
-            await banner.waitForExist({ timeout: 5000 });
+        it('does not render the board for type: File', async function () {
+            const panel = await $('.fk-error-panel');
+            await panel.waitForExist({ timeout: 5000 });
             const board = await $('.fk-board');
-            expect(await board.isExisting()).toBe(true);
+            expect(await board.isExisting()).toBe(false);
         });
     });
 });

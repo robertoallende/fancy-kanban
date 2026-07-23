@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { parseConfig, reconcileCards } from '../../src/data/schema';
-import { W_FIELD_TYPE_DEPRECATED } from '../../src/data/deprecations';
 import type { Card } from '../../src/model/board';
 
 const FULL_CONFIG = `
@@ -12,7 +11,7 @@ fields:
   - name: start_date,  type: Date,     label: Start Date
   - name: notes,       type: Textarea, label: Notes
   - name: effort,      type: Number,   label: Effort
-  - name: docs,        type: File,     label: Docs
+  - name: docs,        type: Link,     label: Docs
   - name: team,        type: Select,   options: frontend|backend, label: Team
 lanes: team
 workflow: inbox→doing, inbox→done, doing→done, doing→inbox, done→doing, done→inbox
@@ -24,7 +23,7 @@ describe('parseConfig', () => {
 		expect(result.title).toBe('My Board');
 	});
 
-	it('parses all six field types, coercing deprecated File to Link', () => {
+	it('parses all six field types including Link', () => {
 		const result = parseConfig(FULL_CONFIG);
 		const types = result.fields.map(f => f.type);
 		expect(types).toContain('Select');
@@ -33,16 +32,16 @@ describe('parseConfig', () => {
 		expect(types).toContain('Textarea');
 		expect(types).toContain('Number');
 		expect(types).toContain('Link');
-		expect(types).not.toContain('File');
 	});
 
-	it('emits W_FIELD_TYPE_DEPRECATED warning for type: File', () => {
-		const result = parseConfig(FULL_CONFIG);
-		expect(result.warnings).toHaveLength(1);
-		expect(result.warnings[0].code).toBe(W_FIELD_TYPE_DEPRECATED);
-		expect(result.warnings[0].message).toContain('File');
-		expect(result.warnings[0].message).toContain('Link');
-		expect(result.warnings[0].hint).toBeDefined();
+	it('throws for removed type: File', () => {
+		const config = `
+title: Board
+fields:
+  - name: status, type: Select, options: todo|done, label: Status
+  - name: docs, type: File, label: Docs
+`.trim();
+		expect(() => parseConfig(config)).toThrow(/File.*removed|removed.*File/i);
 	});
 
 	it('emits no warnings for a config with no deprecated types', () => {
