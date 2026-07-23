@@ -6,6 +6,7 @@ import { parseWorkflow, isTransitionAllowed } from '../data/workflow';
 import { CardModal } from './card-modal';
 import { BoardConfigModal } from './board-config-modal';
 import { reconcileCards, migrateSelectRenames } from '../data/schema';
+import { toggleCheckboxLine } from './card';
 
 export type SaveFn = (board: Board) => Promise<void>;
 
@@ -22,6 +23,23 @@ export function mountBoard(el: HTMLElement, board: Board, save: SaveFn, app?: Ap
 }
 
 function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Board) => void, app?: App, sourcePath = ''): void {
+	boardEl.addEventListener('change', (e) => {
+		const checkbox = (e.target as HTMLElement).closest<HTMLInputElement>('.fk-card__checkbox');
+		if (!checkbox) return;
+		e.stopPropagation();
+
+		const cardEl = checkbox.closest<HTMLElement>('.fk-card');
+		const cardId = cardEl?.dataset.cardId ?? '';
+		const fieldName = checkbox.dataset.field ?? '';
+		const lineIndex = parseInt(checkbox.dataset.lineIndex ?? '0', 10);
+
+		const card = board.cards.find(c => c.id === cardId);
+		if (!card || !fieldName) return;
+
+		const newValue = toggleCheckboxLine(card.values[fieldName] ?? '', lineIndex, checkbox.checked);
+		dispatch(updateCard(board, cardId, { [fieldName]: newValue }));
+	});
+
 	boardEl.addEventListener('click', (e) => {
 		const target = e.target as HTMLElement;
 

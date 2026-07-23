@@ -323,6 +323,20 @@ function validateLinkItem(raw) {
 }
 
 // src/render/card.ts
+function parseChecklistValue(value) {
+  return value.split("\n").map((line) => {
+    const m = line.match(/^- \[([ x])\] (.+)/);
+    if (m) return { kind: "checkbox", checked: m[1] === "x", text: m[2] };
+    return { kind: "text", text: line };
+  });
+}
+function toggleCheckboxLine(value, lineIndex, checked) {
+  var _a;
+  const lines = value.split("\n");
+  const line = (_a = lines[lineIndex]) != null ? _a : "";
+  lines[lineIndex] = checked ? line.replace(/^- \[ \]/, "- [x]") : line.replace(/^- \[x\]/, "- [ ]");
+  return lines.join("\n");
+}
 function effectiveCardTitle(board) {
   var _a;
   if (board.viewConfig.cardTitle !== void 0) {
@@ -367,6 +381,20 @@ function renderCard(parent, card, board) {
           const span = linksEl.createSpan({ cls: "fk-card__field-link", text: item });
           span.dataset.href = item;
         }
+      } else if (field.type === "Textarea" && /^- \[[ x]\]/m.test(value)) {
+        const listEl = row.createDiv({ cls: "fk-card__checklist" });
+        parseChecklistValue(value).forEach((item, idx) => {
+          if (item.kind === "checkbox") {
+            const label = listEl.createEl("label", { cls: "fk-card__checklist-item" });
+            const input = label.createEl("input", { cls: "fk-card__checkbox", type: "checkbox" });
+            input.checked = item.checked;
+            input.dataset.field = field.name;
+            input.dataset.lineIndex = String(idx);
+            label.createSpan({ text: item.text });
+          } else if (item.text.trim()) {
+            listEl.createSpan({ cls: "fk-card__checklist-text", text: item.text });
+          }
+        });
       } else {
         row.createSpan({ cls: "fk-card__field-value", text: value });
       }
@@ -1080,6 +1108,20 @@ function mountBoard(el, board, save, app, sourcePath = "") {
   attachCardActions(boardEl, board, dispatch, app, sourcePath);
 }
 function attachCardActions(boardEl, board, dispatch, app, sourcePath = "") {
+  boardEl.addEventListener("change", (e) => {
+    var _a, _b, _c, _d;
+    const checkbox = e.target.closest(".fk-card__checkbox");
+    if (!checkbox) return;
+    e.stopPropagation();
+    const cardEl = checkbox.closest(".fk-card");
+    const cardId = (_a = cardEl == null ? void 0 : cardEl.dataset.cardId) != null ? _a : "";
+    const fieldName = (_b = checkbox.dataset.field) != null ? _b : "";
+    const lineIndex = parseInt((_c = checkbox.dataset.lineIndex) != null ? _c : "0", 10);
+    const card = board.cards.find((c) => c.id === cardId);
+    if (!card || !fieldName) return;
+    const newValue = toggleCheckboxLine((_d = card.values[fieldName]) != null ? _d : "", lineIndex, checkbox.checked);
+    dispatch(updateCard(board, cardId, { [fieldName]: newValue }));
+  });
   boardEl.addEventListener("click", (e) => {
     var _a, _b, _c, _d, _e, _f;
     const target = e.target;

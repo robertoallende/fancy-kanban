@@ -1,6 +1,27 @@
 import type { Board, Card } from '../model/board';
 import { splitLinks } from '../data/link';
 
+export type ChecklistLine =
+	| { kind: 'checkbox'; checked: boolean; text: string }
+	| { kind: 'text'; text: string };
+
+export function parseChecklistValue(value: string): ChecklistLine[] {
+	return value.split('\n').map(line => {
+		const m = line.match(/^- \[([ x])\] (.+)/);
+		if (m) return { kind: 'checkbox', checked: m[1] === 'x', text: m[2] };
+		return { kind: 'text', text: line };
+	});
+}
+
+export function toggleCheckboxLine(value: string, lineIndex: number, checked: boolean): string {
+	const lines = value.split('\n');
+	const line = lines[lineIndex] ?? '';
+	lines[lineIndex] = checked
+		? line.replace(/^- \[ \]/, '- [x]')
+		: line.replace(/^- \[x\]/, '- [ ]');
+	return lines.join('\n');
+}
+
 export function effectiveCardTitle(board: Board): string | null {
 	if (board.viewConfig.cardTitle !== undefined) {
 		const name = board.viewConfig.cardTitle;
@@ -53,6 +74,20 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 					const span = linksEl.createSpan({ cls: 'fk-card__field-link', text: item });
 					span.dataset.href = item;
 				}
+			} else if (field.type === 'Textarea' && /^- \[[ x]\]/m.test(value)) {
+				const listEl = row.createDiv({ cls: 'fk-card__checklist' });
+				parseChecklistValue(value).forEach((item, idx) => {
+					if (item.kind === 'checkbox') {
+						const label = listEl.createEl('label', { cls: 'fk-card__checklist-item' });
+						const input = label.createEl('input', { cls: 'fk-card__checkbox', type: 'checkbox' });
+						input.checked = item.checked;
+						input.dataset.field = field.name;
+						input.dataset.lineIndex = String(idx);
+						label.createSpan({ text: item.text });
+					} else if (item.text.trim()) {
+						listEl.createSpan({ cls: 'fk-card__checklist-text', text: item.text });
+					}
+				});
 			} else {
 				row.createSpan({ cls: 'fk-card__field-value', text: value });
 			}
