@@ -4,7 +4,7 @@ A board showcasing every supported field type: Text, Textarea, Date, Number, Sel
 
 ```fancy-kanban
 ---
-version: 1
+version: 2
 title: Bug Tracker
 fields:
   - name: title, type: Text, label: Title
@@ -15,7 +15,7 @@ fields:
   - name: spec, type: Link, label: Spec File
   - name: status, type: Select, label: Status, options: backlog|in-progress|done, default: backlog
 card_title: title
-card_fields: spec, due
+card_fields: spec, due, description
 card_labels: false
 ---
 
@@ -26,6 +26,6 @@ card_labels: false
 | b2 | Add dark mode toggle | Implement theme switcher in settings panel | 2026-07-25 | 8 | medium | specs/ui.md | backlog |
 | b1 | Fix login timeout | Users are logged out after 5 min of inactivity instead of 30 | 2026-07-20 | 3 | high | specs/auth.md | in-progress |
 | wlgs4j3i | Demo |  |  |  | medium | samples/demo.md<br>https://google.com | in-progress |
-| 2vfo01sw | Something else |  |  |  | medium |  | backlog |
+| 2vfo01sw | Write tests | - [x] Write unit tests<br>- [ ] Write E2E tests |  |  | medium |  | backlog |
 ```
 

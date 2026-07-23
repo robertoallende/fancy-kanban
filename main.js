@@ -331,9 +331,9 @@ function parseChecklistValue(value) {
   });
 }
 function toggleCheckboxLine(value, lineIndex, checked) {
-  var _a;
   const lines = value.split("\n");
-  const line = (_a = lines[lineIndex]) != null ? _a : "";
+  if (lineIndex < 0 || lineIndex >= lines.length) return value;
+  const line = lines[lineIndex];
   lines[lineIndex] = checked ? line.replace(/^- \[ \]/, "- [x]") : line.replace(/^- \[x\]/, "- [ ]");
   return lines.join("\n");
 }
@@ -1125,6 +1125,7 @@ function attachCardActions(boardEl, board, dispatch, app, sourcePath = "") {
   boardEl.addEventListener("click", (e) => {
     var _a, _b, _c, _d, _e, _f;
     const target = e.target;
+    if (target.closest(".fk-card__checklist-item")) return;
     const linkEl = target.closest(".fk-card__field-link");
     if (linkEl) {
       e.stopPropagation();
