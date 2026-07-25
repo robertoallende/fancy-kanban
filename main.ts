@@ -1,8 +1,10 @@
-import { addIcon, Plugin, TFile } from 'obsidian';
+import { addIcon, Notice, Plugin, TFile } from 'obsidian';
 import { registerPostProcessor } from './src/integration/postprocessor';
 import { FancyKanbanView, VIEW_TYPE_FANCY_KANBAN } from './src/integration/standalone-view';
 import { BoardConfigModal } from './src/render/board-config-modal';
 import { serializeBoardBlock } from './src/data/serializer';
+import { parseKanbanBoard } from './src/import/kanban-parser';
+import { convertKanbanBoard } from './src/import/kanban-converter';
 
 const FANCY_KANBAN_ICON = 'fancy-kanban-icon';
 
@@ -39,6 +41,12 @@ export default class FancyKanbanPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: 'import-from-obsidian-kanban',
+			name: 'Import from Obsidian Kanban',
+			callback: () => { void this.importFromKanban(); },
+		});
+
+		this.addCommand({
 			id: 'insert-board',
 			name: 'Insert board',
 			editorCallback: (editor) => {
@@ -60,6 +68,38 @@ export default class FancyKanbanPlugin extends Plugin {
 
 	onunload() {
 		// intentionally empty — Obsidian handles leaf cleanup
+	}
+
+	private async importFromKanban(): Promise<void> {
+		const file = this.app.workspace.getActiveFile();
+		if (!file) {
+			new Notice('No active file.');
+			return;
+		}
+
+		const text = await this.app.vault.read(file);
+
+		let kb;
+		try {
+			kb = parseKanbanBoard(text);
+		} catch (e) {
+			new Notice(`Not a valid Obsidian Kanban board: ${e instanceof Error ? e.message : String(e)}`);
+			return;
+		}
+
+		const board = convertKanbanBoard(kb, file.basename);
+		const content = serializeBoardBlock(board);
+
+		const folder = file.parent?.path ?? '';
+		const outPath = (folder ? `${folder}/` : '') + `${file.basename}-fk.md`;
+
+		try {
+			const newFile = await this.app.vault.create(outPath, content);
+			await this.app.workspace.getLeaf('tab').openFile(newFile);
+			new Notice(`Imported to ${outPath}`);
+		} catch (e) {
+			new Notice(`Could not create file: ${e instanceof Error ? e.message : String(e)}`);
+		}
 	}
 
 	private newBoard(): void {

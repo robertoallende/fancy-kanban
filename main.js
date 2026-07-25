@@ -1419,6 +1419,141 @@ var FancyKanbanView = class extends import_obsidian4.ItemView {
   }
 };
 
+// src/import/kanban-parser.ts
+var FRONTMATTER_RE = /^---\n([\s\S]*?)\n---/;
+var SETTINGS_BLOCK_RE = /%%\s*kanban:settings[\s\S]*?%%/g;
+var WIP_LIMIT_RE = /\s*\(\d+\)\s*$/;
+var LIST_ITEM_RE = /^- \[([ x/])\] (.*)/;
+var CONTINUATION_RE = /^(\t| {4})(.*)/;
+var STRIP_RES = [
+  /@@\{[^}]+\}/g,
+  /@\{[^}]+\}/g,
+  /@\[\[[^\]]+\]\]/g,
+  /!?\[\[[^\]]+\]\]/g,
+  /#[\w/-]+/g,
+  /\^[\w-]+$/
+];
+function stripMetadata(text) {
+  let s = text;
+  for (const re of STRIP_RES) s = s.replace(re, "");
+  return s.trim();
+}
+function extractFrontmatter(text) {
+  const m = text.match(FRONTMATTER_RE);
+  if (!m) return {};
+  const result = {};
+  for (const line of m[1].split("\n")) {
+    const idx = line.indexOf(":");
+    if (idx === -1) continue;
+    result[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+  }
+  return result;
+}
+function parseKanbanBoard(text) {
+  const frontmatter = extractFrontmatter(text);
+  const plugin = frontmatter["kanban-plugin"];
+  if (!plugin || plugin !== "board" && plugin !== "basic") {
+    throw new Error("File does not contain 'kanban-plugin: board' in frontmatter");
+  }
+  const body = text.replace(FRONTMATTER_RE, "").replace(SETTINGS_BLOCK_RE, "");
+  const lanes = [];
+  let currentLane = null;
+  let inArchive = false;
+  let pendingContinuation = [];
+  let pendingCard = null;
+  function flushCard() {
+    if (pendingCard && currentLane) {
+      pendingCard.body = pendingContinuation.join("\n").trim();
+      currentLane.cards.push(pendingCard);
+    }
+    pendingCard = null;
+    pendingContinuation = [];
+  }
+  for (const line of body.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed === "***") {
+      flushCard();
+      inArchive = true;
+      continue;
+    }
+    if (inArchive) continue;
+    if (trimmed.startsWith("## ")) {
+      flushCard();
+      const rawTitle = trimmed.slice(3).trim();
+      if (rawTitle.toLowerCase() === "archive") {
+        inArchive = true;
+        continue;
+      }
+      const title = rawTitle.replace(WIP_LIMIT_RE, "").trim();
+      currentLane = { title, complete: false, cards: [] };
+      lanes.push(currentLane);
+      continue;
+    }
+    if (!currentLane) continue;
+    if (trimmed === "**Complete**") {
+      currentLane.complete = true;
+      continue;
+    }
+    const contMatch = line.match(CONTINUATION_RE);
+    if (contMatch && pendingCard) {
+      pendingContinuation.push(contMatch[2]);
+      continue;
+    }
+    const itemMatch = trimmed.match(LIST_ITEM_RE);
+    if (itemMatch) {
+      flushCard();
+      pendingCard = {
+        title: stripMetadata(itemMatch[2]),
+        body: "",
+        checked: itemMatch[1] === "x"
+      };
+      continue;
+    }
+    if (pendingCard && trimmed === "") {
+      flushCard();
+    }
+  }
+  flushCard();
+  return { lanes };
+}
+
+// src/import/kanban-converter.ts
+function deriveStatusValue(laneTitle) {
+  return laneTitle.toLowerCase().trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "");
+}
+function convertKanbanBoard(kb, title) {
+  var _a;
+  const statusOptions = kb.lanes.map((l) => deriveStatusValue(l.title));
+  const fields = [
+    { name: "title", type: "Text", label: "Title" },
+    { name: "status", type: "Select", label: "Status", options: statusOptions, default: (_a = statusOptions[0]) != null ? _a : "" },
+    { name: "description", type: "Textarea", label: "Description" }
+  ];
+  const cards = kb.lanes.flatMap((lane) => {
+    const statusValue = deriveStatusValue(lane.title);
+    return lane.cards.filter((card) => card.title.length > 0).map((card) => ({
+      id: generateId(),
+      values: {
+        title: card.title,
+        status: statusValue,
+        description: card.body
+      }
+    }));
+  });
+  return {
+    title,
+    version: 2,
+    fields,
+    rawWorkflow: "",
+    viewConfig: {
+      columns: "status",
+      cardFields: ["description"],
+      cardLabels: false
+    },
+    cards
+  };
+}
+
 // main.ts
 var FANCY_KANBAN_ICON = "fancy-kanban-icon";
 function registerIcon() {
@@ -1449,6 +1584,13 @@ var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
       callback: () => this.newBoard()
     });
     this.addCommand({
+      id: "import-from-obsidian-kanban",
+      name: "Import from Obsidian Kanban",
+      callback: () => {
+        void this.importFromKanban();
+      }
+    });
+    this.addCommand({
       id: "insert-board",
       name: "Insert board",
       editorCallback: (editor) => {
@@ -1468,6 +1610,33 @@ var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
     });
   }
   onunload() {
+  }
+  async importFromKanban() {
+    var _a, _b;
+    const file = this.app.workspace.getActiveFile();
+    if (!file) {
+      new import_obsidian5.Notice("No active file.");
+      return;
+    }
+    const text = await this.app.vault.read(file);
+    let kb;
+    try {
+      kb = parseKanbanBoard(text);
+    } catch (e) {
+      new import_obsidian5.Notice(`Not a valid Obsidian Kanban board: ${e instanceof Error ? e.message : String(e)}`);
+      return;
+    }
+    const board = convertKanbanBoard(kb, file.basename);
+    const content = serializeBoardBlock(board);
+    const folder = (_b = (_a = file.parent) == null ? void 0 : _a.path) != null ? _b : "";
+    const outPath = (folder ? `${folder}/` : "") + `${file.basename}-fk.md`;
+    try {
+      const newFile = await this.app.vault.create(outPath, content);
+      await this.app.workspace.getLeaf("tab").openFile(newFile);
+      new import_obsidian5.Notice(`Imported to ${outPath}`);
+    } catch (e) {
+      new import_obsidian5.Notice(`Could not create file: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
   newBoard() {
     new BoardConfigModal(this.app, null, (schema) => {
