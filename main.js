@@ -1433,10 +1433,14 @@ var STRIP_RES = [
   /#[\w/-]+/g,
   /\^[\w-]+$/
 ];
-function stripMetadata(text) {
+var DATE_RE = /(?:@@\{[^}]+\})|@\{([^}]+)\}|@\[\[([^\]]+)\]\]/;
+function extractMetadata(text) {
+  var _a, _b;
+  const dateMatch = text.match(DATE_RE);
+  const date = (_b = (_a = dateMatch == null ? void 0 : dateMatch[1]) != null ? _a : dateMatch == null ? void 0 : dateMatch[2]) != null ? _b : void 0;
   let s = text;
   for (const re of STRIP_RES) s = s.replace(re, "");
-  return s.trim();
+  return { title: s.trim(), date };
 }
 function extractFrontmatter(text) {
   const m = text.match(FRONTMATTER_RE);
@@ -1502,11 +1506,8 @@ function parseKanbanBoard(text) {
     const itemMatch = trimmed.match(LIST_ITEM_RE);
     if (itemMatch) {
       flushCard();
-      pendingCard = {
-        title: stripMetadata(itemMatch[2]),
-        body: "",
-        checked: itemMatch[1] === "x"
-      };
+      const { title, date } = extractMetadata(itemMatch[2]);
+      pendingCard = { title, body: "", checked: itemMatch[1] === "x", date };
       continue;
     }
     if (pendingCard && trimmed === "") {
@@ -1524,21 +1525,32 @@ function deriveStatusValue(laneTitle) {
 function convertKanbanBoard(kb, title) {
   var _a;
   const statusOptions = kb.lanes.map((l) => deriveStatusValue(l.title));
+  const allCards = kb.lanes.flatMap((l) => l.cards);
+  const hasDate = allCards.some((c) => c.date);
   const fields = [
     { name: "title", type: "Text", label: "Title" },
     { name: "status", type: "Select", label: "Status", options: statusOptions, default: (_a = statusOptions[0]) != null ? _a : "" },
+    ...hasDate ? [{ name: "due", type: "Date", label: "Due" }] : [],
     { name: "description", type: "Textarea", label: "Description" }
+  ];
+  const cardFields = [
+    ...hasDate ? ["due"] : [],
+    "description"
   ];
   const cards = kb.lanes.flatMap((lane) => {
     const statusValue = deriveStatusValue(lane.title);
-    return lane.cards.filter((card) => card.title.length > 0).map((card) => ({
-      id: generateId(),
-      values: {
-        title: card.title,
-        status: statusValue,
-        description: card.body
-      }
-    }));
+    return lane.cards.filter((card) => card.title.length > 0).map((card) => {
+      var _a2;
+      return {
+        id: generateId(),
+        values: {
+          title: card.title,
+          status: statusValue,
+          ...hasDate ? { due: (_a2 = card.date) != null ? _a2 : "" } : {},
+          description: card.body
+        }
+      };
+    });
   });
   return {
     title,
@@ -1547,7 +1559,7 @@ function convertKanbanBoard(kb, title) {
     rawWorkflow: "",
     viewConfig: {
       columns: "status",
-      cardFields: ["description"],
+      cardFields,
       cardLabels: false
     },
     cards

@@ -2,6 +2,7 @@ export interface KanbanCard {
 	title: string;
 	body: string;
 	checked: boolean;
+	date?: string;
 }
 
 export interface KanbanLane {
@@ -29,10 +30,14 @@ const STRIP_RES = [
 	/\^[\w-]+$/,
 ];
 
-function stripMetadata(text: string): string {
+const DATE_RE = /(?:@@\{[^}]+\})|@\{([^}]+)\}|@\[\[([^\]]+)\]\]/;
+
+function extractMetadata(text: string): { title: string; date?: string } {
+	const dateMatch = text.match(DATE_RE);
+	const date = dateMatch?.[1] ?? dateMatch?.[2] ?? undefined;
 	let s = text;
 	for (const re of STRIP_RES) s = s.replace(re, '');
-	return s.trim();
+	return { title: s.trim(), date };
 }
 
 function extractFrontmatter(text: string): Record<string, string> {
@@ -113,11 +118,8 @@ export function parseKanbanBoard(text: string): KanbanBoard {
 		const itemMatch = trimmed.match(LIST_ITEM_RE);
 		if (itemMatch) {
 			flushCard();
-			pendingCard = {
-				title: stripMetadata(itemMatch[2]),
-				body: '',
-				checked: itemMatch[1] === 'x',
-			};
+			const { title, date } = extractMetadata(itemMatch[2]);
+			pendingCard = { title, body: '', checked: itemMatch[1] === 'x', date };
 			continue;
 		}
 

@@ -12,11 +12,19 @@ function deriveStatusValue(laneTitle: string): string {
 
 export function convertKanbanBoard(kb: KanbanBoard, title: string): Board {
 	const statusOptions = kb.lanes.map(l => deriveStatusValue(l.title));
+	const allCards = kb.lanes.flatMap(l => l.cards);
+	const hasDate = allCards.some(c => c.date);
 
 	const fields: FieldDefinition[] = [
 		{ name: 'title', type: 'Text', label: 'Title' },
 		{ name: 'status', type: 'Select', label: 'Status', options: statusOptions, default: statusOptions[0] ?? '' },
+		...(hasDate ? [{ name: 'due', type: 'Date' as const, label: 'Due' }] : []),
 		{ name: 'description', type: 'Textarea', label: 'Description' },
+	];
+
+	const cardFields = [
+		...(hasDate ? ['due'] : []),
+		'description',
 	];
 
 	const cards = kb.lanes.flatMap(lane => {
@@ -28,6 +36,7 @@ export function convertKanbanBoard(kb: KanbanBoard, title: string): Board {
 				values: {
 					title: card.title,
 					status: statusValue,
+					...(hasDate ? { due: card.date ?? '' } : {}),
 					description: card.body,
 				},
 			}));
@@ -40,7 +49,7 @@ export function convertKanbanBoard(kb: KanbanBoard, title: string): Board {
 		rawWorkflow: '',
 		viewConfig: {
 			columns: 'status',
-			cardFields: ['description'],
+			cardFields,
 			cardLabels: false,
 		},
 		cards,

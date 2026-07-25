@@ -158,6 +158,38 @@ describe('parseKanbanBoard', () => {
 		});
 	});
 
+	describe('date extraction', () => {
+		it('extracts the date from @{…} syntax', () => {
+			const board = parseKanbanBoard(FULL);
+			const backlog = board.lanes.find(l => l.title === 'Backlog')!;
+			expect(backlog.cards[0].date).toBe('2026-01-20');
+		});
+
+		it('extracts the date from a Done lane card', () => {
+			const board = parseKanbanBoard(FULL);
+			const done = board.lanes.find(l => l.title === 'Done')!;
+			expect(done.cards[0].date).toBe('2026-01-10');
+		});
+
+		it('date is undefined when no date trigger is present', () => {
+			const board = parseKanbanBoard(FULL);
+			const backlog = board.lanes.find(l => l.title === 'Backlog')!;
+			expect(backlog.cards[1].date).toBeUndefined();
+		});
+
+		it('does not capture the time trigger @@{…} as a date', () => {
+			const board = parseKanbanBoard(FULL);
+			const backlog = board.lanes.find(l => l.title === 'Backlog')!;
+			expect(backlog.cards[2].date).toBeUndefined();
+		});
+
+		it('extracts date from @[[daily-note]] syntax', () => {
+			const text = '---\nkanban-plugin: board\n---\n\n## To Do\n\n- [ ] Task @[[2026-07-25]]\n';
+			const board = parseKanbanBoard(text);
+			expect(board.lanes[0].cards[0].date).toBe('2026-07-25');
+		});
+	});
+
 	describe('multi-line cards', () => {
 		it('collects indented continuation lines into body', () => {
 			const board = parseKanbanBoard(FULL);

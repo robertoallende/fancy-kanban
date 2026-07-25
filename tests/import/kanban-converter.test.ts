@@ -145,6 +145,61 @@ describe('convertKanbanBoard', () => {
 		});
 	});
 
+	describe('date field', () => {
+		it('adds a Date field when any card has a date', () => {
+			const kb: KanbanBoard = {
+				lanes: [{ title: 'To Do', complete: false, cards: [
+					{ title: 'Task with date', body: '', checked: false, date: '2026-07-28' },
+					{ title: 'Task without date', body: '', checked: false },
+				]}],
+			};
+			const board = convertKanbanBoard(kb, 'Test');
+			expect(board.fields.find(f => f.name === 'due')?.type).toBe('Date');
+		});
+
+		it('does not add a Date field when no cards have dates', () => {
+			const board = convertKanbanBoard(SAMPLE, 'My Board');
+			expect(board.fields.find(f => f.name === 'due')).toBeUndefined();
+		});
+
+		it('populates the due value from the card date', () => {
+			const kb: KanbanBoard = {
+				lanes: [{ title: 'To Do', complete: false, cards: [
+					{ title: 'Task', body: '', checked: false, date: '2026-07-28' },
+				]}],
+			};
+			const board = convertKanbanBoard(kb, 'Test');
+			expect(board.cards[0].values.due).toBe('2026-07-28');
+		});
+
+		it('leaves due empty for cards without a date', () => {
+			const kb: KanbanBoard = {
+				lanes: [{ title: 'To Do', complete: false, cards: [
+					{ title: 'With date', body: '', checked: false, date: '2026-07-28' },
+					{ title: 'Without date', body: '', checked: false },
+				]}],
+			};
+			const board = convertKanbanBoard(kb, 'Test');
+			const card = board.cards.find(c => c.values.title === 'Without date')!;
+			expect(card.values.due).toBe('');
+		});
+
+		it('includes due in card_fields when dates are present', () => {
+			const kb: KanbanBoard = {
+				lanes: [{ title: 'To Do', complete: false, cards: [
+					{ title: 'Task', body: '', checked: false, date: '2026-07-28' },
+				]}],
+			};
+			const board = convertKanbanBoard(kb, 'Test');
+			expect(board.viewConfig.cardFields).toContain('due');
+		});
+
+		it('does not include due in card_fields when no dates are present', () => {
+			const board = convertKanbanBoard(SAMPLE, 'My Board');
+			expect(board.viewConfig.cardFields).not.toContain('due');
+		});
+	});
+
 	describe('lane title normalisation', () => {
 		it('lowercases lane titles for status values', () => {
 			const board = convertKanbanBoard(SAMPLE, 'My Board');
