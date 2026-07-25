@@ -19,6 +19,7 @@ I kept bouncing off every kanban plugin I tried. They lived in their own tab, cu
 - **Standalone board view** — open a board in its own pane via the ribbon icon or command palette, in addition to inline embedding
 - **Board setup panel** — create and edit fields, columns, and workflow through a dedicated UI, no hand-editing the config block required
 - **Human-readable format** — boards are stored as a fenced code block containing a config section and a standard Markdown table, so the data is still readable (as a table) even without the plugin installed
+- **Import from Obsidian Kanban** — bring existing `obsidian-kanban` boards over with one command; lanes become columns, cards and their notes are preserved, inline metadata (dates, tags) is stripped cleanly
 
 ## Installation
 
@@ -46,6 +47,16 @@ This inserts a `fancy-kanban` code block into your note (or opens one in a stand
 - The underlying table updates automatically as you work — your note's Markdown source stays in sync with the board
 
 ![Fancy Kanban board settings dialog](images/demo-board-settings.png)
+
+### Import from Obsidian Kanban
+
+If you have existing boards created with the [Obsidian Kanban plugin](https://github.com/mgmeyers/obsidian-kanban), you can bring them into Fancy Kanban in one step:
+
+1. Open the `.md` file of an Obsidian Kanban board
+2. Run **Fancy Kanban: Import from Obsidian Kanban** from the command palette
+3. A new file `<original-name>-fk.md` is created in the same folder and opened automatically
+
+The original file is not modified. Each lane becomes a status column, card titles are preserved (dates, tags, block IDs, and wiki-links are stripped), and any multi-line card body becomes a `description` field on the card.
 
 ### The data format
 
@@ -84,7 +95,7 @@ Because it's a standard Markdown table under the hood, a board is still legible 
 
 Fancy Kanban is early. In rough order:
 
-- [ ] **Import from `obsidian-kanban`** — bring existing boards over without manually rebuilding them
+- [x] **Import from `obsidian-kanban`** — bring existing boards over without manually rebuilding them
 - [ ] **Swimlanes** — a `lanes` field as a second grouping dimension over the same table
 
 If there's a gap you'd like prioritized, [open an issue](https://github.com/robertoallende/fancy-kanban/issues) — this roadmap takes real usage and feedback into account.
