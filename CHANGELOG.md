@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0 - 25/07/2026
+
+- Added "Import from Obsidian Kanban" command: open any board created by the Obsidian Kanban plugin and run the command to generate a new `<filename>-fk.md` file in the same folder with the equivalent Fancy Kanban board — lanes become status columns, card titles are preserved (inline metadata such as dates, tags, and block IDs are stripped), and multi-line card bodies map to a `description` Textarea field
+
 ## 0.5.1 - 24/07/2026
 
 - Fixed checklist checkboxes not rendering in real vaults: build output (`main.js`, `styles.css`) is now automatically copied to `.obsidian/plugins/fancy-kanban/` after every production build
