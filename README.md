@@ -19,6 +19,7 @@ I kept bouncing off every kanban plugin I tried. They lived in their own tab, cu
 - **Standalone board view** — open a board in its own pane via the ribbon icon or command palette, in addition to inline embedding
 - **Board setup panel** — create and edit fields, columns, and workflow through a dedicated UI, no hand-editing the config block required
 - **Human-readable format** — boards are stored as a fenced code block containing a config section and a standard Markdown table, so the data is still readable (as a table) even without the plugin installed
+- **Swimlanes** — add a second grouping dimension with `lanes: <field>` in the board config; cards are arranged in a grid of columns × lanes, and dragging a card across a lane row updates both fields at once
 - **Import from Obsidian Kanban** — bring existing `obsidian-kanban` boards over with one command; lanes become columns, cards and their notes are preserved, inline metadata (dates, tags) is stripped cleanly
 
 ## Installation
@@ -58,6 +59,19 @@ If you have existing boards created with the [Obsidian Kanban plugin](https://gi
 
 The original file is not modified. Each lane becomes a status column, card titles are preserved (dates, tags, block IDs, and wiki-links are stripped), and any multi-line card body becomes a `description` field on the card.
 
+### Swimlanes
+
+Add `lanes: <field>` to the board config to group cards by a second Select field. The board renders as a grid — column headers across the top, lane labels on the left. Dragging a card to a different lane row updates both the column and the lane field in the same operation.
+
+![Fancy Kanban swimlane board](images/demo-swim-lanes.png)
+````markdown
+```fancy-kanban
+lanes: genre
+```
+````
+
+Any `Select` field can be the swimlane field. You can also set it through the board settings panel — no hand-editing required.
+
 ### The data format
 
 Each board is a fenced code block — here's the board above, as it actually looks in the note's source:
@@ -91,12 +105,7 @@ workflow: todo→doing, doing→done, doing→todo, done→doing
 
 Because it's a standard Markdown table under the hood, a board is still legible — as a table, without interactivity — in any Markdown viewer, even without the plugin.
 
-## Roadmap
-
-Fancy Kanban is early. In rough order:
-
-- [x] **Import from `obsidian-kanban`** — bring existing boards over without manually rebuilding them
-- [ ] **Swimlanes** — a `lanes` field as a second grouping dimension over the same table
+## Feature Requests and Issues
 
 If there's a gap you'd like prioritized, [open an issue](https://github.com/robertoallende/fancy-kanban/issues) — this roadmap takes real usage and feedback into account.
 

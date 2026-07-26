@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0 - 26/07/2026
+
+- Added swimlane support: set `lanes: <field>` in the board config to group cards by a second Select field; the board renders as a grid with column headers across the top and lane labels on the left; dragging a card to a different lane row updates both the column and lane field values; the board settings modal includes a swimlane field picker
+
 ## 0.6.0 - 25/07/2026
 
 - Added "Import from Obsidian Kanban" command: open any board created by the Obsidian Kanban plugin and run the command to generate a new `<filename>-fk.md` file in the same folder with the equivalent Fancy Kanban board — lanes become status columns, card titles are preserved (inline metadata such as dates, tags, and block IDs are stripped), and multi-line card bodies map to a `description` Textarea field
