@@ -173,7 +173,43 @@ export class BoardConfigModal extends Modal {
 		const colSelect = colWrap.createEl('select', { cls: 'fk-modal-input' });
 		colSelect.dataset.role = 'columns';
 		this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
-		colSelect.addEventListener('change', () => { this.schema.viewConfig.columns = colSelect.value; });
+		colSelect.addEventListener('change', () => {
+			this.schema.viewConfig.columns = colSelect.value;
+			this.refreshLanesSelect();
+		});
+
+		const lanesWrap = this.field(section, 'Swimlane field');
+		const lanesSelect = lanesWrap.createEl('select', { cls: 'fk-modal-input' });
+		lanesSelect.dataset.role = 'lanes';
+		this.populateLanesSelect(lanesSelect);
+		lanesSelect.addEventListener('change', () => {
+			this.schema.viewConfig.lanes = lanesSelect.value || undefined;
+		});
+	}
+
+	private populateLanesSelect(select: HTMLSelectElement): void {
+		select.innerHTML = '';
+		const noneOpt = select.createEl('option', { text: '(none)' });
+		noneOpt.value = '';
+		const eligible = this.schema.fields.filter(
+			f => f.type === 'Select' && f.name && f.name !== this.schema.viewConfig.columns,
+		);
+		for (const f of eligible) {
+			const o = select.createEl('option', { text: f.label || f.name });
+			o.value = f.name;
+		}
+		select.value = this.schema.viewConfig.lanes ?? '';
+	}
+
+	private refreshLanesSelect(): void {
+		const select = this.contentEl.querySelector<HTMLSelectElement>('[data-role="lanes"]');
+		if (!select) return;
+		const current = this.schema.viewConfig.lanes ?? '';
+		this.populateLanesSelect(select);
+		select.value = current;
+		if (select.value !== current) {
+			this.schema.viewConfig.lanes = undefined;
+		}
 	}
 
 	private renderCardDisplay(container: HTMLElement): void {
@@ -308,6 +344,7 @@ export class BoardConfigModal extends Modal {
 	private refreshViewConfig(): void {
 		const colSelect = this.contentEl.querySelector<HTMLSelectElement>('[data-role="columns"]');
 		if (colSelect) this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
+		this.refreshLanesSelect();
 		this.refreshCardTitleSelect();
 		this.rerenderCardFieldList();
 		this.refreshCardDisplaySelect();

@@ -971,7 +971,40 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
     colSelect.addEventListener("change", () => {
       this.schema.viewConfig.columns = colSelect.value;
+      this.refreshLanesSelect();
     });
+    const lanesWrap = this.field(section, "Swimlane field");
+    const lanesSelect = lanesWrap.createEl("select", { cls: "fk-modal-input" });
+    lanesSelect.dataset.role = "lanes";
+    this.populateLanesSelect(lanesSelect);
+    lanesSelect.addEventListener("change", () => {
+      this.schema.viewConfig.lanes = lanesSelect.value || void 0;
+    });
+  }
+  populateLanesSelect(select) {
+    var _a;
+    select.innerHTML = "";
+    const noneOpt = select.createEl("option", { text: "(none)" });
+    noneOpt.value = "";
+    const eligible = this.schema.fields.filter(
+      (f) => f.type === "Select" && f.name && f.name !== this.schema.viewConfig.columns
+    );
+    for (const f of eligible) {
+      const o = select.createEl("option", { text: f.label || f.name });
+      o.value = f.name;
+    }
+    select.value = (_a = this.schema.viewConfig.lanes) != null ? _a : "";
+  }
+  refreshLanesSelect() {
+    var _a;
+    const select = this.contentEl.querySelector('[data-role="lanes"]');
+    if (!select) return;
+    const current = (_a = this.schema.viewConfig.lanes) != null ? _a : "";
+    this.populateLanesSelect(select);
+    select.value = current;
+    if (select.value !== current) {
+      this.schema.viewConfig.lanes = void 0;
+    }
   }
   renderCardDisplay(container) {
     var _a;
@@ -1096,6 +1129,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
   refreshViewConfig() {
     const colSelect = this.contentEl.querySelector('[data-role="columns"]');
     if (colSelect) this.populateFieldSelect(colSelect, this.schema.viewConfig.columns);
+    this.refreshLanesSelect();
     this.refreshCardTitleSelect();
     this.rerenderCardFieldList();
     this.refreshCardDisplaySelect();
