@@ -669,7 +669,7 @@ var LinkFilePicker = class extends import_obsidian.FuzzySuggestModal {
   }
 };
 var CardModal = class extends import_obsidian.Modal {
-  constructor(app, board, card, columnValue, onConfirm, onDelete, sourcePath = "") {
+  constructor(app, board, card, columnValue, onConfirm, onDelete, sourcePath = "", initialValues = {}) {
     super(app);
     this.board = board;
     this.card = card;
@@ -677,6 +677,7 @@ var CardModal = class extends import_obsidian.Modal {
     this.onConfirm = onConfirm;
     this.onDelete = onDelete;
     this.sourcePath = sourcePath;
+    this.initialValues = initialValues;
     this.values = {};
   }
   onOpen() {
@@ -708,8 +709,8 @@ var CardModal = class extends import_obsidian.Modal {
     (_a = contentEl.querySelector("input, textarea, select")) == null ? void 0 : _a.focus();
   }
   renderField(container, field, initialOverride) {
-    var _a, _b;
-    const initialValue = initialOverride != null ? initialOverride : this.card ? (_a = this.card.values[field.name]) != null ? _a : "" : (_b = field.default) != null ? _b : "";
+    var _a, _b, _c;
+    const initialValue = initialOverride != null ? initialOverride : this.card ? (_a = this.card.values[field.name]) != null ? _a : "" : (_c = (_b = this.initialValues[field.name]) != null ? _b : field.default) != null ? _c : "";
     this.values[field.name] = initialValue;
     const wrapper = container.createDiv({ cls: "fk-modal-field" });
     wrapper.createEl("label", { text: field.label });
@@ -1255,7 +1256,7 @@ function attachCardActions(boardEl, board, dispatch, app, sourcePath = "") {
       if (app) {
         new CardModal(app, board, null, columnValue, (values) => {
           dispatch(createCard(board, columnValue, { ...laneUpdates, ...values }));
-        }, void 0, sourcePath).open();
+        }, void 0, sourcePath, laneUpdates).open();
       } else {
         dispatch(createCard(board, columnValue, laneUpdates));
       }
