@@ -28,6 +28,7 @@ export class CardModal extends Modal {
 		private onConfirm: (values: Record<string, string>) => void,
 		private onDelete?: () => void,
 		private sourcePath: string = '',
+		private initialValues: Record<string, string> = {},
 	) {
 		super(app);
 	}
@@ -67,7 +68,7 @@ export class CardModal extends Modal {
 
 	private renderField(container: HTMLElement, field: FieldDefinition, initialOverride?: string): void {
 		const initialValue = initialOverride
-			?? (this.card ? (this.card.values[field.name] ?? '') : (field.default ?? ''));
+			?? (this.card ? (this.card.values[field.name] ?? '') : (this.initialValues[field.name] ?? field.default ?? ''));
 		this.values[field.name] = initialValue;
 
 		const wrapper = container.createDiv({ cls: 'fk-modal-field' });

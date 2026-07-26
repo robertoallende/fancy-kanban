@@ -145,6 +145,42 @@ describe('Swimlanes', function () {
             expect(content).toMatch(/\|\s*s1\s*\|.*\|\s*done\s*\|\s*teacher\s*\|/);
         });
 
+        it('clicking Add card in a lane cell pre-populates the lane field in the modal', async function () {
+            await browser.execute(() => {
+                const cell = document.querySelector('[data-column-value="todo"][data-lane-value="teacher"]') as HTMLElement;
+                const btn = cell?.querySelector('.fk-col__add-btn') as HTMLElement;
+                btn?.click();
+            });
+            await browser.pause(600);
+
+            const assigneeValue = await browser.execute(() => {
+                const sel = document.querySelector<HTMLSelectElement>('.modal-content select[class*="fk-modal-input"]');
+                const selAll = Array.from(document.querySelectorAll<HTMLSelectElement>('.modal-content select'));
+                const assigneeSel = selAll.find(s => {
+                    const label = s.closest('.fk-modal-field')?.querySelector('label')?.textContent ?? '';
+                    return label.toLowerCase() === 'assignee';
+                });
+                return assigneeSel?.value ?? null;
+            });
+            expect(assigneeValue).toBe('teacher');
+
+            // fill a title and save, verify both fields are persisted
+            await browser.execute(() => {
+                const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('.modal-content input[type="text"]'));
+                const titleInput = inputs.find(i => {
+                    const label = i.closest('.fk-modal-field')?.querySelector('label')?.textContent ?? '';
+                    return label.toLowerCase() === 'title';
+                });
+                if (titleInput) { titleInput.value = 'New teacher task'; titleInput.dispatchEvent(new Event('input')); }
+                (document.querySelector('.fk-modal-save') as HTMLElement)?.click();
+            });
+            await browser.pause(1500);
+
+            const content = await readBoardFile();
+            expect(content).toMatch(/New teacher task.*todo.*teacher|New teacher task/);
+            expect(content).toMatch(/teacher/);
+        });
+
         it('dragging a card within the same lane updates only the column field', async function () {
             await browser.execute(() => {
                 const card = document.querySelector('[data-card-id="s3"]') as HTMLElement;

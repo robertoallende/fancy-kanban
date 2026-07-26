@@ -78,7 +78,7 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 			if (app) {
 				new CardModal(app, board, null, columnValue, (values) => {
 					dispatch(createCard(board, columnValue, { ...laneUpdates, ...values }));
-				}, undefined, sourcePath).open();
+				}, undefined, sourcePath, laneUpdates).open();
 			} else {
 				dispatch(createCard(board, columnValue, laneUpdates));
 			}
