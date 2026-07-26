@@ -7,13 +7,17 @@ export function renderColumn(
 	label: string,
 	cards: Card[],
 	board: Board,
+	laneValue?: string,
 ): HTMLElement {
 	const container = parent.createDiv({ cls: 'fk-column' });
 	container.dataset.columnValue = name;
+	if (laneValue !== undefined) container.dataset.laneValue = laneValue;
 
-	const header = container.createDiv({ cls: 'fk-column__header' });
-	header.createSpan({ cls: 'fk-column__title', text: label });
-	header.createSpan({ cls: 'fk-column__count', text: String(cards.length) });
+	if (laneValue === undefined) {
+		const header = container.createDiv({ cls: 'fk-column__header' });
+		header.createSpan({ cls: 'fk-column__title', text: label });
+		header.createSpan({ cls: 'fk-column__count', text: String(cards.length) });
+	}
 
 	const cardsContainer = container.createDiv({ cls: 'fk-column__cards' });
 

@@ -405,12 +405,15 @@ function renderCard(parent, card, board) {
 }
 
 // src/render/column.ts
-function renderColumn(parent, name, label, cards, board) {
+function renderColumn(parent, name, label, cards, board, laneValue) {
   const container = parent.createDiv({ cls: "fk-column" });
   container.dataset.columnValue = name;
-  const header = container.createDiv({ cls: "fk-column__header" });
-  header.createSpan({ cls: "fk-column__title", text: label });
-  header.createSpan({ cls: "fk-column__count", text: String(cards.length) });
+  if (laneValue !== void 0) container.dataset.laneValue = laneValue;
+  if (laneValue === void 0) {
+    const header = container.createDiv({ cls: "fk-column__header" });
+    header.createSpan({ cls: "fk-column__title", text: label });
+    header.createSpan({ cls: "fk-column__count", text: String(cards.length) });
+  }
   const cardsContainer = container.createDiv({ cls: "fk-column__cards" });
   for (const card of cards) {
     renderCard(cardsContainer, card, board);
@@ -419,22 +422,85 @@ function renderColumn(parent, name, label, cards, board) {
   return container;
 }
 
+// src/render/lanes.ts
+function effectiveLanes(board) {
+  var _a;
+  if (!board.viewConfig.lanes) return null;
+  const field = board.fields.find((f) => f.name === board.viewConfig.lanes);
+  if (!((_a = field == null ? void 0 : field.options) == null ? void 0 : _a.length)) return null;
+  return field.options;
+}
+function groupCards(board) {
+  var _a, _b, _c, _d, _e;
+  const columnField = board.fields.find((f) => f.name === board.viewConfig.columns);
+  const columnOptions = (_a = columnField == null ? void 0 : columnField.options) != null ? _a : [];
+  const laneOptions = effectiveLanes(board);
+  const laneKey = board.viewConfig.lanes;
+  const outerKeys = laneOptions != null ? laneOptions : [""];
+  const result = /* @__PURE__ */ new Map();
+  for (const lane of outerKeys) {
+    const colMap = /* @__PURE__ */ new Map();
+    for (const col of columnOptions) colMap.set(col, []);
+    result.set(lane, colMap);
+  }
+  for (const card of board.cards) {
+    const colVal = (_b = card.values[board.viewConfig.columns]) != null ? _b : "";
+    const laneVal = laneKey ? (_c = card.values[laneKey]) != null ? _c : "" : "";
+    const targetLane = outerKeys.includes(laneVal) ? laneVal : outerKeys[0];
+    const targetCol = columnOptions.includes(colVal) ? colVal : columnOptions[0];
+    if (targetLane === void 0 || targetCol === void 0) continue;
+    (_e = (_d = result.get(targetLane)) == null ? void 0 : _d.get(targetCol)) == null ? void 0 : _e.push(card);
+  }
+  return result;
+}
+
 // src/render/board.ts
 function capitalise(s) {
   return s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);
 }
 function renderBoard(parent, board) {
+  var _a, _b, _c;
   const wrapper = parent.createDiv({ cls: "fk-board" });
   const header = wrapper.createDiv({ cls: "fk-board__header" });
   const settingsBtn = header.createEl("button", { cls: "fk-board__settings", text: "\u2699" });
   settingsBtn.title = "Board settings";
   header.createSpan({ cls: "fk-board__title", text: board.title });
-  const columnsContainer = wrapper.createDiv({ cls: "fk-board__columns" });
+  const laneOptions = effectiveLanes(board);
   const columnField = board.fields.find((f) => f.name === board.viewConfig.columns);
-  if (columnField == null ? void 0 : columnField.options) {
-    for (const option of columnField.options) {
-      const cards = board.cards.filter((c) => c.values[columnField.name] === option);
-      renderColumn(columnsContainer, option, capitalise(option), cards, board);
+  if (!laneOptions) {
+    const columnsContainer = wrapper.createDiv({ cls: "fk-board__columns" });
+    if (columnField == null ? void 0 : columnField.options) {
+      for (const option of columnField.options) {
+        const cards = board.cards.filter((c) => c.values[columnField.name] === option);
+        renderColumn(columnsContainer, option, capitalise(option), cards, board);
+      }
+    }
+    return wrapper;
+  }
+  const grouped = groupCards(board);
+  const columnOptions = (_a = columnField == null ? void 0 : columnField.options) != null ? _a : [];
+  const grid = wrapper.createDiv({ cls: "fk-board__grid" });
+  const colHeaders = grid.createDiv({ cls: "fk-board__col-headers" });
+  colHeaders.createDiv({ cls: "fk-swimlane__corner" });
+  for (const col of columnOptions) {
+    const totalCount = laneOptions.reduce(
+      (n, lane) => {
+        var _a2, _b2, _c2;
+        return n + ((_c2 = (_b2 = (_a2 = grouped.get(lane)) == null ? void 0 : _a2.get(col)) == null ? void 0 : _b2.length) != null ? _c2 : 0);
+      },
+      0
+    );
+    const colHeader = colHeaders.createDiv({ cls: "fk-col-header" });
+    colHeader.createSpan({ cls: "fk-column__title", text: capitalise(col) });
+    colHeader.createSpan({ cls: "fk-column__count", text: String(totalCount) });
+  }
+  for (const lane of laneOptions) {
+    const row = grid.createDiv({ cls: "fk-swimlane" });
+    row.dataset.laneValue = lane;
+    row.createDiv({ cls: "fk-swimlane__label", text: capitalise(lane) });
+    for (const col of columnOptions) {
+      const cards = (_c = (_b = grouped.get(lane)) == null ? void 0 : _b.get(col)) != null ? _c : [];
+      renderColumn(row, col, capitalise(col), cards, board, lane);
     }
   }
   return wrapper;
