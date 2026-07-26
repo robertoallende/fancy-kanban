@@ -71,12 +71,16 @@ function attachCardActions(boardEl: HTMLElement, board: Board, dispatch: (b: Boa
 		if (addBtn) {
 			const col = addBtn.closest<HTMLElement>('.fk-column');
 			const columnValue = col?.dataset.columnValue ?? '';
+			const laneValue = col?.dataset.laneValue;
+			const laneUpdates = laneValue && board.viewConfig.lanes
+				? { [board.viewConfig.lanes]: laneValue }
+				: {};
 			if (app) {
 				new CardModal(app, board, null, columnValue, (values) => {
-					dispatch(createCard(board, columnValue, values));
+					dispatch(createCard(board, columnValue, { ...laneUpdates, ...values }));
 				}, undefined, sourcePath).open();
 			} else {
-				dispatch(createCard(board, columnValue, {}));
+				dispatch(createCard(board, columnValue, laneUpdates));
 			}
 			return;
 		}
@@ -185,13 +189,21 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 			const col = currentCol;
 			clearDropState(boardEl);
 			if (col && draggingCardId) {
-				const toValue = col.dataset.columnValue ?? '';
+				const toColValue = col.dataset.columnValue ?? '';
+				const toLaneValue = col.dataset.laneValue;
 				const draggedCard = board.cards.find(c => c.id === draggingCardId);
-				const fromValue = draggedCard?.values[board.viewConfig.columns] ?? '';
-				if (fromValue === toValue || isTransitionAllowed(workflowMap, fromValue, toValue)) {
-					dispatch(reorderCard(board, draggingCardId, toValue, insertBeforeId));
-				} else if (fromValue !== toValue) {
-					showTransitionBlockedToast(fromValue, toValue);
+				const fromColValue = draggedCard?.values[board.viewConfig.columns] ?? '';
+				if (fromColValue === toColValue || isTransitionAllowed(workflowMap, fromColValue, toColValue)) {
+					let updatedBoard = board;
+					if (toLaneValue !== undefined && board.viewConfig.lanes && draggedCard) {
+						const fromLaneValue = draggedCard.values[board.viewConfig.lanes] ?? '';
+						if (fromLaneValue !== toLaneValue) {
+							updatedBoard = updateCard(board, draggingCardId, { [board.viewConfig.lanes]: toLaneValue });
+						}
+					}
+					dispatch(reorderCard(updatedBoard, draggingCardId, toColValue, insertBeforeId));
+				} else if (fromColValue !== toColValue) {
+					showTransitionBlockedToast(fromColValue, toColValue);
 				}
 			}
 			draggingCardId = null;

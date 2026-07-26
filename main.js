@@ -1216,12 +1216,14 @@ function attachCardActions(boardEl, board, dispatch, app, sourcePath = "") {
     if (addBtn) {
       const col = addBtn.closest(".fk-column");
       const columnValue = (_b = col == null ? void 0 : col.dataset.columnValue) != null ? _b : "";
+      const laneValue = col == null ? void 0 : col.dataset.laneValue;
+      const laneUpdates = laneValue && board.viewConfig.lanes ? { [board.viewConfig.lanes]: laneValue } : {};
       if (app) {
         new CardModal(app, board, null, columnValue, (values) => {
-          dispatch(createCard(board, columnValue, values));
+          dispatch(createCard(board, columnValue, { ...laneUpdates, ...values }));
         }, void 0, sourcePath).open();
       } else {
-        dispatch(createCard(board, columnValue, {}));
+        dispatch(createCard(board, columnValue, laneUpdates));
       }
       return;
     }
@@ -1314,20 +1316,28 @@ function attachDragDrop(boardEl, board, dispatch) {
       }
     };
     const onUp = () => {
-      var _a2, _b;
+      var _a2, _b, _c;
       activeDocument.removeEventListener("pointermove", onMove);
       activeDocument.removeEventListener("pointerup", onUp);
       if (!dragStarted) return;
       const col = currentCol;
       clearDropState(boardEl);
       if (col && draggingCardId) {
-        const toValue = (_a2 = col.dataset.columnValue) != null ? _a2 : "";
+        const toColValue = (_a2 = col.dataset.columnValue) != null ? _a2 : "";
+        const toLaneValue = col.dataset.laneValue;
         const draggedCard = board.cards.find((c) => c.id === draggingCardId);
-        const fromValue = (_b = draggedCard == null ? void 0 : draggedCard.values[board.viewConfig.columns]) != null ? _b : "";
-        if (fromValue === toValue || isTransitionAllowed(workflowMap, fromValue, toValue)) {
-          dispatch(reorderCard(board, draggingCardId, toValue, insertBeforeId));
-        } else if (fromValue !== toValue) {
-          showTransitionBlockedToast(fromValue, toValue);
+        const fromColValue = (_b = draggedCard == null ? void 0 : draggedCard.values[board.viewConfig.columns]) != null ? _b : "";
+        if (fromColValue === toColValue || isTransitionAllowed(workflowMap, fromColValue, toColValue)) {
+          let updatedBoard = board;
+          if (toLaneValue !== void 0 && board.viewConfig.lanes && draggedCard) {
+            const fromLaneValue = (_c = draggedCard.values[board.viewConfig.lanes]) != null ? _c : "";
+            if (fromLaneValue !== toLaneValue) {
+              updatedBoard = updateCard(board, draggingCardId, { [board.viewConfig.lanes]: toLaneValue });
+            }
+          }
+          dispatch(reorderCard(updatedBoard, draggingCardId, toColValue, insertBeforeId));
+        } else if (fromColValue !== toColValue) {
+          showTransitionBlockedToast(fromColValue, toColValue);
         }
       }
       draggingCardId = null;
