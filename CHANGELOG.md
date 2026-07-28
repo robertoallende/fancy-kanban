@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 - 27/07/2026
+
+- Improved test coverage for the render layer: the swimlane grid, lane-aware card modal, and column rendering are now covered by unit tests (578 tests across 27 files, up from 557); a `codecov.yml` policy sets appropriate thresholds per layer so the render layer's e2e-tested paths do not cause false failures
+- Added a support button to the plugin manifest — a heart icon now appears next to Fancy Kanban in Obsidian's Installed Plugins screen, linking to GitHub Sponsors for anyone who wants to help sustain development
+
 ## 0.7.0 - 26/07/2026
 
 - Added swimlane support: set `lanes: <field>` in the board config to group cards by a second Select field; the board renders as a grid with column headers across the top and lane labels on the left; dragging a card to a different lane row updates both the column and lane field values; the board settings modal includes a swimlane field picker
