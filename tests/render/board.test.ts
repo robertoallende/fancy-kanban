@@ -131,3 +131,77 @@ describe('renderBoard', () => {
 		});
 	});
 });
+
+const SWIMLANE_BOARD: Board = {
+	title: 'Swim Board',
+	fields: [
+		{ name: 'title', type: 'Text', label: 'Title' },
+		{ name: 'status', type: 'Select', label: 'Status', options: ['todo', 'done'], default: 'todo' },
+		{ name: 'assignee', type: 'Select', label: 'Assignee', options: ['alice', 'bob'], default: 'alice' },
+	],
+	viewConfig: { columns: 'status', lanes: 'assignee' },
+	rawWorkflow: '',
+	cards: [
+		{ id: 's1', values: { title: 'Alice todo', status: 'todo', assignee: 'alice' } },
+		{ id: 's2', values: { title: 'Alice done', status: 'done', assignee: 'alice' } },
+		{ id: 's3', values: { title: 'Bob todo',   status: 'todo', assignee: 'bob' } },
+	],
+};
+
+describe('renderBoard — swimlane grid', () => {
+	it('renders .fk-board__grid instead of .fk-board__columns when lanes is set', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		expect(el.querySelector('.fk-board__grid')).not.toBeNull();
+		expect(el.querySelector('.fk-board__columns')).toBeNull();
+	});
+
+	it('renders a .fk-board__col-headers row', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		expect(el.querySelector('.fk-board__col-headers')).not.toBeNull();
+	});
+
+	it('renders one column header per column option', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		const titles = Array.from(el.querySelectorAll('.fk-board__col-headers .fk-column__title')).map(n => n.textContent);
+		expect(titles).toEqual(['Todo', 'Done']);
+	});
+
+	it('column header count shows total cards across all lanes', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		const counts = Array.from(el.querySelectorAll('.fk-board__col-headers .fk-column__count')).map(n => n.textContent);
+		expect(counts).toEqual(['2', '1']); // todo: alice+bob=2, done: alice=1
+	});
+
+	it('renders one .fk-swimlane row per lane option', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		expect(el.querySelectorAll('.fk-swimlane').length).toBe(2);
+	});
+
+	it('renders lane labels with capitalised text', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		const labels = Array.from(el.querySelectorAll('.fk-swimlane__label')).map(n => n.textContent);
+		expect(labels).toEqual(['Alice', 'Bob']);
+	});
+
+	it('each swimlane row carries the correct data-lane-value', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		const laneValues = Array.from(el.querySelectorAll('.fk-swimlane')).map(n => (n as HTMLElement).dataset.laneValue);
+		expect(laneValues).toEqual(['alice', 'bob']);
+	});
+
+	it('cards appear in the correct lane × column cell', () => {
+		const container = document.createElement('div');
+		const el = renderBoard(container, SWIMLANE_BOARD);
+		const aliceTodo = el.querySelector('[data-lane-value="alice"][data-column-value="todo"]');
+		expect(aliceTodo?.querySelector('[data-card-id="s1"]')).not.toBeNull();
+		const bobTodo = el.querySelector('[data-lane-value="bob"][data-column-value="todo"]');
+		expect(bobTodo?.querySelector('[data-card-id="s3"]')).not.toBeNull();
+	});
+});

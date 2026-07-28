@@ -39,6 +39,17 @@ describe('effectiveLanes', () => {
 		expect(effectiveLanes(board)).toBeNull();
 	});
 
+	it('returns null when the lanes field has an empty options array', () => {
+		const board = makeBoard({
+			fields: [
+				{ name: 'status', type: 'Select', label: 'Status', options: ['todo'] },
+				{ name: 'assignee', type: 'Select', label: 'Assignee', options: [] },
+			],
+			viewConfig: { columns: 'status', lanes: 'assignee' },
+		});
+		expect(effectiveLanes(board)).toBeNull();
+	});
+
 	it('returns lane options in order when configured', () => {
 		const board = makeBoard({ viewConfig: { columns: 'status', lanes: 'assignee' } });
 		expect(effectiveLanes(board)).toEqual(['roberto', 'teacher']);
@@ -117,6 +128,26 @@ describe('groupCards', () => {
 		it('preserves column order from field options', () => {
 			const grouped = groupCards(laneBoard());
 			expect([...grouped.get('roberto')!.keys()]).toEqual(['todo', 'doing', 'done']);
+		});
+	});
+
+	describe('edge cases', () => {
+		it('returns empty column maps when the columns field is missing', () => {
+			const board = makeBoard({
+				viewConfig: { columns: 'nonexistent', lanes: 'assignee' },
+				cards: [],
+			});
+			const grouped = groupCards(board);
+			const colMap = grouped.get('roberto')!;
+			expect([...colMap.keys()]).toEqual([]);
+		});
+
+		it('does not throw when a card has neither column nor lane value', () => {
+			const board = makeBoard({
+				viewConfig: { columns: 'status', lanes: 'assignee' },
+				cards: [{ id: 'cx', values: {} }],
+			});
+			expect(() => groupCards(board)).not.toThrow();
 		});
 	});
 });

@@ -1,0 +1,17 @@
+coverage:
+  precision: 2
+  round: down
+  status:
+    project:
+      default:
+        target: 85%
+        threshold: 2%
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+      render:
+        paths:
+          - "src/render/**"
+        target: 60%
+        threshold: 5%

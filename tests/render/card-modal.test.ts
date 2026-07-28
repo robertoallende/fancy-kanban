@@ -234,6 +234,71 @@ describe('CardModal — Link field', () => {
 	});
 });
 
+describe('CardModal — initialValues (new card lane pre-population)', () => {
+	const LANE_BOARD: Board = {
+		title: 'Lane Board',
+		fields: [
+			{ name: '_id', type: 'Text', label: 'ID' },
+			{ name: 'title', type: 'Text', label: 'Title' },
+			{ name: 'status', type: 'Select', label: 'Status', options: ['todo', 'done'], default: 'todo' },
+			{ name: 'assignee', type: 'Select', label: 'Assignee', options: ['alice', 'bob'], default: 'alice' },
+		],
+		viewConfig: { columns: 'status', lanes: 'assignee' },
+		rawWorkflow: '',
+		cards: [],
+	};
+
+	function makeLaneModal(initialValues: Record<string, string>, onConfirm = vi.fn()) {
+		const modal = new CardModal({} as never, LANE_BOARD, null, 'todo', onConfirm, undefined, '', initialValues);
+		modal.open();
+		return { modal, onConfirm };
+	}
+
+	it('pre-selects the lane field to the value from initialValues', () => {
+		const { modal } = makeLaneModal({ assignee: 'bob' });
+		const sels = Array.from(modal.contentEl.querySelectorAll<HTMLSelectElement>('select'));
+		const assigneeSel = sels.find(s =>
+			s.closest('.fk-modal-field')?.querySelector('label')?.textContent === 'Assignee'
+		);
+		expect(assigneeSel?.value).toBe('bob');
+	});
+
+	it('initialValues overrides field.default for a new card', () => {
+		const { modal } = makeLaneModal({ assignee: 'bob' });
+		const sels = Array.from(modal.contentEl.querySelectorAll<HTMLSelectElement>('select'));
+		const assigneeSel = sels.find(s =>
+			s.closest('.fk-modal-field')?.querySelector('label')?.textContent === 'Assignee'
+		);
+		expect(assigneeSel?.value).not.toBe('alice'); // 'alice' is field.default
+	});
+
+	it('initialValues value is included in onConfirm payload', () => {
+		const { modal, onConfirm } = makeLaneModal({ assignee: 'bob' });
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ assignee: 'bob' }));
+	});
+
+	it('initialValues does not affect an edit card — card values take precedence', () => {
+		const card = { id: 'c1', values: { _id: 'c1', title: 'Task', status: 'done', assignee: 'alice' } };
+		const modal = new CardModal({} as never, LANE_BOARD, card, 'done', vi.fn(), undefined, '', { assignee: 'bob' });
+		modal.open();
+		const sels = Array.from(modal.contentEl.querySelectorAll<HTMLSelectElement>('select'));
+		const assigneeSel = sels.find(s =>
+			s.closest('.fk-modal-field')?.querySelector('label')?.textContent === 'Assignee'
+		);
+		expect(assigneeSel?.value).toBe('alice');
+	});
+
+	it('falls back to field.default when key is absent from initialValues', () => {
+		const { modal } = makeLaneModal({});
+		const sels = Array.from(modal.contentEl.querySelectorAll<HTMLSelectElement>('select'));
+		const assigneeSel = sels.find(s =>
+			s.closest('.fk-modal-field')?.querySelector('label')?.textContent === 'Assignee'
+		);
+		expect(assigneeSel?.value).toBe('alice'); // field.default
+	});
+});
+
 describe('CardModal — close', () => {
 	it('empties contentEl on close', () => {
 		const { modal } = makeModal(null);

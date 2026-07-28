@@ -101,3 +101,35 @@ describe('renderColumn', () => {
 		});
 	});
 });
+
+describe('renderColumn — lane value (swimlane cell)', () => {
+	it('sets data-lane-value on the container when laneValue is provided', () => {
+		const container = document.createElement('div');
+		const el = renderColumn(container, 'inbox', 'Inbox', [], BOARD, 'alice');
+		expect(el.dataset.laneValue).toBe('alice');
+	});
+
+	it('does not set data-lane-value when laneValue is omitted', () => {
+		const container = document.createElement('div');
+		const el = renderColumn(container, 'inbox', 'Inbox', [], BOARD);
+		expect(el.dataset.laneValue).toBeUndefined();
+	});
+
+	it('omits .fk-column__header when laneValue is provided', () => {
+		const container = document.createElement('div');
+		const el = renderColumn(container, 'inbox', 'Inbox', [], BOARD, 'alice');
+		expect(el.querySelector('.fk-column__header')).toBeNull();
+	});
+
+	it('still renders .fk-column__header when laneValue is omitted', () => {
+		const container = document.createElement('div');
+		const el = renderColumn(container, 'inbox', 'Inbox', [], BOARD);
+		expect(el.querySelector('.fk-column__header')).not.toBeNull();
+	});
+
+	it('still sets data-column-value regardless of laneValue', () => {
+		const container = document.createElement('div');
+		const el = renderColumn(container, 'inbox', 'Inbox', [], BOARD, 'alice');
+		expect(el.dataset.columnValue).toBe('inbox');
+	});
+});
