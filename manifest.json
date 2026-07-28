@@ -5,5 +5,8 @@
   "minAppVersion": "1.7.2",
   "description": "Embeddable kanban boards in any note, with native swimlanes and a relational field model.",
   "author": "Roberto Allende",
-  "isDesktopOnly": false
+  "isDesktopOnly": false,
+  "fundingUrl": {
+    "GitHub Sponsors": "https://github.com/sponsors/robertoallende"
+  }
 }
