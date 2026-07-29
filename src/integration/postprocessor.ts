@@ -1,8 +1,10 @@
-import type { Plugin, MarkdownPostProcessorContext } from 'obsidian';
-import { TFile } from 'obsidian';
+import type { App, Plugin, MarkdownPostProcessorContext } from 'obsidian';
+import { MarkdownRenderChild, TFile } from 'obsidian';
 import { parseBlock } from '../data/parser';
 import type { ParseIssue } from '../data/parser';
+import type { Board } from '../model/board';
 import { mountBoard } from '../render/mount';
+import type { SaveFn } from '../render/mount';
 import writeBack from './write-back';
 
 export function blockIndexFromContext(ctx: MarkdownPostProcessorContext, el: HTMLElement): number {
@@ -50,6 +52,30 @@ function renderWarningBanner(container: HTMLElement, warnings: ParseIssue[]): vo
 	dismiss.addEventListener('click', () => banner.remove());
 }
 
+class FancyKanbanView extends MarkdownRenderChild {
+	constructor(
+		el: HTMLElement,
+		private readonly board: Board,
+		private readonly save: SaveFn,
+		private readonly warnings: ParseIssue[],
+		private readonly isReadonly: boolean,
+		private readonly readonlyReason: string | undefined,
+		private readonly app: App,
+		private readonly sourcePath: string,
+	) {
+		super(el);
+	}
+
+	onload(): void {
+		if (this.isReadonly) {
+			this.containerEl.createEl('p', { cls: ['fk-banner', 'fk-banner--warning'], text: this.readonlyReason ?? '' });
+		}
+		if (this.warnings.length > 0) renderWarningBanner(this.containerEl, this.warnings);
+		const boardWrapper = this.containerEl.createDiv();
+		mountBoard(boardWrapper, this.board, this.save, this.app, this.sourcePath);
+	}
+}
+
 export function registerPostProcessor(plugin: Plugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('fancy-kanban', (source, el, ctx) => {
 		const result = parseBlock(source);
@@ -63,25 +89,20 @@ export function registerPostProcessor(plugin: Plugin): void {
 		const abstract = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
 		const file = abstract instanceof TFile ? abstract : null;
 
-		if (!file) {
-			if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-			const boardWrapper = el.createDiv();
-			mountBoard(boardWrapper, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
-			return;
-		}
-
-		if (result.readonly) {
-			el.createEl('p', { cls: ['fk-banner', 'fk-banner--warning'], text: result.readonlyReason ?? '' });
-		}
-
-		if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-
-		const boardWrapper = el.createDiv();
 		const blockIndex = blockIndexFromContext(ctx, el);
-		const save = result.readonly
+		const save: SaveFn = (result.readonly || !file)
 			? () => Promise.resolve()
-			: (b: typeof result.board) => writeBack(plugin.app.vault, file, blockIndex, b);
+			: (b) => writeBack(plugin.app.vault, file, blockIndex, b);
 
-		mountBoard(boardWrapper, result.board, save, plugin.app, ctx.sourcePath);
+		ctx.addChild(new FancyKanbanView(
+			el,
+			result.board,
+			save,
+			result.warnings,
+			result.readonly,
+			result.readonlyReason,
+			plugin.app,
+			ctx.sourcePath,
+		));
 	});
 }

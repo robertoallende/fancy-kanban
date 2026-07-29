@@ -47,6 +47,17 @@ function makeCtx(lineStart = 0, text = ''): { ctx: unknown; addChild: ReturnType
 	return { ctx, addChild };
 }
 
+function callAndLoad(
+	handler: (source: string, el: HTMLElement, ctx: unknown) => void,
+	source: string,
+	el: HTMLElement,
+): void {
+	const { ctx, addChild } = makeCtx();
+	handler(source, el, ctx);
+	const child = addChild.mock.calls[0]?.[0] as MarkdownRenderChild | undefined;
+	child?.onload();
+}
+
 const VALID_SOURCE = `---
 title: Test Board
 fields:
@@ -90,19 +101,19 @@ describe('registerPostProcessor', () => {
 	});
 
 	describe('handler — valid source', () => {
-		it('appends a .fk-board element to el', () => {
+		it('appends a .fk-board element to el after onload()', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), VALID_SOURCE, el);
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 
-		it('el has exactly one child after handler runs', () => {
+		it('el has exactly one child after onload()', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), VALID_SOURCE, el);
 			expect(el.children.length).toBe(1);
 		});
 
@@ -110,7 +121,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), VALID_SOURCE, el);
 			expect(el.querySelector('.fk-error')).toBeNull();
 		});
 
@@ -118,7 +129,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin('note.md', null);
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), VALID_SOURCE, el);
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 	});
@@ -128,7 +139,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), WARN_SOURCE, el);
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 
@@ -136,7 +147,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), WARN_SOURCE, el);
 			expect(el.querySelector('.fk-warning-banner')).not.toBeNull();
 		});
 
@@ -144,7 +155,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), WARN_SOURCE, el);
 			const banner = el.querySelector('.fk-warning-banner')!;
 			expect(banner.textContent!.length).toBeGreaterThan(0);
 		});
@@ -153,7 +164,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), WARN_SOURCE, el);
 			const dismiss = el.querySelector<HTMLButtonElement>('.fk-warning-banner__dismiss')!;
 			expect(dismiss).not.toBeNull();
 			dismiss.click();
@@ -164,7 +175,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
+			callAndLoad(getHandler(), WARN_SOURCE, el);
 			expect(el.querySelector('.fk-error-panel')).toBeNull();
 		});
 	});
