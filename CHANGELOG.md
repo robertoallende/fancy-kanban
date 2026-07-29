@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0 - 29/07/2026
+
+- Fixed intermittent blank rendering when a board block is at the top of a note or the cursor is positioned inside it: the post-processor now wraps board mounting in `MarkdownRenderChild.onload()` so Obsidian controls render timing ([#10](https://github.com/robertoallende/fancy-kanban/issues/10))
+
 ## 0.7.1 - 27/07/2026
 
 - Improved test coverage for the render layer: the swimlane grid, lane-aware card modal, and column rendering are now covered by unit tests (578 tests across 27 files, up from 557); a `codecov.yml` policy sets appropriate thresholds per layer so the render layer's e2e-tested paths do not cause false failures
