@@ -48,6 +48,12 @@ export class Modal {
 	onClose(): void {}
 }
 
+export class MarkdownRenderChild {
+	constructor(public containerEl: HTMLElement) {}
+	onload(): void {}
+	onunload(): void {}
+}
+
 export class Plugin {}
 export class TFile { path = ''; }
 export class Notice { constructor(_msg: string) {} }

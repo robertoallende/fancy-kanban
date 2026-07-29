@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import type { Plugin, TFile } from 'obsidian';
+import { MarkdownRenderChild } from 'obsidian';
 import { registerPostProcessor, blockIndexFromContext } from '../../src/integration/postprocessor';
 
 const MOCK_FILE = {} as TFile;
@@ -36,11 +37,14 @@ function makePlugin(filePath = 'note.md', file: TFile | null = MOCK_FILE): {
 	};
 }
 
-function makeCtx(lineStart = 0, text = ''): unknown {
-	return {
+function makeCtx(lineStart = 0, text = ''): { ctx: unknown; addChild: ReturnType<typeof vi.fn> } {
+	const addChild = vi.fn();
+	const ctx = {
 		sourcePath: 'note.md',
+		addChild,
 		getSectionInfo: vi.fn(() => ({ lineStart, lineEnd: lineStart + 10, text })),
 	};
+	return { ctx, addChild };
 }
 
 const VALID_SOURCE = `---
@@ -90,7 +94,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx());
+			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 
@@ -98,7 +102,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx());
+			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
 			expect(el.children.length).toBe(1);
 		});
 
@@ -106,7 +110,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx());
+			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-error')).toBeNull();
 		});
 
@@ -114,7 +118,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin('note.md', null);
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(VALID_SOURCE, el, makeCtx());
+			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 	});
@@ -124,7 +128,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx());
+			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-board')).not.toBeNull();
 		});
 
@@ -132,7 +136,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx());
+			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-warning-banner')).not.toBeNull();
 		});
 
@@ -140,7 +144,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx());
+			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
 			const banner = el.querySelector('.fk-warning-banner')!;
 			expect(banner.textContent!.length).toBeGreaterThan(0);
 		});
@@ -149,7 +153,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx());
+			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
 			const dismiss = el.querySelector<HTMLButtonElement>('.fk-warning-banner__dismiss')!;
 			expect(dismiss).not.toBeNull();
 			dismiss.click();
@@ -160,7 +164,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(WARN_SOURCE, el, makeCtx());
+			getHandler()(WARN_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-error-panel')).toBeNull();
 		});
 	});
@@ -170,7 +174,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-error-panel')).not.toBeNull();
 		});
 
@@ -178,7 +182,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			expect(el.children.length).toBe(1);
 		});
 
@@ -186,7 +190,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-board')).toBeNull();
 		});
 
@@ -194,7 +198,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			expect(el.querySelector('.fk-error')!.textContent!.length).toBeGreaterThan(0);
 		});
 
@@ -202,7 +206,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			const pre = el.querySelector('.fk-error-panel__source');
 			expect(pre).not.toBeNull();
 			expect(pre!.textContent).toBe(INVALID_SOURCE);
@@ -212,7 +216,7 @@ describe('registerPostProcessor', () => {
 			const { plugin, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			const btn = el.querySelector('.fk-error-panel__goto');
 			expect(btn).not.toBeNull();
 			expect(btn!.textContent).toBe('Go to source');
@@ -222,10 +226,49 @@ describe('registerPostProcessor', () => {
 			const { plugin, openLinkText, getHandler } = makePlugin();
 			registerPostProcessor(plugin);
 			const el = document.createElement('div');
-			getHandler()(INVALID_SOURCE, el, makeCtx());
+			getHandler()(INVALID_SOURCE, el, makeCtx().ctx);
 			const btn = el.querySelector<HTMLButtonElement>('.fk-error-panel__goto')!;
 			btn.click();
 			expect(openLinkText).toHaveBeenCalledWith('note.md', '', false);
+		});
+	});
+
+	describe('lifecycle — MarkdownRenderChild', () => {
+		it('calls ctx.addChild with a MarkdownRenderChild for a valid board', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			const { ctx, addChild } = makeCtx();
+			getHandler()(VALID_SOURCE, el, ctx);
+			expect(addChild).toHaveBeenCalledWith(expect.any(MarkdownRenderChild));
+		});
+
+		it('does not render .fk-board immediately — rendering is deferred to onload()', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			getHandler()(VALID_SOURCE, el, makeCtx().ctx);
+			expect(el.querySelector('.fk-board')).toBeNull();
+		});
+
+		it('renders .fk-board after onload() is called on the child', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			const { ctx, addChild } = makeCtx();
+			getHandler()(VALID_SOURCE, el, ctx);
+			const child = addChild.mock.calls[0][0] as MarkdownRenderChild;
+			child.onload();
+			expect(el.querySelector('.fk-board')).not.toBeNull();
+		});
+
+		it('does not call ctx.addChild on parse failure — error path is synchronous', () => {
+			const { plugin, getHandler } = makePlugin();
+			registerPostProcessor(plugin);
+			const el = document.createElement('div');
+			const { ctx, addChild } = makeCtx();
+			getHandler()(INVALID_SOURCE, el, ctx);
+			expect(addChild).not.toHaveBeenCalled();
 		});
 	});
 });
