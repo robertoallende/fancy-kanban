@@ -1442,9 +1442,29 @@ function renderWarningBanner(container, warnings) {
   dismiss.setAttribute("aria-label", "Dismiss warnings");
   dismiss.addEventListener("click", () => banner.remove());
 }
+var FancyKanbanView = class extends import_obsidian3.MarkdownRenderChild {
+  constructor(el, board, save, warnings, isReadonly, readonlyReason, app, sourcePath) {
+    super(el);
+    this.board = board;
+    this.save = save;
+    this.warnings = warnings;
+    this.isReadonly = isReadonly;
+    this.readonlyReason = readonlyReason;
+    this.app = app;
+    this.sourcePath = sourcePath;
+  }
+  onload() {
+    var _a;
+    if (this.isReadonly) {
+      this.containerEl.createEl("p", { cls: ["fk-banner", "fk-banner--warning"], text: (_a = this.readonlyReason) != null ? _a : "" });
+    }
+    if (this.warnings.length > 0) renderWarningBanner(this.containerEl, this.warnings);
+    const boardWrapper = this.containerEl.createDiv();
+    mountBoard(boardWrapper, this.board, this.save, this.app, this.sourcePath);
+  }
+};
 function registerPostProcessor(plugin) {
   plugin.registerMarkdownCodeBlockProcessor("fancy-kanban", (source, el, ctx) => {
-    var _a;
     const result = parseBlock(source);
     if (!result.ok) {
       renderErrorPanel(el, result.errors, source, () => {
@@ -1454,27 +1474,25 @@ function registerPostProcessor(plugin) {
     }
     const abstract = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     const file = abstract instanceof import_obsidian3.TFile ? abstract : null;
-    if (!file) {
-      if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-      const boardWrapper2 = el.createDiv();
-      mountBoard(boardWrapper2, result.board, () => Promise.resolve(), plugin.app, ctx.sourcePath);
-      return;
-    }
-    if (result.readonly) {
-      el.createEl("p", { cls: ["fk-banner", "fk-banner--warning"], text: (_a = result.readonlyReason) != null ? _a : "" });
-    }
-    if (result.warnings.length > 0) renderWarningBanner(el, result.warnings);
-    const boardWrapper = el.createDiv();
     const blockIndex = blockIndexFromContext(ctx, el);
-    const save = result.readonly ? () => Promise.resolve() : (b) => writeBack(plugin.app.vault, file, blockIndex, b);
-    mountBoard(boardWrapper, result.board, save, plugin.app, ctx.sourcePath);
+    const save = result.readonly || !file ? () => Promise.resolve() : (b) => writeBack(plugin.app.vault, file, blockIndex, b);
+    ctx.addChild(new FancyKanbanView(
+      el,
+      result.board,
+      save,
+      result.warnings,
+      result.readonly,
+      result.readonlyReason,
+      plugin.app,
+      ctx.sourcePath
+    ));
   });
 }
 
 // src/integration/standalone-view.ts
 var import_obsidian4 = require("obsidian");
 var VIEW_TYPE_FANCY_KANBAN = "fancy-kanban-view";
-var FancyKanbanView = class extends import_obsidian4.ItemView {
+var FancyKanbanView2 = class extends import_obsidian4.ItemView {
   constructor(leaf) {
     super(leaf);
     this.boardTitle = "Fancy Kanban";
@@ -1691,7 +1709,7 @@ function registerIcon() {
 var FancyKanbanPlugin = class extends import_obsidian5.Plugin {
   async onload() {
     registerIcon();
-    this.registerView(VIEW_TYPE_FANCY_KANBAN, (leaf) => new FancyKanbanView(leaf));
+    this.registerView(VIEW_TYPE_FANCY_KANBAN, (leaf) => new FancyKanbanView2(leaf));
     this.app.workspace.onLayoutReady(() => {
       this.app.workspace.getLeavesOfType(VIEW_TYPE_FANCY_KANBAN).forEach((leaf) => {
         void leaf.loadIfDeferred();
