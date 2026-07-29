@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1 - 30/07/2026
+
+- Re-release to resolve a manifest scanning issue with the Obsidian community plugin directory; no code changes
+
 ## 0.8.0 - 29/07/2026
 
 - Fixed intermittent blank rendering when a board block is at the top of a note or the cursor is positioned inside it: the post-processor now wraps board mounting in `MarkdownRenderChild.onload()` so Obsidian controls render timing ([#10](https://github.com/robertoallende/fancy-kanban/issues/10))
