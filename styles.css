@@ -355,10 +355,10 @@
   flex: none;
 }
 
-.fk-col-type    { width: 90px; }
+.fk-col-type    { width: 92px; }
 .fk-col-label   { width: 160px; }
 .fk-col-options { width: 120px; }
-.fk-col-default { width: 95px; }
+.fk-col-default { width: 100px; }
 
 .fk-modal-field-row input:disabled,
 .fk-modal-field-row select:disabled {
