@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.2 - 30/07/2026
+
+- Fixed long link URLs overflowing the card face: link labels now truncate with an ellipsis and the full URL is shown on hover
+
 ## 0.8.1 - 30/07/2026
 
 - Re-release to resolve a manifest scanning issue with the Obsidian community plugin directory; no code changes
