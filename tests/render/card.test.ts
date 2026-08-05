@@ -193,6 +193,17 @@ describe('renderCard', () => {
 			expect(links[0].dataset.href).toBe('notes/spec.md');
 			expect(links[1].dataset.href).toBe('https://example.com');
 		});
+
+		it('sets title attribute to full URL on Link field spans so long links are accessible on hover', () => {
+			const container = document.createElement('div');
+			const longUrl = 'https://www.example.com/very/long/path/that/overflows/the/card/width/easily';
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['docs'] } };
+			const card: Card = { ...CARD, values: { ...CARD.values, docs: longUrl } };
+			const el = renderCard(container, card, board);
+			const link = el.querySelector<HTMLElement>('.fk-card__field-link');
+			expect(link?.title).toBe(longUrl);
+			expect(link?.dataset.href).toBe(longUrl);
+		});
 	});
 
 	describe('drag', () => {

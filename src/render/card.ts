@@ -74,6 +74,7 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 				for (const item of splitLinks(value)) {
 					const span = linksEl.createSpan({ cls: 'fk-card__field-link', text: item });
 					span.dataset.href = item;
+					span.title = item;
 				}
 			} else if (field.type === 'Textarea' && /^- \[[ x]\]/m.test(value)) {
 				const listEl = row.createDiv({ cls: 'fk-card__checklist' });

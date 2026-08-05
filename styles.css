@@ -219,12 +219,17 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2px 8px;
+  min-width: 0;
 }
 
 .fk-card__field-link {
   cursor: pointer;
   color: var(--link-color);
   text-decoration: underline;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fk-card__field-link:hover {
