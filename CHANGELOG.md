@@ -3,8 +3,8 @@
 ## 0.8.2 - 30/07/2026
 
 - Fixed long link URLs overflowing the card face: link labels now truncate with an ellipsis and the full URL is shown on hover #11
-- Fixed the Type and Default dropdowns in the board setup fields table clipping their longest values ("Textarea" and "yesterday") due to Obsidian's native select chevron occupying space not accounted for in the fixed column widths
-- Added relative date defaults for Date fields: board setup now offers yesterday / today / tomorrow as default options; the card modal resolves the keyword to the actual date when a new card is created
+- Fixed the Type and Default dropdowns in the board setup fields table clipping their longest values ("Textarea" and "yesterday") due to Obsidian's native select chevron occupying space not accounted for in the fixed column widths #12
+- Added relative date defaults for Date fields: board setup now offers yesterday / today / tomorrow as default options; the card modal resolves the keyword to the actual date when a new card is created #13
 
 ## 0.8.1 - 30/07/2026
 

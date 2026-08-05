@@ -380,6 +380,7 @@ function renderCard(parent, card, board) {
         for (const item of splitLinks(value)) {
           const span = linksEl.createSpan({ cls: "fk-card__field-link", text: item });
           span.dataset.href = item;
+          span.title = item;
         }
       } else if (field.type === "Textarea" && /^- \[[ x]\]/m.test(value)) {
         const listEl = row.createDiv({ cls: "fk-card__checklist" });
@@ -653,6 +654,20 @@ function isTransitionAllowed(map, from, to) {
 
 // src/render/card-modal.ts
 var import_obsidian = require("obsidian");
+function toISODate(d) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function resolveDateDefault(value) {
+  if (!value) return "";
+  if (value === "yesterday" || value === "today" || value === "tomorrow") {
+    const d = /* @__PURE__ */ new Date();
+    if (value === "yesterday") d.setDate(d.getDate() - 1);
+    if (value === "tomorrow") d.setDate(d.getDate() + 1);
+    return toISODate(d);
+  }
+  return value;
+}
 var LinkFilePicker = class extends import_obsidian.FuzzySuggestModal {
   constructor(app, onSelect) {
     super(app);
@@ -710,7 +725,8 @@ var CardModal = class extends import_obsidian.Modal {
   }
   renderField(container, field, initialOverride) {
     var _a, _b, _c;
-    const initialValue = initialOverride != null ? initialOverride : this.card ? (_a = this.card.values[field.name]) != null ? _a : "" : (_c = (_b = this.initialValues[field.name]) != null ? _b : field.default) != null ? _c : "";
+    const rawDefault = field.type === "Date" ? resolveDateDefault(field.default) : (_a = field.default) != null ? _a : "";
+    const initialValue = initialOverride != null ? initialOverride : this.card ? (_b = this.card.values[field.name]) != null ? _b : "" : (_c = this.initialValues[field.name]) != null ? _c : rawDefault;
     this.values[field.name] = initialValue;
     const wrapper = container.createDiv({ cls: "fk-modal-field" });
     wrapper.createEl("label", { text: field.label });
@@ -923,27 +939,44 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
       if (t === field.type) o.selected = true;
     }
     const isSelect = field.type === "Select";
+    const isDate = field.type === "Date";
     const optionsInp = this.fixedInput(row, "a | b | c", ((_a = field.options) != null ? _a : []).join(", "), "fk-col-options");
     optionsInp.disabled = !isSelect;
     optionsInp.addEventListener("input", () => {
       field.options = optionsInp.value.split(",").map((s) => s.trim()).filter(Boolean);
     });
-    const defaultInp = this.fixedInput(row, "Default", (_b = field.default) != null ? _b : "", "fk-col-default");
+    const defaultInp = this.fixedInput(row, "Default", !isDate ? (_b = field.default) != null ? _b : "" : "", "fk-col-default");
     defaultInp.disabled = !isSelect;
+    if (isDate) defaultInp.classList.add("fk-hidden");
     defaultInp.addEventListener("input", () => {
       field.default = defaultInp.value || void 0;
+    });
+    const DATE_KEYWORDS = ["yesterday", "today", "tomorrow"];
+    const defaultDateSel = row.createEl("select", { cls: ["fk-modal-input-sm", "fk-col-default"] });
+    defaultDateSel.createEl("option", { text: "(none)", value: "" });
+    for (const kw of DATE_KEYWORDS) {
+      const o = defaultDateSel.createEl("option", { text: kw, value: kw });
+      if (field.default === kw) o.selected = true;
+    }
+    if (!isDate) defaultDateSel.classList.add("fk-hidden");
+    defaultDateSel.addEventListener("change", () => {
+      field.default = defaultDateSel.value || void 0;
     });
     typeSelect.addEventListener("change", () => {
       field.type = typeSelect.value;
       const nowSelect = field.type === "Select";
+      const nowDate = field.type === "Date";
       optionsInp.disabled = !nowSelect;
-      defaultInp.disabled = !nowSelect;
       if (!nowSelect) {
         field.options = void 0;
-        field.default = void 0;
         optionsInp.value = "";
-        defaultInp.value = "";
       }
+      field.default = void 0;
+      defaultInp.value = "";
+      defaultDateSel.value = "";
+      defaultInp.disabled = !nowSelect;
+      defaultInp.classList.toggle("fk-hidden", nowDate);
+      defaultDateSel.classList.toggle("fk-hidden", !nowDate);
     });
     const controls = row.createDiv({ cls: "fk-modal-row-controls" });
     const upBtn = this.iconBtn(controls, "\u2191", idx === 0);
