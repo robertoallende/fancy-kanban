@@ -355,10 +355,19 @@
   flex: none;
 }
 
-.fk-col-type    { width: auto; }
+.fk-col-type,
+.fk-col-default {
+  width: auto;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23888' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 8px 5px;
+}
 .fk-col-label   { width: 160px; }
 .fk-col-options { width: 120px; }
-.fk-col-default { width: auto; }
 
 .fk-modal-field-row input:disabled,
 .fk-modal-field-row select:disabled {
