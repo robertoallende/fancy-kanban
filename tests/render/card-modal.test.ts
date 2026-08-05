@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { CardModal } from '../../src/render/card-modal';
+import { CardModal, resolveDateDefault } from '../../src/render/card-modal';
 import type { Board, Card } from '../../src/model/board';
 
 const BOARD: Board = {
@@ -296,6 +296,96 @@ describe('CardModal — initialValues (new card lane pre-population)', () => {
 			s.closest('.fk-modal-field')?.querySelector('label')?.textContent === 'Assignee'
 		);
 		expect(assigneeSel?.value).toBe('alice'); // field.default
+	});
+});
+
+function localISO(d: Date): string {
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+describe('resolveDateDefault', () => {
+	it('returns empty string for undefined', () => {
+		expect(resolveDateDefault(undefined)).toBe('');
+	});
+
+	it('resolves "today" to today\'s local ISO date', () => {
+		expect(resolveDateDefault('today')).toBe(localISO(new Date()));
+	});
+
+	it('resolves "yesterday" to yesterday\'s local ISO date', () => {
+		const d = new Date();
+		d.setDate(d.getDate() - 1);
+		expect(resolveDateDefault('yesterday')).toBe(localISO(d));
+	});
+
+	it('resolves "tomorrow" to tomorrow\'s local ISO date', () => {
+		const d = new Date();
+		d.setDate(d.getDate() + 1);
+		expect(resolveDateDefault('tomorrow')).toBe(localISO(d));
+	});
+
+	it('returns an explicit ISO date string unchanged', () => {
+		expect(resolveDateDefault('2026-01-15')).toBe('2026-01-15');
+	});
+
+	it('returns an unrecognised string unchanged', () => {
+		expect(resolveDateDefault('someday')).toBe('someday');
+	});
+});
+
+describe('CardModal — Date field defaults', () => {
+	const DATE_BOARD: Board = {
+		title: 'Date Board',
+		fields: [
+			{ name: '_id', type: 'Text', label: 'ID' },
+			{ name: 'title', type: 'Text', label: 'Title' },
+			{ name: 'due', type: 'Date', label: 'Due', default: 'today' },
+			{ name: 'status', type: 'Select', label: 'Status', options: ['todo', 'done'], default: 'todo' },
+		],
+		viewConfig: { columns: 'status' },
+		rawWorkflow: '',
+		cards: [],
+	};
+
+	function makeDateModal(defaultValue: string | undefined, card: Card | null = null) {
+		const fields = DATE_BOARD.fields.map(f =>
+			f.name === 'due' ? { ...f, default: defaultValue } : f
+		);
+		const board = { ...DATE_BOARD, fields };
+		const modal = new CardModal({} as never, board, card, 'todo', vi.fn());
+		modal.open();
+		return modal;
+	}
+
+	function dueDateInput(modal: CardModal): HTMLInputElement {
+		const inputs = Array.from(modal.contentEl.querySelectorAll<HTMLInputElement>('input[type="date"]'));
+		return inputs[0];
+	}
+
+	it('pre-fills due date with today when default is "today"', () => {
+		const modal = makeDateModal('today');
+		expect(dueDateInput(modal).value).toBe(localISO(new Date()));
+	});
+
+	it('pre-fills due date with tomorrow when default is "tomorrow"', () => {
+		const d = new Date();
+		d.setDate(d.getDate() + 1);
+		const modal = makeDateModal('tomorrow');
+		expect(dueDateInput(modal).value).toBe(localISO(d));
+	});
+
+	it('pre-fills due date with yesterday when default is "yesterday"', () => {
+		const d = new Date();
+		d.setDate(d.getDate() - 1);
+		const modal = makeDateModal('yesterday');
+		expect(dueDateInput(modal).value).toBe(localISO(d));
+	});
+
+	it('does not apply keyword default when editing an existing card', () => {
+		const card: Card = { id: 'c1', values: { _id: 'c1', title: 'Task', due: '2025-03-01', status: 'todo' } };
+		const modal = makeDateModal('today', card);
+		expect(dueDateInput(modal).value).toBe('2025-03-01');
 	});
 });
 

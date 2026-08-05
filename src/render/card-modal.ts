@@ -2,6 +2,22 @@ import { App, Modal, FuzzySuggestModal, TFile } from 'obsidian';
 import type { Board, Card, FieldDefinition } from '../model/board';
 import { splitLinks, joinLinks, validateLinkItem } from '../data/link';
 
+function toISODate(d: Date): string {
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function resolveDateDefault(value: string | undefined): string {
+	if (!value) return '';
+	if (value === 'yesterday' || value === 'today' || value === 'tomorrow') {
+		const d = new Date();
+		if (value === 'yesterday') d.setDate(d.getDate() - 1);
+		if (value === 'tomorrow') d.setDate(d.getDate() + 1);
+		return toISODate(d);
+	}
+	return value;
+}
+
 class LinkFilePicker extends FuzzySuggestModal<TFile> {
 	constructor(app: App, private onSelect: (path: string) => void) {
 		super(app);
@@ -67,8 +83,11 @@ export class CardModal extends Modal {
 	}
 
 	private renderField(container: HTMLElement, field: FieldDefinition, initialOverride?: string): void {
+		const rawDefault = field.type === 'Date'
+			? resolveDateDefault(field.default)
+			: (field.default ?? '');
 		const initialValue = initialOverride
-			?? (this.card ? (this.card.values[field.name] ?? '') : (this.initialValues[field.name] ?? field.default ?? ''));
+			?? (this.card ? (this.card.values[field.name] ?? '') : (this.initialValues[field.name] ?? rawDefault));
 		this.values[field.name] = initialValue;
 
 		const wrapper = container.createDiv({ cls: 'fk-modal-field' });

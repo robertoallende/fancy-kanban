@@ -113,6 +113,7 @@ export class BoardConfigModal extends Modal {
 		}
 
 		const isSelect = field.type === 'Select';
+		const isDate = field.type === 'Date';
 
 		const optionsInp = this.fixedInput(row, 'a | b | c', (field.options ?? []).join(', '), 'fk-col-options');
 		optionsInp.disabled = !isSelect;
@@ -120,23 +121,40 @@ export class BoardConfigModal extends Modal {
 			field.options = optionsInp.value.split(',').map(s => s.trim()).filter(Boolean);
 		});
 
-		const defaultInp = this.fixedInput(row, 'Default', field.default ?? '', 'fk-col-default');
+		const defaultInp = this.fixedInput(row, 'Default', !isDate ? (field.default ?? '') : '', 'fk-col-default');
 		defaultInp.disabled = !isSelect;
+		if (isDate) defaultInp.classList.add('fk-hidden');
 		defaultInp.addEventListener('input', () => {
 			field.default = defaultInp.value || undefined;
+		});
+
+		const DATE_KEYWORDS = ['yesterday', 'today', 'tomorrow'] as const;
+		const defaultDateSel = row.createEl('select', { cls: ['fk-modal-input-sm', 'fk-col-default'] });
+		defaultDateSel.createEl('option', { text: '(none)', value: '' });
+		for (const kw of DATE_KEYWORDS) {
+			const o = defaultDateSel.createEl('option', { text: kw, value: kw });
+			if (field.default === kw) o.selected = true;
+		}
+		if (!isDate) defaultDateSel.classList.add('fk-hidden');
+		defaultDateSel.addEventListener('change', () => {
+			field.default = defaultDateSel.value || undefined;
 		});
 
 		typeSelect.addEventListener('change', () => {
 			field.type = typeSelect.value as FieldType;
 			const nowSelect = field.type === 'Select';
+			const nowDate = field.type === 'Date';
 			optionsInp.disabled = !nowSelect;
-			defaultInp.disabled = !nowSelect;
 			if (!nowSelect) {
 				field.options = undefined;
-				field.default = undefined;
 				optionsInp.value = '';
-				defaultInp.value = '';
 			}
+			field.default = undefined;
+			defaultInp.value = '';
+			defaultDateSel.value = '';
+			defaultInp.disabled = !nowSelect;
+			defaultInp.classList.toggle('fk-hidden', nowDate);
+			defaultDateSel.classList.toggle('fk-hidden', !nowDate);
 		});
 
 		// Reorder / remove controls
