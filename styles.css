@@ -358,7 +358,7 @@
 .fk-col-type    { width: auto; }
 .fk-col-label   { width: 160px; }
 .fk-col-options { width: 120px; }
-.fk-col-default { width: 65px; }
+.fk-col-default { width: auto; }
 
 .fk-modal-field-row input:disabled,
 .fk-modal-field-row select:disabled {
