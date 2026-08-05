@@ -355,7 +355,7 @@
   flex: none;
 }
 
-.fk-col-type    { width: 105px; }
+.fk-col-type    { width: auto; }
 .fk-col-label   { width: 160px; }
 .fk-col-options { width: 120px; }
 .fk-col-default { width: 65px; }
