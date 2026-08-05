@@ -2,7 +2,8 @@
 
 ## 0.8.2 - 30/07/2026
 
-- Fixed long link URLs overflowing the card face: link labels now truncate with an ellipsis and the full URL is shown on hover
+- Fixed long link URLs overflowing the card face: link labels now truncate with an ellipsis and the full URL is shown on hover #11
+- Fixed the field type dropdown in board setup being too narrow to display "Textarea" without clipping
 
 ## 0.8.1 - 30/07/2026
 
