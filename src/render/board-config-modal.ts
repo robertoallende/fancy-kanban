@@ -159,11 +159,54 @@ export class BoardConfigModal extends Modal {
 		const isSelect = field.type === 'Select';
 		const isDate = field.type === 'Date';
 
-		const optionsInp = this.fixedInput(row, 'a | b | c', (field.options ?? []).join(', '), 'fk-col-options');
-		optionsInp.disabled = !isSelect;
-		optionsInp.addEventListener('input', () => {
-			field.options = optionsInp.value.split(',').map(s => s.trim()).filter(Boolean);
-		});
+		// Options editor — only created for Select fields; created/removed on type change
+		let optionsEditor: HTMLElement | null = null;
+
+		const renderOptionRows = () => {
+			if (!optionsEditor) return;
+			optionsEditor.innerHTML = '';
+			for (let i = 0; i < (field.options ?? []).length; i++) {
+				const opt = (field.options ?? [])[i];
+				const optRow = optionsEditor.createDiv({ cls: 'fk-option-row' });
+				const nameInp = optRow.createEl('input', { type: 'text', cls: 'fk-modal-input-sm' });
+				nameInp.value = opt;
+				nameInp.addEventListener('input', () => {
+					if (field.options) {
+						const oldName = field.options[i];
+						field.options[i] = nameInp.value;
+						if (field.colors && field.colors[oldName] !== undefined) {
+							field.colors[nameInp.value] = field.colors[oldName];
+							delete field.colors[oldName];
+						}
+					}
+				});
+				const colorInp = optRow.createEl('input', { type: 'color', cls: 'fk-option-color' });
+				colorInp.value = field.colors?.[opt] ?? '#cccccc';
+				colorInp.addEventListener('input', () => {
+					if (!field.colors) field.colors = {};
+					field.colors[field.options![i]] = colorInp.value;
+				});
+				const removeBtn = optRow.createEl('button', { cls: 'fk-option-remove', text: '×' });
+				removeBtn.addEventListener('click', () => {
+					const removed = field.options!.splice(i, 1)[0];
+					if (field.colors) delete field.colors[removed];
+					renderOptionRows();
+				});
+			}
+			const addOptBtn = optionsEditor.createEl('button', { cls: 'fk-modal-add-option', text: '+ Add option' });
+			addOptBtn.addEventListener('click', () => {
+				if (!field.options) field.options = [];
+				field.options.push('');
+				renderOptionRows();
+			});
+		};
+
+		const createOptionsEditor = () => {
+			optionsEditor = row.createDiv({ cls: 'fk-options-editor' });
+			renderOptionRows();
+		};
+
+		if (isSelect) createOptionsEditor();
 
 		const defaultInp = this.fixedInput(row, 'Default', !isDate ? (field.default ?? '') : '', 'fk-col-default');
 		defaultInp.disabled = !isSelect;
@@ -188,10 +231,14 @@ export class BoardConfigModal extends Modal {
 			field.type = typeSelect.value as FieldType;
 			const nowSelect = field.type === 'Select';
 			const nowDate = field.type === 'Date';
-			optionsInp.disabled = !nowSelect;
-			if (!nowSelect) {
+			if (nowSelect) {
+				if (!field.options) field.options = [];
+				if (!optionsEditor) createOptionsEditor();
+				else renderOptionRows();
+			} else {
 				field.options = undefined;
-				optionsInp.value = '';
+				field.colors = undefined;
+				if (optionsEditor) { optionsEditor.remove(); optionsEditor = null; }
 			}
 			field.default = undefined;
 			defaultInp.value = '';

@@ -315,9 +315,13 @@ describe('BoardConfigModal — tab navigation', () => {
 		const typeSelect = lastRow.querySelector('.fk-col-type') as HTMLSelectElement;
 		typeSelect.value = 'Select';
 		typeSelect.dispatchEvent(new Event('change'));
-		const optionsInp = lastRow.querySelector('.fk-col-options') as HTMLInputElement;
-		optionsInp.value = 'north, south';
-		optionsInp.dispatchEvent(new Event('input'));
+		// Add options via the options editor
+		const addOptBtn = lastRow.querySelector<HTMLButtonElement>('.fk-modal-add-option')!;
+		addOptBtn.click(); // north
+		addOptBtn.click(); // south
+		const nameInputs = lastRow.querySelectorAll<HTMLInputElement>('.fk-option-row input[type="text"]');
+		nameInputs[0].value = 'north'; nameInputs[0].dispatchEvent(new Event('input'));
+		nameInputs[1].value = 'south'; nameInputs[1].dispatchEvent(new Event('input'));
 		// Switch to Layout — new field should appear in columns select
 		clickTab(modal, 'Layout');
 		const colSelect = modal.contentEl.querySelector<HTMLSelectElement>('[data-role="columns"]')!;
@@ -351,6 +355,111 @@ describe('BoardConfigModal — tab navigation', () => {
 		expect(onConfirm).toHaveBeenCalledTimes(1);
 		const schema = onConfirm.mock.calls[0][0] as BoardSchema;
 		expect(schema.viewConfig.columns).toBe('status');
+	});
+});
+
+describe('BoardConfigModal — Select options editor', () => {
+	const SCHEMA_WITH_COLORS: BoardSchema = {
+		title: 'My Board',
+		fields: [
+			{ name: 'title', type: 'Text', label: 'Title' },
+			{ name: 'status', type: 'Select', label: 'Status',
+			  options: ['todo', 'doing', 'done'],
+			  colors: { todo: '#e74c3c', doing: '#3498db' },
+			  default: 'todo' },
+		],
+		viewConfig: { columns: 'status' },
+		rawWorkflow: '',
+	};
+
+	it('renders an fk-options-editor for a Select field', () => {
+		const { modal } = makeModal(SCHEMA);
+		const editors = modal.contentEl.querySelectorAll('.fk-options-editor');
+		expect(editors.length).toBe(1);
+	});
+
+	it('renders one option row per option', () => {
+		const { modal } = makeModal(SCHEMA);
+		const rows = modal.contentEl.querySelectorAll('.fk-option-row');
+		expect(rows.length).toBe(3); // todo, doing, done
+	});
+
+	it('each option row has a name input and a color input', () => {
+		const { modal } = makeModal(SCHEMA);
+		const rows = modal.contentEl.querySelectorAll('.fk-option-row');
+		rows.forEach(row => {
+			expect(row.querySelector('input[type="text"]')).not.toBeNull();
+			expect(row.querySelector('input[type="color"]')).not.toBeNull();
+		});
+	});
+
+	it('pre-populates option name inputs from field.options', () => {
+		const { modal } = makeModal(SCHEMA);
+		const nameInputs = Array.from(
+			modal.contentEl.querySelectorAll<HTMLInputElement>('.fk-option-row input[type="text"]')
+		);
+		expect(nameInputs.map(i => i.value)).toEqual(['todo', 'doing', 'done']);
+	});
+
+	it('pre-populates color swatches from field.colors', () => {
+		const { modal } = makeModal(SCHEMA_WITH_COLORS);
+		const rows = modal.contentEl.querySelectorAll('.fk-option-row');
+		const todoColor = rows[0].querySelector<HTMLInputElement>('input[type="color"]')!;
+		const doingColor = rows[1].querySelector<HTMLInputElement>('input[type="color"]')!;
+		expect(todoColor.value).toBe('#e74c3c');
+		expect(doingColor.value).toBe('#3498db');
+	});
+
+	it('does not render an fk-options-editor for a non-Select field', () => {
+		const schemaTextOnly: BoardSchema = {
+			...SCHEMA,
+			fields: [{ name: 'title', type: 'Text', label: 'Title' }],
+		};
+		const { modal } = makeModal(schemaTextOnly);
+		expect(modal.contentEl.querySelector('.fk-options-editor')).toBeNull();
+	});
+
+	it('includes colors in saved schema when color inputs are changed', () => {
+		const { modal, onConfirm } = makeModal(SCHEMA);
+		const colorInputs = modal.contentEl.querySelectorAll<HTMLInputElement>(
+			'.fk-option-row input[type="color"]'
+		);
+		colorInputs[0].value = '#ff0000';
+		colorInputs[0].dispatchEvent(new Event('input'));
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		const schema = onConfirm.mock.calls[0][0] as BoardSchema;
+		expect(schema.fields.find(f => f.name === 'status')?.colors?.todo).toBe('#ff0000');
+	});
+
+	it('Add option button appends a new empty option row', () => {
+		const { modal } = makeModal(SCHEMA);
+		const before = modal.contentEl.querySelectorAll('.fk-option-row').length;
+		const addBtn = Array.from(modal.contentEl.querySelectorAll('button'))
+			.find(b => b.textContent === '+ Add option') as HTMLButtonElement;
+		addBtn.click();
+		const after = modal.contentEl.querySelectorAll('.fk-option-row').length;
+		expect(after).toBe(before + 1);
+	});
+
+	it('remove button on an option row removes it', () => {
+		const { modal } = makeModal(SCHEMA);
+		const before = modal.contentEl.querySelectorAll('.fk-option-row').length;
+		const removeBtn = modal.contentEl.querySelector<HTMLButtonElement>('.fk-option-remove')!;
+		removeBtn.click();
+		const after = modal.contentEl.querySelectorAll('.fk-option-row').length;
+		expect(after).toBe(before - 1);
+	});
+
+	it('saved schema options reflect name inputs in the editor', () => {
+		const { modal, onConfirm } = makeModal(SCHEMA);
+		const nameInputs = modal.contentEl.querySelectorAll<HTMLInputElement>(
+			'.fk-option-row input[type="text"]'
+		);
+		nameInputs[0].value = 'backlog';
+		nameInputs[0].dispatchEvent(new Event('input'));
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		const schema = onConfirm.mock.calls[0][0] as BoardSchema;
+		expect(schema.fields.find(f => f.name === 'status')?.options?.[0]).toBe('backlog');
 	});
 });
 
