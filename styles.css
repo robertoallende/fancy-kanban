@@ -385,7 +385,7 @@
   display: flex;
   flex-wrap: nowrap;
   gap: 4px;
-  align-items: center;
+  align-items: flex-start;
   padding: 6px;
   background: var(--background-secondary);
   border-radius: 4px;
@@ -412,6 +412,7 @@
   gap: 2px;
   margin-left: auto;
   flex-shrink: 0;
+  padding-top: 2px;
 }
 
 .fk-board .fk-modal-icon-btn,
@@ -432,6 +433,71 @@
 .fk-modal-icon-btn:disabled {
   opacity: 0.2;
   cursor: default;
+}
+
+.fk-options-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fk-option-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fk-option-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-smaller);
+  height: 24px;
+  padding: 2px 6px;
+}
+
+.fk-option-row input[type="color"] {
+  width: 22px;
+  height: 22px;
+  padding: 1px;
+  border-radius: 50%;
+  border: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  flex-shrink: 0;
+  background: none;
+}
+
+.fk-option-remove {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  opacity: 0.4;
+  font-size: var(--font-smaller);
+  padding: 0 2px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.fk-option-remove:hover {
+  opacity: 1;
+}
+
+.fk-modal-add-option {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--font-smaller);
+  opacity: 0.5;
+  padding: 2px 0;
+  margin-top: 2px;
+}
+
+.fk-modal-add-option:hover {
+  opacity: 1;
 }
 
 .fk-modal-add-field {
