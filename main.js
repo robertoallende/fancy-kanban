@@ -322,6 +322,40 @@ function validateLinkItem(raw) {
   return { valid: true };
 }
 
+// src/render/inline.ts
+var INLINE_TOKEN = /(\*\*(.+?)\*\*|\*(.+?)\*|~~(.+?)~~|`([^`]+)`)/g;
+function renderInline(text, container) {
+  let last = 0;
+  let match;
+  INLINE_TOKEN.lastIndex = 0;
+  while ((match = INLINE_TOKEN.exec(text)) !== null) {
+    if (match.index > last) {
+      container.appendChild(document.createTextNode(text.slice(last, match.index)));
+    }
+    if (match[2] !== void 0) {
+      const el = document.createElement("strong");
+      el.textContent = match[2];
+      container.appendChild(el);
+    } else if (match[3] !== void 0) {
+      const el = document.createElement("em");
+      el.textContent = match[3];
+      container.appendChild(el);
+    } else if (match[4] !== void 0) {
+      const el = document.createElement("del");
+      el.textContent = match[4];
+      container.appendChild(el);
+    } else if (match[5] !== void 0) {
+      const el = document.createElement("code");
+      el.textContent = match[5];
+      container.appendChild(el);
+    }
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) {
+    container.appendChild(document.createTextNode(text.slice(last)));
+  }
+}
+
 // src/render/card.ts
 function parseChecklistValue(value) {
   return value.split("\n").map((line) => {
@@ -391,13 +425,25 @@ function renderCard(parent, card, board) {
             input.checked = item.checked;
             input.dataset.field = field.name;
             input.dataset.lineIndex = String(idx);
-            label.createSpan({ text: item.text });
+            renderInline(item.text, label.createSpan({ cls: "fk-card__checklist-label" }));
           } else if (item.text.trim()) {
             listEl.createSpan({ cls: "fk-card__checklist-text", text: item.text });
           }
         });
+      } else if (field.type === "Textarea" && /^- .+/m.test(value)) {
+        const ul = row.createEl("ul");
+        for (const line of value.split("\n")) {
+          const text = line.replace(/^- /, "");
+          if (text) renderInline(text, ul.createEl("li"));
+        }
+      } else if (field.type === "Textarea" && /^\d+\. .+/m.test(value)) {
+        const ol = row.createEl("ol");
+        for (const line of value.split("\n")) {
+          const text = line.replace(/^\d+\. /, "");
+          if (text) renderInline(text, ol.createEl("li"));
+        }
       } else {
-        row.createSpan({ cls: "fk-card__field-value", text: value });
+        renderInline(value, row.createSpan({ cls: "fk-card__field-value" }));
       }
     }
     if (!fieldsEl.childElementCount) fieldsEl.remove();
