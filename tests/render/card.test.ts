@@ -206,6 +206,77 @@ describe('renderCard', () => {
 		});
 	});
 
+	describe('markdown rendering on card face', () => {
+		const MD_BOARD: Board = {
+			...BASE_BOARD,
+			fields: [
+				{ name: 'title', type: 'Text', label: 'Title' },
+				{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'], default: 'inbox' },
+				{ name: 'notes', type: 'Textarea', label: 'Notes' },
+			],
+			viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['notes'] },
+		};
+
+		it('renders **bold** in a Text field value as <strong>', () => {
+			const container = document.createElement('div');
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] },
+				fields: [
+					{ name: 'title', type: 'Text', label: 'Title' },
+					{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'] },
+					{ name: 'due', type: 'Text', label: 'Priority' },
+				],
+			};
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', due: '**urgent**' } };
+			const el = renderCard(container, card, board);
+			expect(el.querySelector('.fk-card__field-value strong')?.textContent).toBe('urgent');
+		});
+
+		it('renders *italic* in a Text field value as <em>', () => {
+			const container = document.createElement('div');
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] },
+				fields: [
+					{ name: 'title', type: 'Text', label: 'Title' },
+					{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'] },
+					{ name: 'due', type: 'Text', label: 'Note' },
+				],
+			};
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', due: '*maybe*' } };
+			const el = renderCard(container, card, board);
+			expect(el.querySelector('.fk-card__field-value em')?.textContent).toBe('maybe');
+		});
+
+		it('renders a Textarea value of "- a\\n- b" as a <ul> with two <li> elements', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: '- alpha\n- beta' } };
+			const el = renderCard(container, card, MD_BOARD);
+			const ul = el.querySelector('ul');
+			expect(ul).not.toBeNull();
+			const items = ul!.querySelectorAll('li');
+			expect(items.length).toBe(2);
+			expect(items[0].textContent).toBe('alpha');
+			expect(items[1].textContent).toBe('beta');
+		});
+
+		it('renders a Textarea value of "1. a\\n2. b" as an <ol> with two <li> elements', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: '1. first\n2. second' } };
+			const el = renderCard(container, card, MD_BOARD);
+			const ol = el.querySelector('ol');
+			expect(ol).not.toBeNull();
+			const items = ol!.querySelectorAll('li');
+			expect(items.length).toBe(2);
+			expect(items[0].textContent).toBe('first');
+			expect(items[1].textContent).toBe('second');
+		});
+
+		it('renders **bold** inside a checklist item label as <strong>', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: '- [ ] **important**' } };
+			const el = renderCard(container, card, MD_BOARD);
+			expect(el.querySelector('.fk-card__checklist-item strong')?.textContent).toBe('important');
+		});
+	});
+
 	describe('drag', () => {
 		it('has class fk-card--draggable', () => {
 			const container = document.createElement('div');
