@@ -34,6 +34,10 @@ function serializeConfig(board: Board): string {
 	for (const field of board.fields) {
 		let line = `  - name: ${field.name}, type: ${field.type}, label: ${field.label}`;
 		if (field.options !== undefined) line += `, options: ${field.options.join('|')}`;
+		if (field.colors !== undefined) {
+			const colorsStr = Object.entries(field.colors).map(([k, v]) => `${k}=${v}`).join('|');
+			line += `, colors: ${colorsStr}`;
+		}
 		if (field.default !== undefined) line += `, default: ${field.default}`;
 		lines.push(line);
 	}

@@ -184,6 +184,38 @@ describe('serializeBoard', () => {
 			if (!result.ok) throw new Error(result.error);
 			expect(result.board.viewConfig.cardLabels).toBe(false);
 		});
+
+		it('includes colors in the field line when defined', () => {
+			const board: Board = {
+				...MINIMAL_BOARD,
+				fields: [
+					{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'],
+					  colors: { inbox: '#3498db', done: '#27ae60' }, default: 'inbox' },
+					{ name: 'title', type: 'Text', label: 'Title' },
+				],
+			};
+			const text = serializeBoard(board);
+			expect(text).toContain('colors: inbox=#3498db|done=#27ae60');
+		});
+
+		it('omits colors from the field line when undefined', () => {
+			const text = serializeBoard(MINIMAL_BOARD);
+			expect(text).not.toContain('colors:');
+		});
+
+		it('round-trips colors through serialize then parse', () => {
+			const board: Board = {
+				...MINIMAL_BOARD,
+				fields: [
+					{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'],
+					  colors: { inbox: '#3498db', done: '#27ae60' }, default: 'inbox' },
+					{ name: 'title', type: 'Text', label: 'Title' },
+				],
+			};
+			const result = parseBlock(serializeBoard(board));
+			if (!result.ok) throw new Error(result.error);
+			expect(result.board.fields[0].colors).toEqual({ inbox: '#3498db', done: '#27ae60' });
+		});
 	});
 
 	describe('table header', () => {

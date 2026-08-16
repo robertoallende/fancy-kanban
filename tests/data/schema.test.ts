@@ -235,6 +235,42 @@ describe('card_labels parsing', () => {
 	});
 });
 
+describe('colors parsing on Select fields', () => {
+	it('parses colors map from a Select field', () => {
+		const config = `
+title: Board
+fields:
+  - name: status, type: Select, options: inbox|done, label: Status
+  - name: priority, type: Select, options: High|Medium|Low, colors: High=#e74c3c|Medium=#f39c12|Low=#27ae60, label: Priority
+`.trim();
+		const result = parseConfig(config);
+		const priority = result.fields.find(f => f.name === 'priority')!;
+		expect(priority.colors).toEqual({ High: '#e74c3c', Medium: '#f39c12', Low: '#27ae60' });
+	});
+
+	it('leaves colors undefined when the key is absent', () => {
+		const config = `
+title: Board
+fields:
+  - name: status, type: Select, options: inbox|done, label: Status
+`.trim();
+		const result = parseConfig(config);
+		expect(result.fields[0].colors).toBeUndefined();
+	});
+
+	it('skips malformed tokens (no = sign) and keeps valid ones', () => {
+		const config = `
+title: Board
+fields:
+  - name: status, type: Select, options: inbox|done, label: Status
+  - name: priority, type: Select, options: High|Medium|Low, colors: High=#e74c3c|Medium|Low=#27ae60, label: Priority
+`.trim();
+		const result = parseConfig(config);
+		const priority = result.fields.find(f => f.name === 'priority')!;
+		expect(priority.colors).toEqual({ High: '#e74c3c', Low: '#27ae60' });
+	});
+});
+
 describe('reconcileCards', () => {
 	const fields = [
 		{ name: 'status', type: 'Select' as const, label: 'Status', options: ['inbox', 'done'], default: 'inbox' },

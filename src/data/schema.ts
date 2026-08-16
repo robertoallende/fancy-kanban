@@ -93,6 +93,15 @@ function parseFieldLine(line: string): { field: FieldDefinition; warning?: Confi
 	};
 
 	if (kvs['options'] !== undefined) field.options = kvs['options'].split('|');
+	if (kvs['colors'] !== undefined) {
+		const colors: Record<string, string> = {};
+		for (const token of kvs['colors'].split('|')) {
+			const eq = token.indexOf('=');
+			if (eq === -1) continue;
+			colors[token.slice(0, eq)] = token.slice(eq + 1);
+		}
+		if (Object.keys(colors).length > 0) field.colors = colors;
+	}
 	if (kvs['default'] !== undefined) field.default = kvs['default'];
 
 	return { field, warning };

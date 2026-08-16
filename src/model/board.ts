@@ -5,6 +5,7 @@ export interface FieldDefinition {
 	type: FieldType;
 	label: string;
 	options?: string[];
+	colors?: Record<string, string>;
 	default?: string;
 }
 
