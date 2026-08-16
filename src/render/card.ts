@@ -1,5 +1,6 @@
 import type { Board, Card } from '../model/board';
 import { splitLinks } from '../data/link';
+import { renderInline } from './inline';
 
 export type ChecklistLine =
 	| { kind: 'checkbox'; checked: boolean; text: string }
@@ -85,13 +86,25 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 						input.checked = item.checked;
 						input.dataset.field = field.name;
 						input.dataset.lineIndex = String(idx);
-						label.createSpan({ text: item.text });
+						renderInline(item.text, label.createSpan({ cls: 'fk-card__checklist-label' }));
 					} else if (item.text.trim()) {
 						listEl.createSpan({ cls: 'fk-card__checklist-text', text: item.text });
 					}
 				});
+			} else if (field.type === 'Textarea' && /^- .+/m.test(value)) {
+				const ul = row.createEl('ul');
+				for (const line of value.split('\n')) {
+					const text = line.replace(/^- /, '');
+					if (text) renderInline(text, ul.createEl('li'));
+				}
+			} else if (field.type === 'Textarea' && /^\d+\. .+/m.test(value)) {
+				const ol = row.createEl('ol');
+				for (const line of value.split('\n')) {
+					const text = line.replace(/^\d+\. /, '');
+					if (text) renderInline(text, ol.createEl('li'));
+				}
 			} else {
-				row.createSpan({ cls: 'fk-card__field-value', text: value });
+				renderInline(value, row.createSpan({ cls: 'fk-card__field-value' }));
 			}
 		}
 
