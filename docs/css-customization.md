@@ -30,6 +30,28 @@ Link fields are excluded from `data-key` / `data-value` — each link item alrea
 </div>
 ```
 
+## Colored chips (built-in)
+
+Select fields support a built-in `colors` config key that maps option names to hex colors. When a color is defined for a value, it renders automatically as a colored pill — no CSS required.
+
+Configure colors in the board setup modal (Fields tab → options editor) or directly in the config block:
+
+```
+- name: priority, type: Select, options: High|Medium|Low,
+  colors: High=#e74c3c|Medium=#f39c12|Low=#27ae60, label: Priority
+```
+
+The pill uses white text on all background colors. You can override this with CSS using the `data-value` attribute that is still present on chip spans:
+
+```css
+/* Soften shipped chips in the done column */
+.fk-card[data-column="done"] .fk-card__field-chip[data-value="Shipped"] {
+    opacity: 0.6;
+}
+```
+
+See `samples/colored-select.md` for a working example.
+
 ## Recipes
 
 ### Color a card by column
