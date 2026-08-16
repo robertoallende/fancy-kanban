@@ -140,6 +140,7 @@ fields:
 | `type` | yes | One of: `Text`, `Textarea`, `Date`, `Number`, `Select`, `Link` |
 | `label` | yes | Human-readable column header. Must match the markdown table header exactly. |
 | `options` | Select only | Pipe-separated (`\|`) list of allowed values |
+| `colors` | Select, optional | Pipe-separated `name=hex` pairs assigning a background color to each option (e.g. `High=#e74c3c\|Low=#27ae60`). Options without an entry render as plain text. |
 | `default` | no | Default value for new cards |
 
 ### Field Types
@@ -150,7 +151,7 @@ fields:
 | `Textarea` | String with `<br>` for newlines | Multi-line text |
 | `Date` | `YYYY-MM-DD` | Calendar date |
 | `Number` | Integer or decimal string | Numeric value |
-| `Select` | One of the `options` values | Constrained choice |
+| `Select` | One of the `options` values | Constrained choice; options may carry hex colors via the `colors` property |
 | `Link` | `<br>`-separated list of paths or URIs | Vault-root-relative paths (`notes/doc.pdf`) or external URIs (`https://…`, `ftp://…`, `mailto:…`) |
 
 ### Special Field Names
@@ -241,7 +242,7 @@ When writing: `|` → `\|`, any newline → `<br>`.
 2. Split on the first `---` line to locate the config section start
 3. Split on the second `---` line to separate config from table
 4. Parse config line-by-line: extract `title`, `version`, `fields`, `workflow`, `lanes`, `card_title`, `card_fields`, `card_labels`
-5. For `fields`, collect lines starting with `- ` and parse each as comma-separated `key: value` pairs
+5. For `fields`, collect lines starting with `- ` and parse each as comma-separated `key: value` pairs; `colors` is decoded as pipe-separated `name=hex` tokens
 6. Find table lines in the body (lines starting with `|`)
 7. First table line is the header row — extract column labels; `_id` is always first
 8. Map remaining header labels to field names via case-insensitive label lookup
