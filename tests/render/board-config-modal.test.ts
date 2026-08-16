@@ -283,6 +283,75 @@ describe('BoardConfigModal — tab navigation', () => {
 		clickTab(modal, 'Layout');
 		expect(modal.contentEl.querySelector('[data-role="columns"]')).not.toBeNull();
 	});
+
+	it('only the active tab button has fk-tab--active after switching to Layout', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Layout');
+		const active = tabs(modal).filter(b => b.classList.contains('fk-tab--active'));
+		expect(active.length).toBe(1);
+		expect(active[0].textContent).toBe('Layout');
+	});
+
+	it('only the active tab button has fk-tab--active after switching back to Fields', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Layout');
+		clickTab(modal, 'Fields');
+		const active = tabs(modal).filter(b => b.classList.contains('fk-tab--active'));
+		expect(active.length).toBe(1);
+		expect(active[0].textContent).toBe('Fields');
+	});
+
+	it('field added on Fields tab appears in Layout columns select after switching', () => {
+		const { modal } = makeModal(SCHEMA);
+		// Add a new Select field on Fields tab
+		const addBtn = Array.from(modal.contentEl.querySelectorAll('button'))
+			.find(b => b.textContent?.includes('Add field')) as HTMLButtonElement;
+		addBtn.click();
+		const rows = modal.contentEl.querySelectorAll('.fk-modal-field-row');
+		const lastRow = rows[rows.length - 1];
+		const labelInp = lastRow.querySelector('.fk-col-label') as HTMLInputElement;
+		labelInp.value = 'Region';
+		labelInp.dispatchEvent(new Event('input'));
+		const typeSelect = lastRow.querySelector('.fk-col-type') as HTMLSelectElement;
+		typeSelect.value = 'Select';
+		typeSelect.dispatchEvent(new Event('change'));
+		const optionsInp = lastRow.querySelector('.fk-col-options') as HTMLInputElement;
+		optionsInp.value = 'north, south';
+		optionsInp.dispatchEvent(new Event('input'));
+		// Switch to Layout — new field should appear in columns select
+		clickTab(modal, 'Layout');
+		const colSelect = modal.contentEl.querySelector<HTMLSelectElement>('[data-role="columns"]')!;
+		const options = Array.from(colSelect.options).map(o => o.value);
+		expect(options).toContain('region');
+	});
+
+	it('field added on Fields tab appears in Card display add-field select after switching', () => {
+		const { modal } = makeModal(SCHEMA);
+		const addBtn = Array.from(modal.contentEl.querySelectorAll('button'))
+			.find(b => b.textContent?.includes('Add field')) as HTMLButtonElement;
+		addBtn.click();
+		const rows = modal.contentEl.querySelectorAll('.fk-modal-field-row');
+		const lastRow = rows[rows.length - 1];
+		const labelInp = lastRow.querySelector('.fk-col-label') as HTMLInputElement;
+		labelInp.value = 'Notes';
+		labelInp.dispatchEvent(new Event('input'));
+		// Switch to Card display — new field should appear in the add-field select
+		clickTab(modal, 'Card display');
+		const addSelect = modal.contentEl.querySelector<HTMLSelectElement>('[data-role="card-display-select"]')!;
+		const options = Array.from(addSelect.options).map(o => o.value);
+		expect(options).toContain('notes');
+	});
+
+	it('save can be called from the Layout tab and includes schema changes', () => {
+		const onConfirm = vi.fn();
+		const modal = new BoardConfigModal({} as never, SCHEMA, onConfirm);
+		modal.open();
+		clickTab(modal, 'Layout');
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		expect(onConfirm).toHaveBeenCalledTimes(1);
+		const schema = onConfirm.mock.calls[0][0] as BoardSchema;
+		expect(schema.viewConfig.columns).toBe('status');
+	});
 });
 
 describe('BoardConfigModal — close', () => {
