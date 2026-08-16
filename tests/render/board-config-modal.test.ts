@@ -215,6 +215,73 @@ describe('BoardConfigModal — dynamic field list', () => {
 	});
 });
 
+describe('BoardConfigModal — tab navigation', () => {
+	function tabs(modal: BoardConfigModal): HTMLButtonElement[] {
+		return Array.from(modal.contentEl.querySelectorAll<HTMLButtonElement>('.fk-tab'));
+	}
+
+	function clickTab(modal: BoardConfigModal, label: string): void {
+		const tab = tabs(modal).find(b => b.textContent === label);
+		if (!tab) throw new Error(`Tab "${label}" not found`);
+		tab.click();
+	}
+
+	it('renders a tab bar with three tabs: Fields, Layout, Card display', () => {
+		const { modal } = makeModal(SCHEMA);
+		const labels = tabs(modal).map(b => b.textContent);
+		expect(labels).toEqual(['Fields', 'Layout', 'Card display']);
+	});
+
+	it('Fields tab is active by default', () => {
+		const { modal } = makeModal(SCHEMA);
+		const fieldsTab = tabs(modal).find(b => b.textContent === 'Fields');
+		expect(fieldsTab?.classList.contains('fk-tab--active')).toBe(true);
+	});
+
+	it('clicking Layout makes it the active tab', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Layout');
+		const layoutTab = tabs(modal).find(b => b.textContent === 'Layout');
+		expect(layoutTab?.classList.contains('fk-tab--active')).toBe(true);
+	});
+
+	it('clicking Layout deactivates Fields tab', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Layout');
+		const fieldsTab = tabs(modal).find(b => b.textContent === 'Fields');
+		expect(fieldsTab?.classList.contains('fk-tab--active')).toBe(false);
+	});
+
+	it('clicking Card display makes it the active tab', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Card display');
+		const cardTab = tabs(modal).find(b => b.textContent === 'Card display');
+		expect(cardTab?.classList.contains('fk-tab--active')).toBe(true);
+	});
+
+	it('field rows are visible on the Fields tab', () => {
+		const { modal } = makeModal(SCHEMA);
+		expect(modal.contentEl.querySelector('.fk-modal-field-row')).not.toBeNull();
+	});
+
+	it('field rows are not rendered on the Layout tab', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Layout');
+		expect(modal.contentEl.querySelector('.fk-modal-field-row')).toBeNull();
+	});
+
+	it('columns select is not rendered on the Fields tab', () => {
+		const { modal } = makeModal(SCHEMA);
+		expect(modal.contentEl.querySelector('[data-role="columns"]')).toBeNull();
+	});
+
+	it('columns select is rendered after switching to Layout', () => {
+		const { modal } = makeModal(SCHEMA);
+		clickTab(modal, 'Layout');
+		expect(modal.contentEl.querySelector('[data-role="columns"]')).not.toBeNull();
+	});
+});
+
 describe('BoardConfigModal — close', () => {
 	it('empties contentEl on close', () => {
 		const { modal } = makeModal();
