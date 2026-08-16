@@ -122,9 +122,12 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 			} else if (field.type === 'Textarea') {
 				renderTextareaBlocks(value, row.createDiv({ cls: 'fk-card__field-value' }));
 			} else {
-				const valueSpan = row.createSpan({ cls: 'fk-card__field-value' });
+				const color = field.colors?.[value];
+				const cls = color ? ['fk-card__field-value', 'fk-card__field-chip'] : 'fk-card__field-value';
+				const valueSpan = row.createSpan({ cls });
 				valueSpan.dataset.key = field.name;
 				valueSpan.dataset.value = value;
+				if (color) valueSpan.style.backgroundColor = color;
 				renderInline(value, valueSpan);
 			}
 		}

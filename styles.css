@@ -215,6 +215,16 @@
   word-break: break-word;
 }
 
+.fk-card__field-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  color: #fff;
+  font-size: 0.8em;
+  font-weight: 500;
+  opacity: 1;
+}
+
 .fk-card__field-links {
   display: flex;
   flex-wrap: wrap;

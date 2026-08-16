@@ -303,6 +303,72 @@ describe('renderCard', () => {
 		});
 	});
 
+	describe('colored chip rendering', () => {
+		const CHIP_BOARD: Board = {
+			...BASE_BOARD,
+			fields: [
+				{ name: 'title', type: 'Text', label: 'Title' },
+				{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'], default: 'inbox' },
+				{ name: 'priority', type: 'Select', label: 'Priority',
+				  options: ['High', 'Medium', 'Low'],
+				  colors: { High: '#e74c3c', Medium: '#f39c12', Low: '#27ae60' },
+				  default: 'Medium' },
+			],
+			viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['priority'] },
+		};
+
+		it('renders a Select field value with a color as fk-card__field-chip', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', priority: 'High' } };
+			const el = renderCard(container, card, CHIP_BOARD);
+			const span = el.querySelector<HTMLElement>('.fk-card__field-value');
+			expect(span?.classList.contains('fk-card__field-chip')).toBe(true);
+		});
+
+		it('chip span has inline background-color matching the field color', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', priority: 'High' } };
+			const el = renderCard(container, card, CHIP_BOARD);
+			const span = el.querySelector<HTMLElement>('.fk-card__field-chip');
+			expect(span?.style.backgroundColor).toBe('rgb(231, 76, 60)');
+		});
+
+		it('Select field value without a matching color does not get fk-card__field-chip', () => {
+			const board: Board = {
+				...CHIP_BOARD,
+				fields: [
+					{ name: 'title', type: 'Text', label: 'Title' },
+					{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'], default: 'inbox' },
+					{ name: 'priority', type: 'Select', label: 'Priority',
+					  options: ['High', 'Medium', 'Low'],
+					  colors: { High: '#e74c3c' }, // Medium and Low have no color
+					  default: 'Medium' },
+				],
+			};
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', priority: 'Medium' } };
+			const el = renderCard(container, card, board);
+			const span = el.querySelector<HTMLElement>('.fk-card__field-value');
+			expect(span?.classList.contains('fk-card__field-chip')).toBe(false);
+		});
+
+		it('Select field with no colors defined does not render any chip', () => {
+			const container = document.createElement('div');
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] } };
+			const el = renderCard(container, CARD, board);
+			expect(el.querySelector('.fk-card__field-chip')).toBeNull();
+		});
+
+		it('chip span still has data-key and data-value', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', priority: 'High' } };
+			const el = renderCard(container, card, CHIP_BOARD);
+			const chip = el.querySelector<HTMLElement>('.fk-card__field-chip');
+			expect(chip?.dataset.key).toBe('priority');
+			expect(chip?.dataset.value).toBe('High');
+		});
+	});
+
 	describe('data attributes', () => {
 		it('sets data-column to the card status value', () => {
 			const container = document.createElement('div');
