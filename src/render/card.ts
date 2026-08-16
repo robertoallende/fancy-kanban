@@ -70,6 +70,10 @@ function renderTextareaBlocks(value: string, container: HTMLElement): void {
 export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLElement {
 	const container = parent.createDiv({ cls: ['fk-card', 'fk-card--draggable'] });
 	container.dataset.cardId = card.id;
+	container.dataset.column = card.values[board.viewConfig.columns] ?? '';
+	if (board.viewConfig.lanes) {
+		container.dataset.lane = card.values[board.viewConfig.lanes] ?? '';
+	}
 
 	const titleFieldName = effectiveCardTitle(board);
 	if (titleFieldName !== null) {
@@ -118,7 +122,10 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 			} else if (field.type === 'Textarea') {
 				renderTextareaBlocks(value, row.createDiv({ cls: 'fk-card__field-value' }));
 			} else {
-				renderInline(value, row.createSpan({ cls: 'fk-card__field-value' }));
+				const valueSpan = row.createSpan({ cls: 'fk-card__field-value' });
+				valueSpan.dataset.key = field.name;
+				valueSpan.dataset.value = value;
+				renderInline(value, valueSpan);
 			}
 		}
 

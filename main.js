@@ -390,20 +390,47 @@ function effectiveCardFields(board) {
     (name) => name !== titleField && board.fields.some((f) => f.name === name)
   );
 }
+function renderTextareaBlocks(value, container) {
+  const lines = value.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^- /.test(line)) {
+      const ul = container.createEl("ul");
+      while (i < lines.length && /^- /.test(lines[i])) {
+        renderInline(lines[i].replace(/^- /, ""), ul.createEl("li"));
+        i++;
+      }
+    } else if (/^\d+\. /.test(line)) {
+      const ol = container.createEl("ol");
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        renderInline(lines[i].replace(/^\d+\. /, ""), ol.createEl("li"));
+        i++;
+      }
+    } else {
+      if (line.trim()) renderInline(line, container.createDiv());
+      i++;
+    }
+  }
+}
 function renderCard(parent, card, board) {
-  var _a, _b;
+  var _a, _b, _c, _d;
   const container = parent.createDiv({ cls: ["fk-card", "fk-card--draggable"] });
   container.dataset.cardId = card.id;
+  container.dataset.column = (_a = card.values[board.viewConfig.columns]) != null ? _a : "";
+  if (board.viewConfig.lanes) {
+    container.dataset.lane = (_b = card.values[board.viewConfig.lanes]) != null ? _b : "";
+  }
   const titleFieldName = effectiveCardTitle(board);
   if (titleFieldName !== null) {
-    container.createDiv({ cls: "fk-card__title", text: (_a = card.values[titleFieldName]) != null ? _a : "" });
+    renderInline((_c = card.values[titleFieldName]) != null ? _c : "", container.createDiv({ cls: "fk-card__title" }));
   }
   const secondaryFields = effectiveCardFields(board).map((name) => board.fields.find((f) => f.name === name)).filter((f) => f !== void 0);
   if (secondaryFields.length) {
     const fieldsEl = container.createDiv({ cls: "fk-card__fields" });
     const showLabels = board.viewConfig.cardLabels !== false;
     for (const field of secondaryFields) {
-      const value = (_b = card.values[field.name]) != null ? _b : "";
+      const value = (_d = card.values[field.name]) != null ? _d : "";
       if (!value) continue;
       const row = fieldsEl.createDiv({ cls: "fk-card__field" });
       if (showLabels) {
@@ -430,20 +457,13 @@ function renderCard(parent, card, board) {
             listEl.createSpan({ cls: "fk-card__checklist-text", text: item.text });
           }
         });
-      } else if (field.type === "Textarea" && /^- .+/m.test(value)) {
-        const ul = row.createEl("ul");
-        for (const line of value.split("\n")) {
-          const text = line.replace(/^- /, "");
-          if (text) renderInline(text, ul.createEl("li"));
-        }
-      } else if (field.type === "Textarea" && /^\d+\. .+/m.test(value)) {
-        const ol = row.createEl("ol");
-        for (const line of value.split("\n")) {
-          const text = line.replace(/^\d+\. /, "");
-          if (text) renderInline(text, ol.createEl("li"));
-        }
+      } else if (field.type === "Textarea") {
+        renderTextareaBlocks(value, row.createDiv({ cls: "fk-card__field-value" }));
       } else {
-        renderInline(value, row.createSpan({ cls: "fk-card__field-value" }));
+        const valueSpan = row.createSpan({ cls: "fk-card__field-value" });
+        valueSpan.dataset.key = field.name;
+        valueSpan.dataset.value = value;
+        renderInline(value, valueSpan);
       }
     }
     if (!fieldsEl.childElementCount) fieldsEl.remove();

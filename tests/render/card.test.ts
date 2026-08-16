@@ -302,4 +302,93 @@ describe('renderCard', () => {
 			expect(el.classList.contains('fk-card--draggable')).toBe(true);
 		});
 	});
+
+	describe('data attributes', () => {
+		it('sets data-column to the card status value', () => {
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
+			expect(el.dataset.column).toBe('inbox');
+		});
+
+		it('data-column reflects the actual column value of the card', () => {
+			const container = document.createElement('div');
+			const card: Card = { ...CARD, values: { ...CARD.values, status: 'done' } };
+			const el = renderCard(container, card, BASE_BOARD);
+			expect(el.dataset.column).toBe('done');
+		});
+
+		it('sets data-lane when the board has swimlanes', () => {
+			const container = document.createElement('div');
+			const board: Board = {
+				...BASE_BOARD,
+				fields: [
+					...BASE_BOARD.fields,
+					{ name: 'owner', type: 'Select', label: 'Owner', options: ['alice', 'bob'], default: 'alice' },
+				],
+				viewConfig: { columns: 'status', lanes: 'owner' },
+			};
+			const card: Card = { ...CARD, values: { ...CARD.values, owner: 'alice' } };
+			const el = renderCard(container, card, board);
+			expect(el.dataset.lane).toBe('alice');
+		});
+
+		it('omits data-lane when the board has no swimlanes', () => {
+			const container = document.createElement('div');
+			const el = renderCard(container, CARD, BASE_BOARD);
+			expect(el.dataset.lane).toBeUndefined();
+		});
+
+		it('secondary Text field value span has data-key and data-value', () => {
+			const container = document.createElement('div');
+			const board: Board = {
+				...BASE_BOARD,
+				viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] },
+			};
+			const el = renderCard(container, CARD, board);
+			const span = el.querySelector<HTMLElement>('.fk-card__field-value');
+			expect(span?.dataset.key).toBe('due');
+			expect(span?.dataset.value).toBe('2026-08-01');
+		});
+
+		it('secondary Select field value span has data-key and data-value', () => {
+			const container = document.createElement('div');
+			const board: Board = {
+				...BASE_BOARD,
+				fields: [
+					{ name: 'title', type: 'Text', label: 'Title' },
+					{ name: 'status', type: 'Select', label: 'Status', options: ['inbox', 'done'], default: 'inbox' },
+					{ name: 'priority', type: 'Select', label: 'Priority', options: ['low', 'high'], default: 'low' },
+				],
+				viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['priority'] },
+			};
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', priority: 'high' } };
+			const el = renderCard(container, card, board);
+			const span = el.querySelector<HTMLElement>('.fk-card__field-value');
+			expect(span?.dataset.key).toBe('priority');
+			expect(span?.dataset.value).toBe('high');
+		});
+
+		it('secondary Date field value span has data-key and data-value', () => {
+			const container = document.createElement('div');
+			const board: Board = {
+				...BASE_BOARD,
+				viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['due'] },
+			};
+			const el = renderCard(container, CARD, board);
+			const span = el.querySelector<HTMLElement>('.fk-card__field-value');
+			expect(span?.dataset.key).toBe('due');
+			expect(span?.dataset.value).toBe('2026-08-01');
+		});
+
+		it('Link field spans do not get data-key or data-value', () => {
+			const container = document.createElement('div');
+			const board: Board = { ...BASE_BOARD, viewConfig: { columns: 'status', cardTitle: 'title', cardFields: ['docs'] } };
+			const card: Card = { ...CARD, values: { ...CARD.values, docs: 'notes/spec.md' } };
+			const el = renderCard(container, card, board);
+			const link = el.querySelector<HTMLElement>('.fk-card__field-link');
+			expect(link?.dataset.key).toBeUndefined();
+			expect(link?.dataset.value).toBeUndefined();
+			expect(link?.dataset.href).toBe('notes/spec.md');
+		});
+	});
 });
