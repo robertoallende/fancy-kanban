@@ -35,8 +35,8 @@ Link fields are excluded from `data-key` / `data-value` — each link item alrea
 ### Color a card by column
 
 ```css
-.fk-card[data-column="doing"] {
-    border-left: 3px solid steelblue;
+.fk-card[data-column="inbox"] {
+    border-left: 4px solid steelblue;
 }
 
 .fk-card[data-column="blocked"] {
@@ -48,7 +48,7 @@ Link fields are excluded from `data-key` / `data-value` — each link item alrea
 ### Color a card by a field value
 
 ```css
-/* Red background when Priority is High */
+/* Red background when priority is High */
 .fk-card:has(.fk-card__field-value[data-key="priority"][data-value="High"]) {
     background-color: #ffcccc;
 }
@@ -56,6 +56,20 @@ Link fields are excluded from `data-key` / `data-value` — each link item alrea
 /* Muted when effort is 0 */
 .fk-card:has(.fk-card__field-value[data-key="effort"][data-value="0"]) {
     opacity: 0.5;
+}
+```
+
+### Combining both in one file
+
+Multiple rules work together in a single snippet file:
+
+```css
+.fk-card[data-column="inbox"] {
+    border-left: 4px solid steelblue;
+}
+
+.fk-card:has(.fk-card__field-value[data-key="priority"][data-value="High"]) {
+    background-color: #ffcccc;
 }
 ```
 
@@ -82,7 +96,7 @@ Link fields are excluded from `data-key` / `data-value` — each link item alrea
 
 ## How to apply a snippet
 
-1. Create a `.css` file in your vault's `.obsidian/snippets/` folder (create the folder if it does not exist).
+1. Create a `.css` file with any name in your vault's `.obsidian/snippets/` folder (create the folder if it does not exist).
 2. Paste your CSS rules into the file.
 3. Open Obsidian Settings → Appearance → CSS snippets and enable the file.
 
@@ -90,6 +104,7 @@ Changes to the file take effect immediately — no reload required.
 
 ## Notes
 
+- `data-key` matches the field's `name` as defined in the board config, not its `label`. If a rule is not matching, use the devtools element picker to check the exact string in `data-key` on the span.
 - `data-value` reflects the stored value, not a display-transformed one. Date values are ISO strings (`2026-08-17`); Select values match the option name exactly as defined in the board config.
 - `:has()` is supported in all modern browsers and in the Electron build of Obsidian that ships the desktop app.
 - Textarea and checklist fields do not receive `data-key` / `data-value` because their content renders as structured sub-elements rather than a single value span.

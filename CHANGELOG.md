@@ -4,6 +4,7 @@
 
 - Board setup modal is now organised into three tabs — Fields, Layout, and Card display — making it easier to navigate as boards grow more complex; switching tabs preserves all unsaved changes
 - Card face now renders inline markdown: `**bold**`, `*italic*`, `~~strikethrough~~`, and `` `code` `` are formatted in all text fields including the card title; Textarea fields also support unordered and ordered lists, and mixed prose-and-list content renders in document order
+- Cards now expose data attributes (`data-column`, `data-lane`, `data-key`, `data-value`) on their DOM elements, enabling CSS color-coding via Obsidian snippets; see `docs/css-customization.md` for examples #14
 
 ## 0.8.2 - 30/07/2026
 
