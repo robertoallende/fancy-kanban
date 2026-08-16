@@ -43,6 +43,30 @@ export function effectiveCardFields(board: Board): string[] {
 	);
 }
 
+function renderTextareaBlocks(value: string, container: HTMLElement): void {
+	const lines = value.split('\n');
+	let i = 0;
+	while (i < lines.length) {
+		const line = lines[i];
+		if (/^- /.test(line)) {
+			const ul = container.createEl('ul');
+			while (i < lines.length && /^- /.test(lines[i])) {
+				renderInline(lines[i].replace(/^- /, ''), ul.createEl('li'));
+				i++;
+			}
+		} else if (/^\d+\. /.test(line)) {
+			const ol = container.createEl('ol');
+			while (i < lines.length && /^\d+\. /.test(lines[i])) {
+				renderInline(lines[i].replace(/^\d+\. /, ''), ol.createEl('li'));
+				i++;
+			}
+		} else {
+			if (line.trim()) renderInline(line, container.createDiv({ cls: 'fk-card__field-value' }));
+			i++;
+		}
+	}
+}
+
 export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLElement {
 	const container = parent.createDiv({ cls: ['fk-card', 'fk-card--draggable'] });
 	container.dataset.cardId = card.id;
@@ -91,18 +115,8 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 						listEl.createSpan({ cls: 'fk-card__checklist-text', text: item.text });
 					}
 				});
-			} else if (field.type === 'Textarea' && value.split('\n').filter(l => l.trim()).every(l => /^- /.test(l))) {
-				const ul = row.createEl('ul');
-				for (const line of value.split('\n')) {
-					const text = line.replace(/^- /, '');
-					if (text) renderInline(text, ul.createEl('li'));
-				}
-			} else if (field.type === 'Textarea' && value.split('\n').filter(l => l.trim()).every(l => /^\d+\. /.test(l))) {
-				const ol = row.createEl('ol');
-				for (const line of value.split('\n')) {
-					const text = line.replace(/^\d+\. /, '');
-					if (text) renderInline(text, ol.createEl('li'));
-				}
+			} else if (field.type === 'Textarea') {
+				renderTextareaBlocks(value, row);
 			} else {
 				renderInline(value, row.createSpan({ cls: 'fk-card__field-value' }));
 			}

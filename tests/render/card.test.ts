@@ -276,12 +276,14 @@ describe('renderCard', () => {
 			expect(el.querySelector('.fk-card__title strong')?.textContent).toBe('urgent');
 		});
 
-		it('renders mixed prose+list Textarea as plain text, not a list', () => {
+		it('renders mixed prose+list Textarea with prose as text block and list items as <ul>', () => {
 			const container = document.createElement('div');
-			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: 'intro text\n- item one' } };
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: 'intro text\n- item one\n- item two' } };
 			const el = renderCard(container, card, MD_BOARD);
-			expect(el.querySelector('ul')).toBeNull();
-			expect(el.querySelector('.fk-card__field-value')).not.toBeNull();
+			expect(el.querySelector('.fk-card__field-value')?.textContent).toBe('intro text');
+			const ul = el.querySelector('ul');
+			expect(ul).not.toBeNull();
+			expect(ul!.querySelectorAll('li').length).toBe(2);
 		});
 
 		it('renders **bold** inside a checklist item label as <strong>', () => {
