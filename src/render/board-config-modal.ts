@@ -41,9 +41,14 @@ export class BoardConfigModal extends Modal {
 		private onConfirm: (schema: BoardSchema) => void,
 	) {
 		super(app);
+		const cloneField = (f: FieldDefinition): FieldDefinition => ({
+			...f,
+			options: f.options ? [...f.options] : undefined,
+			colors: f.colors ? { ...f.colors } : undefined,
+		});
 		this.schema = initial
-			? { ...initial, fields: initial.fields.map(f => ({ ...f })) }
-			: { ...DEFAULT_SCHEMA, fields: DEFAULT_SCHEMA.fields.map(f => ({ ...f })) };
+			? { ...initial, fields: initial.fields.map(cloneField) }
+			: { ...DEFAULT_SCHEMA, fields: DEFAULT_SCHEMA.fields.map(cloneField) };
 	}
 
 	onOpen(): void {

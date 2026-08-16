@@ -43,10 +43,13 @@ async function renameColumn(from: string, to: string): Promise<void> {
             const label = row.querySelector('.fk-col-label') as HTMLInputElement;
             return label?.value === 'Status';
         });
-        const optionsInp = statusRow?.querySelector('.fk-col-options') as HTMLInputElement;
-        if (optionsInp) {
-            optionsInp.value = optionsInp.value.replace(fromVal, toVal);
-            optionsInp.dispatchEvent(new Event('input'));
+        const nameInputs = Array.from(
+            statusRow?.querySelectorAll<HTMLInputElement>('.fk-option-row input[type="text"]') ?? []
+        );
+        const target = nameInputs.find(inp => inp.value === fromVal);
+        if (target) {
+            target.value = toVal;
+            target.dispatchEvent(new Event('input'));
         }
     }, from, to);
 

@@ -963,7 +963,12 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     this.activeTab = "fields";
     this.tabButtons = /* @__PURE__ */ new Map();
     this.tabContentEl = null;
-    this.schema = initial ? { ...initial, fields: initial.fields.map((f) => ({ ...f })) } : { ...DEFAULT_SCHEMA, fields: DEFAULT_SCHEMA.fields.map((f) => ({ ...f })) };
+    const cloneField = (f) => ({
+      ...f,
+      options: f.options ? [...f.options] : void 0,
+      colors: f.colors ? { ...f.colors } : void 0
+    });
+    this.schema = initial ? { ...initial, fields: initial.fields.map(cloneField) } : { ...DEFAULT_SCHEMA, fields: DEFAULT_SCHEMA.fields.map(cloneField) };
   }
   onOpen() {
     var _a;
