@@ -1,0 +1,95 @@
+# CSS Customization
+
+Fancy Kanban exposes structured data attributes on card elements so you can target cards by field value using CSS snippets in Obsidian (Settings → Appearance → CSS snippets).
+
+## Data attributes on cards
+
+Every rendered card carries the following attributes:
+
+| Attribute | Where | Value |
+|---|---|---|
+| `data-card-id` | card root | internal card ID |
+| `data-column` | card root | current column (status) value |
+| `data-lane` | card root | current lane value (only when `lanes:` is configured) |
+| `data-key` | field value span | field name |
+| `data-value` | field value span | rendered field value |
+
+Link fields are excluded from `data-key` / `data-value` — each link item already carries `data-href`.
+
+### Example DOM
+
+```html
+<div class="fk-card" data-card-id="abc12345" data-column="doing" data-lane="alice">
+  <div class="fk-card__title">Buy milk</div>
+  <div class="fk-card__fields">
+    <div class="fk-card__field">
+      <span class="fk-card__field-label">Priority</span>
+      <span class="fk-card__field-value" data-key="priority" data-value="High">High</span>
+    </div>
+  </div>
+</div>
+```
+
+## Recipes
+
+### Color a card by column
+
+```css
+.fk-card[data-column="doing"] {
+    border-left: 3px solid steelblue;
+}
+
+.fk-card[data-column="blocked"] {
+    border-left: 3px solid crimson;
+    opacity: 0.7;
+}
+```
+
+### Color a card by a field value
+
+```css
+/* Red background when Priority is High */
+.fk-card:has(.fk-card__field-value[data-key="priority"][data-value="High"]) {
+    background-color: #ffcccc;
+}
+
+/* Muted when effort is 0 */
+.fk-card:has(.fk-card__field-value[data-key="effort"][data-value="0"]) {
+    opacity: 0.5;
+}
+```
+
+### Combine column and field value
+
+```css
+/* Highlight overdue cards only in the "doing" column */
+.fk-card[data-column="doing"]:has(.fk-card__field-value[data-key="due"][data-value="2026-08-01"]) {
+    outline: 2px solid orange;
+}
+```
+
+### Color by lane
+
+```css
+.fk-card[data-lane="alice"] {
+    border-top: 2px solid teal;
+}
+
+.fk-card[data-lane="bob"] {
+    border-top: 2px solid goldenrod;
+}
+```
+
+## How to apply a snippet
+
+1. Create a `.css` file in your vault's `.obsidian/snippets/` folder (create the folder if it does not exist).
+2. Paste your CSS rules into the file.
+3. Open Obsidian Settings → Appearance → CSS snippets and enable the file.
+
+Changes to the file take effect immediately — no reload required.
+
+## Notes
+
+- `data-value` reflects the stored value, not a display-transformed one. Date values are ISO strings (`2026-08-17`); Select values match the option name exactly as defined in the board config.
+- `:has()` is supported in all modern browsers and in the Electron build of Obsidian that ships the desktop app.
+- Textarea and checklist fields do not receive `data-key` / `data-value` because their content renders as structured sub-elements rather than a single value span.
