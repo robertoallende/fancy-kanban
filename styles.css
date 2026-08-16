@@ -258,6 +258,37 @@
   box-shadow: none;
 }
 
+.fk-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 0;
+}
+
+.fk-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+  margin-bottom: -1px;
+  padding: 6px 12px;
+}
+
+.fk-tab:hover {
+  color: var(--text-normal);
+}
+
+.fk-tab--active {
+  border-bottom-color: var(--interactive-accent);
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
 .fk-modal-footer {
   display: flex;
   justify-content: space-between;

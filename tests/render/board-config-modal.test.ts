@@ -70,6 +70,9 @@ describe('BoardConfigModal — edit existing board', () => {
 
 	it('pre-fills workflow input', () => {
 		const { modal } = makeModal(SCHEMA);
+		// workflow is on the Layout tab
+		Array.from(modal.contentEl.querySelectorAll<HTMLButtonElement>('.fk-tab'))
+			.find(b => b.textContent === 'Layout')?.click();
 		const inputs = Array.from(modal.contentEl.querySelectorAll('input')) as HTMLInputElement[];
 		const workflowInp = inputs.find(i => i.value === 'todo→doing');
 		expect(workflowInp).not.toBeUndefined();

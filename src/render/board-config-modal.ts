@@ -18,11 +18,22 @@ const DEFAULT_SCHEMA: BoardSchema = {
 	version: 1,
 };
 
+type TabId = 'fields' | 'layout' | 'card-display';
+
+const TAB_LABELS: Record<TabId, string> = {
+	'fields': 'Fields',
+	'layout': 'Layout',
+	'card-display': 'Card display',
+};
+
 export class BoardConfigModal extends Modal {
 	private schema: BoardSchema;
 	private errorEl: HTMLElement | null = null;
 	private fieldListEl: HTMLElement | null = null;
 	private cardFieldListEl: HTMLElement | null = null;
+	private activeTab: TabId = 'fields';
+	private tabButtons: Map<TabId, HTMLButtonElement> = new Map();
+	private tabContentEl: HTMLElement | null = null;
 
 	constructor(
 		app: App,
@@ -42,18 +53,51 @@ export class BoardConfigModal extends Modal {
 			? 'New board'
 			: 'Board settings';
 
-		this.renderTitleInput(contentEl);
-		this.renderFieldsSection(contentEl);
-		this.renderViewConfig(contentEl);
-		this.renderCardDisplay(contentEl);
-		this.renderWorkflow(contentEl);
+		this.renderTabBar(contentEl);
+		this.tabContentEl = contentEl.createDiv({ cls: 'fk-tab-content' });
+		this.renderTabContent();
 
 		this.errorEl = contentEl.createEl('p', { cls: 'fk-modal-error' });
-
 		const saveBtn = contentEl.createEl('button', { cls: 'fk-modal-save', text: 'Save' });
 		saveBtn.addEventListener('click', () => this.submit());
 
 		contentEl.querySelector<HTMLElement>('input')?.focus();
+	}
+
+	private renderTabBar(container: HTMLElement): void {
+		const tabBar = container.createDiv({ cls: 'fk-tabs' });
+		this.tabButtons.clear();
+		for (const [id, label] of Object.entries(TAB_LABELS) as [TabId, string][]) {
+			const btn = tabBar.createEl('button', { cls: 'fk-tab', text: label });
+			if (id === this.activeTab) btn.classList.add('fk-tab--active');
+			btn.addEventListener('click', () => this.switchTab(id));
+			this.tabButtons.set(id, btn);
+		}
+	}
+
+	private switchTab(id: TabId): void {
+		this.activeTab = id;
+		this.tabButtons.forEach((btn, tabId) => {
+			btn.classList.toggle('fk-tab--active', tabId === id);
+		});
+		this.renderTabContent();
+	}
+
+	private renderTabContent(): void {
+		const container = this.tabContentEl;
+		if (!container) return;
+		container.empty();
+		this.fieldListEl = null;
+		this.cardFieldListEl = null;
+		if (this.activeTab === 'fields') {
+			this.renderTitleInput(container);
+			this.renderFieldsSection(container);
+		} else if (this.activeTab === 'layout') {
+			this.renderViewConfig(container);
+			this.renderWorkflow(container);
+		} else {
+			this.renderCardDisplay(container);
+		}
 	}
 
 	private renderTitleInput(container: HTMLElement): void {
