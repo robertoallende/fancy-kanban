@@ -114,6 +114,15 @@ function parseFieldLine(line) {
     label: (_a = kvs["label"]) != null ? _a : kvs["name"]
   };
   if (kvs["options"] !== void 0) field.options = kvs["options"].split("|");
+  if (kvs["colors"] !== void 0) {
+    const colors = {};
+    for (const token of kvs["colors"].split("|")) {
+      const eq = token.indexOf("=");
+      if (eq === -1) continue;
+      colors[token.slice(0, eq)] = token.slice(eq + 1);
+    }
+    if (Object.keys(colors).length > 0) field.colors = colors;
+  }
   if (kvs["default"] !== void 0) field.default = kvs["default"];
   return { field, warning };
 }
@@ -414,7 +423,7 @@ function renderTextareaBlocks(value, container) {
   }
 }
 function renderCard(parent, card, board) {
-  var _a, _b, _c, _d;
+  var _a, _b, _c, _d, _e;
   const container = parent.createDiv({ cls: ["fk-card", "fk-card--draggable"] });
   container.dataset.cardId = card.id;
   container.dataset.column = (_a = card.values[board.viewConfig.columns]) != null ? _a : "";
@@ -460,9 +469,12 @@ function renderCard(parent, card, board) {
       } else if (field.type === "Textarea") {
         renderTextareaBlocks(value, row.createDiv({ cls: "fk-card__field-value" }));
       } else {
-        const valueSpan = row.createSpan({ cls: "fk-card__field-value" });
+        const color = (_e = field.colors) == null ? void 0 : _e[value];
+        const cls = color ? ["fk-card__field-value", "fk-card__field-chip"] : "fk-card__field-value";
+        const valueSpan = row.createSpan({ cls });
         valueSpan.dataset.key = field.name;
         valueSpan.dataset.value = value;
+        if (color) valueSpan.style.backgroundColor = color;
         renderInline(value, valueSpan);
       }
     }
@@ -609,6 +621,10 @@ function serializeConfig(board) {
   for (const field of board.fields) {
     let line = `  - name: ${field.name}, type: ${field.type}, label: ${field.label}`;
     if (field.options !== void 0) line += `, options: ${field.options.join("|")}`;
+    if (field.colors !== void 0) {
+      const colorsStr = Object.entries(field.colors).map(([k, v]) => `${k}=${v}`).join("|");
+      line += `, colors: ${colorsStr}`;
+    }
     if (field.default !== void 0) line += `, default: ${field.default}`;
     lines.push(line);
   }
@@ -1023,7 +1039,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     });
   }
   renderFieldRow(parent, field, idx) {
-    var _a, _b;
+    var _a;
     const total = this.schema.fields.length;
     const row = parent.createDiv({ cls: "fk-modal-field-row" });
     const isNew = field.name === "";
@@ -1045,12 +1061,52 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     }
     const isSelect = field.type === "Select";
     const isDate = field.type === "Date";
-    const optionsInp = this.fixedInput(row, "a | b | c", ((_a = field.options) != null ? _a : []).join(", "), "fk-col-options");
-    optionsInp.disabled = !isSelect;
-    optionsInp.addEventListener("input", () => {
-      field.options = optionsInp.value.split(",").map((s) => s.trim()).filter(Boolean);
-    });
-    const defaultInp = this.fixedInput(row, "Default", !isDate ? (_b = field.default) != null ? _b : "" : "", "fk-col-default");
+    let optionsEditor = null;
+    const renderOptionRows = () => {
+      var _a2, _b, _c, _d;
+      if (!optionsEditor) return;
+      optionsEditor.innerHTML = "";
+      for (let i = 0; i < ((_a2 = field.options) != null ? _a2 : []).length; i++) {
+        const opt = ((_b = field.options) != null ? _b : [])[i];
+        const optRow = optionsEditor.createDiv({ cls: "fk-option-row" });
+        const nameInp = optRow.createEl("input", { type: "text", cls: "fk-modal-input-sm" });
+        nameInp.value = opt;
+        nameInp.addEventListener("input", () => {
+          if (field.options) {
+            const oldName = field.options[i];
+            field.options[i] = nameInp.value;
+            if (field.colors && field.colors[oldName] !== void 0) {
+              field.colors[nameInp.value] = field.colors[oldName];
+              delete field.colors[oldName];
+            }
+          }
+        });
+        const colorInp = optRow.createEl("input", { type: "color", cls: "fk-option-color" });
+        colorInp.value = (_d = (_c = field.colors) == null ? void 0 : _c[opt]) != null ? _d : "#cccccc";
+        colorInp.addEventListener("input", () => {
+          if (!field.colors) field.colors = {};
+          field.colors[field.options[i]] = colorInp.value;
+        });
+        const removeBtn2 = optRow.createEl("button", { cls: "fk-option-remove", text: "\xD7" });
+        removeBtn2.addEventListener("click", () => {
+          const removed = field.options.splice(i, 1)[0];
+          if (field.colors) delete field.colors[removed];
+          renderOptionRows();
+        });
+      }
+      const addOptBtn = optionsEditor.createEl("button", { cls: "fk-modal-add-option", text: "+ Add option" });
+      addOptBtn.addEventListener("click", () => {
+        if (!field.options) field.options = [];
+        field.options.push("");
+        renderOptionRows();
+      });
+    };
+    const createOptionsEditor = () => {
+      optionsEditor = row.createDiv({ cls: "fk-options-editor" });
+      renderOptionRows();
+    };
+    if (isSelect) createOptionsEditor();
+    const defaultInp = this.fixedInput(row, "Default", !isDate ? (_a = field.default) != null ? _a : "" : "", "fk-col-default");
     defaultInp.disabled = !isSelect;
     if (isDate) defaultInp.classList.add("fk-hidden");
     defaultInp.addEventListener("input", () => {
@@ -1071,10 +1127,17 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
       field.type = typeSelect.value;
       const nowSelect = field.type === "Select";
       const nowDate = field.type === "Date";
-      optionsInp.disabled = !nowSelect;
-      if (!nowSelect) {
+      if (nowSelect) {
+        if (!field.options) field.options = [];
+        if (!optionsEditor) createOptionsEditor();
+        else renderOptionRows();
+      } else {
         field.options = void 0;
-        optionsInp.value = "";
+        field.colors = void 0;
+        if (optionsEditor) {
+          optionsEditor.remove();
+          optionsEditor = null;
+        }
       }
       field.default = void 0;
       defaultInp.value = "";
