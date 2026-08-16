@@ -28,6 +28,15 @@ async function openSettingsModal(): Promise<void> {
     await browser.pause(500);
 }
 
+async function clickTab(label: string): Promise<void> {
+    await browser.execute((tabLabel) => {
+        const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.fk-tab'));
+        const tab = tabs.find(b => b.textContent === tabLabel);
+        tab?.click();
+    }, label);
+    await browser.pause(200);
+}
+
 async function readBoardFile(): Promise<string> {
     return browser.executeObsidian(async ({ app }) => {
         const file = app.vault.getAbstractFileByPath('settings-board.md');
@@ -51,7 +60,27 @@ describe('Board settings modal', function () {
         expect(hasModal).toBe(true);
     });
 
-    it('shows the current board title in the title input', async function () {
+    it('renders three tabs: Fields, Layout, Card display', async function () {
+        await openSettingsModal();
+
+        const tabLabels = await browser.execute(() =>
+            Array.from(document.querySelectorAll<HTMLButtonElement>('.fk-tab'))
+                .map(b => b.textContent)
+        );
+        expect(tabLabels).toEqual(['Fields', 'Layout', 'Card display']);
+    });
+
+    it('Fields tab is active by default', async function () {
+        await openSettingsModal();
+
+        const isActive = await browser.execute(() => {
+            const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.fk-tab'));
+            return tabs.find(b => b.textContent === 'Fields')?.classList.contains('fk-tab--active');
+        });
+        expect(isActive).toBe(true);
+    });
+
+    it('shows the current board title in the title input on the Fields tab', async function () {
         await openSettingsModal();
 
         const titleValue = await browser.execute(() => {
@@ -62,7 +91,7 @@ describe('Board settings modal', function () {
         expect(titleValue).toBe('Settings Test Board');
     });
 
-    it('shows existing fields in the field list', async function () {
+    it('shows existing fields in the field list on the Fields tab', async function () {
         await openSettingsModal();
 
         const fieldLabels = await browser.execute(() => {
@@ -98,7 +127,6 @@ describe('Board settings modal', function () {
     it('adding a new field and saving persists it to the file', async function () {
         await openSettingsModal();
 
-        // Click the first "+ Add field" button (fields section, not card display section)
         await browser.execute(() => {
             (document.querySelector('.fk-modal-add-field') as HTMLButtonElement)?.click();
         });
@@ -122,5 +150,75 @@ describe('Board settings modal', function () {
         const content = await readBoardFile();
         expect(content).toContain('name: priority');
         expect(content).toContain('label: Priority');
+    });
+
+    it('clicking the Layout tab shows the Columns field select', async function () {
+        await openSettingsModal();
+        await clickTab('Layout');
+
+        const hasColumnsSelect = await browser.execute(() =>
+            document.querySelector('[data-role="columns"]') !== null
+        );
+        expect(hasColumnsSelect).toBe(true);
+    });
+
+    it('clicking the Card display tab shows the card title select', async function () {
+        await openSettingsModal();
+        await clickTab('Card display');
+
+        const hasCardTitleSelect = await browser.execute(() =>
+            document.querySelector('[data-role="card-title-select"]') !== null
+        );
+        expect(hasCardTitleSelect).toBe(true);
+    });
+
+    it('switching tabs does not lose unsaved field changes', async function () {
+        await openSettingsModal();
+
+        // Add a new field on Fields tab
+        await browser.execute(() => {
+            (document.querySelector('.fk-modal-add-field') as HTMLButtonElement)?.click();
+        });
+        await browser.pause(200);
+
+        await browser.execute(() => {
+            const rows = Array.from(document.querySelectorAll('.fk-modal-field-row'));
+            const lastRow = rows[rows.length - 1];
+            const inp = lastRow?.querySelector('.fk-col-label') as HTMLInputElement;
+            if (inp) { inp.value = 'Notes'; inp.dispatchEvent(new Event('input')); }
+        });
+
+        const countBefore = await browser.execute(() =>
+            document.querySelectorAll('.fk-modal-field-row').length
+        );
+
+        // Switch to Layout and back to Fields
+        await clickTab('Layout');
+        await clickTab('Fields');
+
+        const countAfter = await browser.execute(() =>
+            document.querySelectorAll('.fk-modal-field-row').length
+        );
+
+        expect(countAfter).toBe(countBefore);
+    });
+
+    it('adding a card face field on Card display tab and saving persists it to the file', async function () {
+        await openSettingsModal();
+        await clickTab('Card display');
+
+        await browser.execute(() => {
+            const addBtn = document.querySelector('.fk-modal-add-field') as HTMLButtonElement;
+            addBtn?.click();
+        });
+        await browser.pause(200);
+
+        await browser.execute(() => {
+            (document.querySelector('.fk-modal-save') as HTMLButtonElement)?.click();
+        });
+        await browser.pause(1000);
+
+        const content = await readBoardFile();
+        expect(content).toContain('card_fields:');
     });
 });

@@ -866,6 +866,11 @@ var DEFAULT_SCHEMA = {
   rawWorkflow: "",
   version: 1
 };
+var TAB_LABELS = {
+  "fields": "Fields",
+  "layout": "Layout",
+  "card-display": "Card display"
+};
 var BoardConfigModal = class extends import_obsidian2.Modal {
   constructor(app, initial, onConfirm) {
     super(app);
@@ -873,6 +878,9 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     this.errorEl = null;
     this.fieldListEl = null;
     this.cardFieldListEl = null;
+    this.activeTab = "fields";
+    this.tabButtons = /* @__PURE__ */ new Map();
+    this.tabContentEl = null;
     this.schema = initial ? { ...initial, fields: initial.fields.map((f) => ({ ...f })) } : { ...DEFAULT_SCHEMA, fields: DEFAULT_SCHEMA.fields.map((f) => ({ ...f })) };
   }
   onOpen() {
@@ -880,15 +888,46 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     const { contentEl } = this;
     contentEl.empty();
     this.titleEl.textContent = this.schema.title === "New Board" && !this.schema.fields.length ? "New board" : "Board settings";
-    this.renderTitleInput(contentEl);
-    this.renderFieldsSection(contentEl);
-    this.renderViewConfig(contentEl);
-    this.renderCardDisplay(contentEl);
-    this.renderWorkflow(contentEl);
+    this.renderTabBar(contentEl);
+    this.tabContentEl = contentEl.createDiv({ cls: "fk-tab-content" });
+    this.renderTabContent();
     this.errorEl = contentEl.createEl("p", { cls: "fk-modal-error" });
     const saveBtn = contentEl.createEl("button", { cls: "fk-modal-save", text: "Save" });
     saveBtn.addEventListener("click", () => this.submit());
     (_a = contentEl.querySelector("input")) == null ? void 0 : _a.focus();
+  }
+  renderTabBar(container) {
+    const tabBar = container.createDiv({ cls: "fk-tabs" });
+    this.tabButtons.clear();
+    for (const [id, label] of Object.entries(TAB_LABELS)) {
+      const btn = tabBar.createEl("button", { cls: "fk-tab", text: label });
+      if (id === this.activeTab) btn.classList.add("fk-tab--active");
+      btn.addEventListener("click", () => this.switchTab(id));
+      this.tabButtons.set(id, btn);
+    }
+  }
+  switchTab(id) {
+    this.activeTab = id;
+    this.tabButtons.forEach((btn, tabId) => {
+      btn.classList.toggle("fk-tab--active", tabId === id);
+    });
+    this.renderTabContent();
+  }
+  renderTabContent() {
+    const container = this.tabContentEl;
+    if (!container) return;
+    container.empty();
+    this.fieldListEl = null;
+    this.cardFieldListEl = null;
+    if (this.activeTab === "fields") {
+      this.renderTitleInput(container);
+      this.renderFieldsSection(container);
+    } else if (this.activeTab === "layout") {
+      this.renderViewConfig(container);
+      this.renderWorkflow(container);
+    } else {
+      this.renderCardDisplay(container);
+    }
   }
   renderTitleInput(container) {
     const wrap = this.field(container, "Board title");
