@@ -49,7 +49,7 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 
 	const titleFieldName = effectiveCardTitle(board);
 	if (titleFieldName !== null) {
-		container.createDiv({ cls: 'fk-card__title', text: card.values[titleFieldName] ?? '' });
+		renderInline(card.values[titleFieldName] ?? '', container.createDiv({ cls: 'fk-card__title' }));
 	}
 
 	const secondaryFields = effectiveCardFields(board)
@@ -91,13 +91,13 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 						listEl.createSpan({ cls: 'fk-card__checklist-text', text: item.text });
 					}
 				});
-			} else if (field.type === 'Textarea' && /^- .+/m.test(value)) {
+			} else if (field.type === 'Textarea' && value.split('\n').filter(l => l.trim()).every(l => /^- /.test(l))) {
 				const ul = row.createEl('ul');
 				for (const line of value.split('\n')) {
 					const text = line.replace(/^- /, '');
 					if (text) renderInline(text, ul.createEl('li'));
 				}
-			} else if (field.type === 'Textarea' && /^\d+\. .+/m.test(value)) {
+			} else if (field.type === 'Textarea' && value.split('\n').filter(l => l.trim()).every(l => /^\d+\. /.test(l))) {
 				const ol = row.createEl('ol');
 				for (const line of value.split('\n')) {
 					const text = line.replace(/^\d+\. /, '');

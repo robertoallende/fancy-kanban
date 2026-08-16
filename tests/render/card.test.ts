@@ -269,6 +269,21 @@ describe('renderCard', () => {
 			expect(items[1].textContent).toBe('second');
 		});
 
+		it('renders **bold** in the card title as <strong>', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: '**urgent** task', status: 'inbox', notes: '' } };
+			const el = renderCard(container, card, MD_BOARD);
+			expect(el.querySelector('.fk-card__title strong')?.textContent).toBe('urgent');
+		});
+
+		it('renders mixed prose+list Textarea as plain text, not a list', () => {
+			const container = document.createElement('div');
+			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: 'intro text\n- item one' } };
+			const el = renderCard(container, card, MD_BOARD);
+			expect(el.querySelector('ul')).toBeNull();
+			expect(el.querySelector('.fk-card__field-value')).not.toBeNull();
+		});
+
 		it('renders **bold** inside a checklist item label as <strong>', () => {
 			const container = document.createElement('div');
 			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: '- [ ] **important**' } };
