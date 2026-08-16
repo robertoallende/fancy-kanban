@@ -219,6 +219,7 @@
   display: inline-block;
   padding: 1px 7px;
   border-radius: 9999px;
+  background-color: var(--fk-chip-bg, transparent);
   color: #fff;
   font-size: 0.8em;
   font-weight: 500;

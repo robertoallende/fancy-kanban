@@ -12,21 +12,13 @@ export function renderInline(text: string, container: HTMLElement): void {
 		}
 
 		if (match[2] !== undefined) {
-			const el = document.createElement('strong');
-			el.textContent = match[2];
-			container.appendChild(el);
+			container.createEl('strong', { text: match[2] });
 		} else if (match[3] !== undefined) {
-			const el = document.createElement('em');
-			el.textContent = match[3];
-			container.appendChild(el);
+			container.createEl('em', { text: match[3] });
 		} else if (match[4] !== undefined) {
-			const el = document.createElement('del');
-			el.textContent = match[4];
-			container.appendChild(el);
+			container.createEl('del', { text: match[4] });
 		} else if (match[5] !== undefined) {
-			const el = document.createElement('code');
-			el.textContent = match[5];
-			container.appendChild(el);
+			container.createEl('code', { text: match[5] });
 		}
 
 		last = match.index + match[0].length;

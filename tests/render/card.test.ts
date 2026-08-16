@@ -325,12 +325,12 @@ describe('renderCard', () => {
 			expect(span?.classList.contains('fk-card__field-chip')).toBe(true);
 		});
 
-		it('chip span has inline background-color matching the field color', () => {
+		it('chip span has --fk-chip-bg custom property matching the field color', () => {
 			const container = document.createElement('div');
 			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', priority: 'High' } };
 			const el = renderCard(container, card, CHIP_BOARD);
 			const span = el.querySelector<HTMLElement>('.fk-card__field-chip');
-			expect(span?.style.backgroundColor).toBe('rgb(231, 76, 60)');
+			expect(span?.style.getPropertyValue('--fk-chip-bg')).toBe('#e74c3c');
 		});
 
 		it('Select field value without a matching color does not get fk-card__field-chip', () => {

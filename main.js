@@ -342,21 +342,13 @@ function renderInline(text, container) {
       container.appendChild(document.createTextNode(text.slice(last, match.index)));
     }
     if (match[2] !== void 0) {
-      const el = document.createElement("strong");
-      el.textContent = match[2];
-      container.appendChild(el);
+      container.createEl("strong", { text: match[2] });
     } else if (match[3] !== void 0) {
-      const el = document.createElement("em");
-      el.textContent = match[3];
-      container.appendChild(el);
+      container.createEl("em", { text: match[3] });
     } else if (match[4] !== void 0) {
-      const el = document.createElement("del");
-      el.textContent = match[4];
-      container.appendChild(el);
+      container.createEl("del", { text: match[4] });
     } else if (match[5] !== void 0) {
-      const el = document.createElement("code");
-      el.textContent = match[5];
-      container.appendChild(el);
+      container.createEl("code", { text: match[5] });
     }
     last = match.index + match[0].length;
   }
@@ -474,7 +466,7 @@ function renderCard(parent, card, board) {
         const valueSpan = row.createSpan({ cls });
         valueSpan.dataset.key = field.name;
         valueSpan.dataset.value = value;
-        if (color) valueSpan.style.backgroundColor = color;
+        if (color) valueSpan.style.setProperty("--fk-chip-bg", color);
         renderInline(value, valueSpan);
       }
     }

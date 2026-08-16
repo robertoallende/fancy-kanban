@@ -127,7 +127,7 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 				const valueSpan = row.createSpan({ cls });
 				valueSpan.dataset.key = field.name;
 				valueSpan.dataset.value = value;
-				if (color) valueSpan.style.backgroundColor = color;
+				if (color) valueSpan.style.setProperty('--fk-chip-bg', color);
 				renderInline(value, valueSpan);
 			}
 		}
