@@ -1066,10 +1066,11 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     }
     const isSelect = field.type === "Select";
     const isDate = field.type === "Date";
-    let optionsEditor = null;
+    const optionsEditorEl = row.createDiv({ cls: "fk-options-editor" });
+    if (!isSelect) optionsEditorEl.classList.add("fk-hidden");
+    const optionsEditor = optionsEditorEl;
     const renderOptionRows = () => {
       var _a2, _b, _c, _d;
-      if (!optionsEditor) return;
       optionsEditor.innerHTML = "";
       for (let i = 0; i < ((_a2 = field.options) != null ? _a2 : []).length; i++) {
         const opt = ((_b = field.options) != null ? _b : [])[i];
@@ -1106,11 +1107,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
         renderOptionRows();
       });
     };
-    const createOptionsEditor = () => {
-      optionsEditor = row.createDiv({ cls: "fk-options-editor" });
-      renderOptionRows();
-    };
-    if (isSelect) createOptionsEditor();
+    if (isSelect) renderOptionRows();
     const defaultInp = this.fixedInput(row, "Default", !isDate ? (_a = field.default) != null ? _a : "" : "", "fk-col-default");
     defaultInp.disabled = !isSelect;
     if (isDate) defaultInp.classList.add("fk-hidden");
@@ -1134,15 +1131,13 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
       const nowDate = field.type === "Date";
       if (nowSelect) {
         if (!field.options) field.options = [];
-        if (!optionsEditor) createOptionsEditor();
-        else renderOptionRows();
+        optionsEditor.classList.remove("fk-hidden");
+        renderOptionRows();
       } else {
         field.options = void 0;
         field.colors = void 0;
-        if (optionsEditor) {
-          optionsEditor.remove();
-          optionsEditor = null;
-        }
+        optionsEditor.classList.add("fk-hidden");
+        optionsEditor.innerHTML = "";
       }
       field.default = void 0;
       defaultInp.value = "";

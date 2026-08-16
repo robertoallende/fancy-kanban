@@ -164,11 +164,12 @@ export class BoardConfigModal extends Modal {
 		const isSelect = field.type === 'Select';
 		const isDate = field.type === 'Date';
 
-		// Options editor — only created for Select fields; created/removed on type change
-		let optionsEditor: HTMLElement | null = null;
+		// Options editor — always created in DOM order, shown only for Select fields
+		const optionsEditorEl = row.createDiv({ cls: 'fk-options-editor' });
+		if (!isSelect) optionsEditorEl.classList.add('fk-hidden');
+		const optionsEditor = optionsEditorEl;
 
 		const renderOptionRows = () => {
-			if (!optionsEditor) return;
 			optionsEditor.innerHTML = '';
 			for (let i = 0; i < (field.options ?? []).length; i++) {
 				const opt = (field.options ?? [])[i];
@@ -206,12 +207,7 @@ export class BoardConfigModal extends Modal {
 			});
 		};
 
-		const createOptionsEditor = () => {
-			optionsEditor = row.createDiv({ cls: 'fk-options-editor' });
-			renderOptionRows();
-		};
-
-		if (isSelect) createOptionsEditor();
+		if (isSelect) renderOptionRows();
 
 		const defaultInp = this.fixedInput(row, 'Default', !isDate ? (field.default ?? '') : '', 'fk-col-default');
 		defaultInp.disabled = !isSelect;
@@ -238,12 +234,13 @@ export class BoardConfigModal extends Modal {
 			const nowDate = field.type === 'Date';
 			if (nowSelect) {
 				if (!field.options) field.options = [];
-				if (!optionsEditor) createOptionsEditor();
-				else renderOptionRows();
+				optionsEditor.classList.remove('fk-hidden');
+				renderOptionRows();
 			} else {
 				field.options = undefined;
 				field.colors = undefined;
-				if (optionsEditor) { optionsEditor.remove(); optionsEditor = null; }
+				optionsEditor.classList.add('fk-hidden');
+				optionsEditor.innerHTML = '';
 			}
 			field.default = undefined;
 			defaultInp.value = '';

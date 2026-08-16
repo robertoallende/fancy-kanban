@@ -372,10 +372,11 @@ describe('BoardConfigModal — Select options editor', () => {
 		rawWorkflow: '',
 	};
 
-	it('renders an fk-options-editor for a Select field', () => {
+	it('renders a visible fk-options-editor for a Select field', () => {
 		const { modal } = makeModal(SCHEMA);
-		const editors = modal.contentEl.querySelectorAll('.fk-options-editor');
-		expect(editors.length).toBe(1);
+		const visible = Array.from(modal.contentEl.querySelectorAll('.fk-options-editor'))
+			.filter(el => !el.classList.contains('fk-hidden'));
+		expect(visible.length).toBe(1);
 	});
 
 	it('renders one option row per option', () => {
@@ -410,13 +411,14 @@ describe('BoardConfigModal — Select options editor', () => {
 		expect(doingColor.value).toBe('#3498db');
 	});
 
-	it('does not render an fk-options-editor for a non-Select field', () => {
+	it('hides the fk-options-editor for a non-Select field', () => {
 		const schemaTextOnly: BoardSchema = {
 			...SCHEMA,
 			fields: [{ name: 'title', type: 'Text', label: 'Title' }],
 		};
 		const { modal } = makeModal(schemaTextOnly);
-		expect(modal.contentEl.querySelector('.fk-options-editor')).toBeNull();
+		const editor = modal.contentEl.querySelector('.fk-options-editor');
+		expect(editor?.classList.contains('fk-hidden')).toBe(true);
 	});
 
 	it('includes colors in saved schema when color inputs are changed', () => {
