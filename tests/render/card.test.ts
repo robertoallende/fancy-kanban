@@ -280,8 +280,9 @@ describe('renderCard', () => {
 			const container = document.createElement('div');
 			const card: Card = { id: 'x', values: { title: 'Task', status: 'inbox', notes: 'intro text\n- item one\n- item two' } };
 			const el = renderCard(container, card, MD_BOARD);
-			expect(el.querySelector('.fk-card__field-value')?.textContent).toBe('intro text');
-			const ul = el.querySelector('ul');
+			const wrapper = el.querySelector('.fk-card__field-value')!;
+			expect(wrapper.querySelector('div')?.textContent).toBe('intro text');
+			const ul = wrapper.querySelector('ul');
 			expect(ul).not.toBeNull();
 			expect(ul!.querySelectorAll('li').length).toBe(2);
 		});

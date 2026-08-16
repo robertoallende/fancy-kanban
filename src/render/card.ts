@@ -61,7 +61,7 @@ function renderTextareaBlocks(value: string, container: HTMLElement): void {
 				i++;
 			}
 		} else {
-			if (line.trim()) renderInline(line, container.createDiv({ cls: 'fk-card__field-value' }));
+			if (line.trim()) renderInline(line, container.createDiv());
 			i++;
 		}
 	}
@@ -116,7 +116,7 @@ export function renderCard(parent: HTMLElement, card: Card, board: Board): HTMLE
 					}
 				});
 			} else if (field.type === 'Textarea') {
-				renderTextareaBlocks(value, row);
+				renderTextareaBlocks(value, row.createDiv({ cls: 'fk-card__field-value' }));
 			} else {
 				renderInline(value, row.createSpan({ cls: 'fk-card__field-value' }));
 			}
