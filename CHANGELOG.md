@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0 - 17/08/2026
+
+- Board setup modal is now organised into three tabs — Fields, Layout, and Card display — making it easier to navigate as boards grow more complex; switching tabs preserves all unsaved changes
+- Card face now renders inline markdown: `**bold**`, `*italic*`, `~~strikethrough~~`, and `` `code` `` are formatted in all text fields including the card title; Textarea fields also support unordered and ordered lists, and mixed prose-and-list content renders in document order
+
 ## 0.8.2 - 30/07/2026
 
 - Fixed long link URLs overflowing the card face: link labels now truncate with an ellipsis and the full URL is shown on hover #11
