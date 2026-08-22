@@ -4,7 +4,7 @@
 
 Kanban that finally lives where your notes do.
 
-![Fancy Kanban board embedded in a note](images/demo-board.png)
+![Fancy Kanban board embedded in a note](images/fancy-kanban-demo.png)
 
 ## Why
 
@@ -76,30 +76,37 @@ Any `Select` field can be the swimlane field. You can also set it through the bo
 
 Each board is a fenced code block — here's the board above, as it actually looks in the note's source:
 
-![Fancy Kanban plain markdown](images/demo-markdown.png)
+![Fancy Kanban plain markdown](images/fancy-kanban-demo-source.png)
 
 
 ````markdown
 ```fancy-kanban
 ---
-title: Website Relaunch
+version: 2
+title: Sprint 24 · Aug 2026
 fields:
-  - name: title, type: Text, label: Title
-  - name: status, type: Select, options: todo|doing|done, label: Status, default: todo
-  - name: due, type: Date, label: Due
-  - name: priority, type: Select, options: low|medium|high, label: Priority
-workflow: todo→doing, doing→done, doing→todo, done→doing
+  - name: title,    type: Text,     label: Title
+  - name: status,   type: Select,   options: backlog|in-progress|review|done,        label: Status,   default: backlog
+  - name: team,     type: Select,   options: Frontend|Backend|Design,                label: Team
+  - name: priority, type: Select,   options: High|Medium|Low, colors: High=#e74c3c|Medium=#e67e22|Low=#27ae60, label: Priority, default: Medium
+  - name: type,     type: Select,   options: Feature|Bug|Chore, colors: Feature=#2980b9|Bug=#c0392b|Chore=#7f8c8d, label: Type, default: Feature
+  - name: due,      type: Date,     label: Due
+card_fields: priority, type, due
+lanes: team
+workflow: backlog→in-progress, in-progress→review, review→done, review→in-progress, in-progress→backlog
 ---
 
-| _id    | Status | Title                  | Due        | Priority |
-|--------|--------|------------------------|------------|----------|
-| a1b2c3 | todo   | Rewrite homepage copy  | 2026-07-28 | high     |
-| d4e5f6 | todo   | Source new photography |            | medium   |
-| g7h8i9 | todo   | Draft pricing page     | 2026-08-02 |          |
-| j1k2l3 | doing  | Build nav component    | 2026-07-20 | high     |
-| m4n5o6 | doing  | Migrate blog posts     |            | low      |
-| p7q8r9 | done   | Set up staging env     | 2026-07-10 |          |
-| s1t2u3 | done   | Pick color palette     | 2026-07-05 | medium   |
+| _id      | Title                          | Status      | Team     | Priority | Type    | Due        |
+|----------|--------------------------------|-------------|----------|----------|---------|------------|
+| fa1b2c3d | Redesign login page            | in-progress | Frontend | High     | Feature | 2026-08-28 |
+| fb2c3d4e | Fix tooltip overflow on mobile | review      | Frontend | High     | Bug     | 2026-08-22 |
+| fc3d4e5f | Add dark mode toggle           | backlog     | Frontend | Medium   | Feature |            |
+| ba1b2c3d | Migrate auth to OAuth 2.0      | in-progress | Backend  | High     | Feature | 2026-08-30 |
+| bc3d4e5f | Fix token refresh race         | review      | Backend  | High     | Bug     | 2026-08-23 |
+| be5f6g7h | Optimize slow search query     | backlog     | Backend  | Medium   | Bug     |            |
+| da1b2c3d | New onboarding illustrations   | in-progress | Design   | Medium   | Feature | 2026-08-29 |
+| dc3d4e5f | Accessibility audit            | review      | Design   | High     | Chore   | 2026-08-24 |
+| db2c3d4e | Icon set refresh               | backlog     | Design   | Low      | Feature |            |
 ```
 ````
 
