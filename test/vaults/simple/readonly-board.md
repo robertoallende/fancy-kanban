@@ -1,6 +1,6 @@
 ```fancy-kanban
 ---
-version: 3
+version: 4
 title: Future Board
 fields:
   - name: status, type: Select, options: todo|done, label: Status, default: todo
