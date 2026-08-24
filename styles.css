@@ -298,35 +298,30 @@
   display: flex;
   gap: 0;
   margin-bottom: 12px;
-  border: 1px solid var(--background-modifier-border);
-  overflow: hidden;
 }
 
-.fk-tab {
+.fk-tabs .fk-tab {
   flex: 1;
   background: transparent;
-  border: none;
+  border: 1px solid var(--background-modifier-border);
   border-radius: 0;
   box-shadow: none;
   color: var(--text-muted);
   cursor: pointer;
   font-size: var(--font-ui-small);
   padding: 4px 12px;
+  margin-left: -1px;
 }
 
-.fk-tab + .fk-tab {
-  border-left: 1px solid var(--background-modifier-border);
+.fk-tabs .fk-tab:first-child {
+  margin-left: 0;
 }
 
-.fk-tab:hover {
-  color: var(--text-normal);
-  background: var(--background-modifier-hover);
-  box-shadow: none;
-}
-
-.fk-tab--active {
+.fk-tabs .fk-tab--active {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
+  position: relative;
+  z-index: 1;
 }
 
 .fk-modal-footer {
