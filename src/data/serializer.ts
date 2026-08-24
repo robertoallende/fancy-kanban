@@ -28,7 +28,7 @@ export function serializeBoardBlock(board: Board): string {
 
 function serializeConfig(board: Board): string {
 	const lines: string[] = [];
-	lines.push(`version: 2`);
+	lines.push(`version: 3`);
 	lines.push(`title: ${board.title}`);
 	lines.push('fields:');
 	for (const field of board.fields) {
@@ -45,6 +45,7 @@ function serializeConfig(board: Board): string {
 	if (board.viewConfig.cardTitle !== undefined) lines.push(`card_title: ${board.viewConfig.cardTitle}`);
 	if (board.viewConfig.cardFields?.length) lines.push(`card_fields: ${board.viewConfig.cardFields.join(', ')}`);
 	if (board.viewConfig.cardLabels === false) lines.push(`card_labels: false`);
+	if (board.viewConfig.cardLimit) lines.push(`card_limit: ${board.viewConfig.cardLimit}`);
 	if (board.rawWorkflow) lines.push(`workflow: ${board.rawWorkflow}`);
 	return lines.join('\n');
 }

@@ -197,6 +197,13 @@ describe('createCard', () => {
 		expect(card.values.priority).toBe('low');
 	});
 
+	// unit 33.1 — default must be applied even when modal sends an empty string
+	it('falls back to field default when an empty string is passed for a field with a default', () => {
+		const result = createCard(BOARD, 'inbox', { priority: '' });
+		const card = result.cards[result.cards.length - 1];
+		expect(card.values.priority).toBe('low');
+	});
+
 	it('generates a unique id', () => {
 		const result = createCard(BOARD, 'inbox', {});
 		const card = result.cards[result.cards.length - 1];

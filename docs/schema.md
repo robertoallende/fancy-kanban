@@ -76,6 +76,7 @@ YAML-like key-value pairs. Parsed line-by-line.
 | `card_title` | no | auto-detect | Field name to use as the card heading; set to empty string to show no heading |
 | `card_fields` | no | none | Ordered comma-separated list of secondary fields to display below the card heading |
 | `card_labels` | no | `true` | Set to `false` to hide the label prefix on secondary card fields |
+| `card_limit` | no | `0` (no limit) | Maximum number of cards shown per column; cards beyond this count are hidden behind a "Show more" button |
 
 ### `card_title`
 
@@ -110,6 +111,16 @@ card_labels: false
 ```
 
 When set to `false`, the label prefix is omitted from secondary field rows on the card face — only the value is shown. Defaults to `true` (labels visible). The key is only written to the config when its value is `false`.
+
+### `card_limit`
+
+```yaml
+card_limit: 5
+```
+
+When set to a positive integer, each column shows at most that many cards. Cards beyond the limit are hidden and a **Show more (N)** button appears at the bottom of the column. Clicking it reveals all remaining cards without reloading the board. Setting `card_limit: 0` or omitting the key disables limiting entirely.
+
+This is particularly useful for boards where the **done** column accumulates many completed cards over time — the most recently added cards remain visible at a glance, while older history collapses out of the way.
 
 ### `lanes`
 
@@ -241,7 +252,7 @@ When writing: `|` → `\|`, any newline → `<br>`.
 1. Extract the raw string between the opening and closing fences of the `fancy-kanban` block
 2. Split on the first `---` line to locate the config section start
 3. Split on the second `---` line to separate config from table
-4. Parse config line-by-line: extract `title`, `version`, `fields`, `workflow`, `lanes`, `card_title`, `card_fields`, `card_labels`
+4. Parse config line-by-line: extract `title`, `version`, `fields`, `workflow`, `lanes`, `card_title`, `card_fields`, `card_labels`, `card_limit`
 5. For `fields`, collect lines starting with `- ` and parse each as comma-separated `key: value` pairs; `colors` is decoded as pipe-separated `name=hex` tokens
 6. Find table lines in the body (lines starting with `|`)
 7. First table line is the header row — extract column labels; `_id` is always first

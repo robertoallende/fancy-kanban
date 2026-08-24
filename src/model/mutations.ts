@@ -49,7 +49,7 @@ export function createCard(board: Board, columnValue: string, values: Record<str
 		if (field.name === columnField) {
 			cardValues[field.name] = columnValue;
 		} else {
-			cardValues[field.name] = values[field.name] ?? field.default ?? '';
+			cardValues[field.name] = values[field.name] || field.default || '';
 		}
 	}
 	const newCard: Card = { id: generateId(), values: cardValues };

@@ -389,6 +389,52 @@ describe('CardModal — Date field defaults', () => {
 	});
 });
 
+// unit 33.1 — default values must be stored when user saves without touching the field
+describe('CardModal — default values stored on save (unit 33.1)', () => {
+	const DEFAULT_BOARD: Board = {
+		title: 'Default Board',
+		fields: [
+			{ name: 'title',    type: 'Text',   label: 'Title' },
+			{ name: 'status',   type: 'Select', label: 'Status',   options: ['inbox', 'doing', 'done'], default: 'inbox' },
+			{ name: 'priority', type: 'Select', label: 'Priority', options: ['High', 'Medium', 'Low'],  default: 'High' },
+		],
+		viewConfig: { columns: 'status' },
+		rawWorkflow: '',
+		cards: [],
+	};
+
+	function makeDefaultModal(onConfirm = vi.fn()) {
+		const modal = new CardModal({} as never, DEFAULT_BOARD, null, 'inbox', onConfirm);
+		modal.open();
+		return { modal, onConfirm };
+	}
+
+	it('includes the Select default in onConfirm payload when user saves without touching the field', () => {
+		const { modal, onConfirm } = makeDefaultModal();
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ priority: 'High' }));
+	});
+
+	it('does not save an empty string for a field that has a default and was not touched', () => {
+		const { modal, onConfirm } = makeDefaultModal();
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		const values = onConfirm.mock.calls[0][0] as Record<string, string>;
+		expect(values.priority).not.toBe('');
+	});
+
+	it('saves the explicit user selection when the user changes the field', () => {
+		const { modal, onConfirm } = makeDefaultModal();
+		const sel = modal.contentEl.querySelector<HTMLSelectElement>('select[class="fk-modal-input"]')!;
+		const prioritySel = Array.from(modal.contentEl.querySelectorAll<HTMLSelectElement>('select')).find(s =>
+			s.closest('.fk-modal-field')?.querySelector('label')?.textContent === 'Priority'
+		)!;
+		prioritySel.value = 'Low';
+		prioritySel.dispatchEvent(new Event('change'));
+		modal.contentEl.querySelector<HTMLButtonElement>('.fk-modal-save')!.click();
+		expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ priority: 'Low' }));
+	});
+});
+
 describe('CardModal — close', () => {
 	it('empties contentEl on close', () => {
 		const { modal } = makeModal(null);

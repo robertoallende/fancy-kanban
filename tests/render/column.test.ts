@@ -133,3 +133,76 @@ describe('renderColumn — lane value (swimlane cell)', () => {
 		expect(el.dataset.columnValue).toBe('inbox');
 	});
 });
+
+// unit 33.2 — card_limit column rendering
+describe('renderColumn — card limit', () => {
+	const FIVE_CARDS: Card[] = [
+		{ id: 'c1', values: { title: 'One',   status: 'done' } },
+		{ id: 'c2', values: { title: 'Two',   status: 'done' } },
+		{ id: 'c3', values: { title: 'Three', status: 'done' } },
+		{ id: 'c4', values: { title: 'Four',  status: 'done' } },
+		{ id: 'c5', values: { title: 'Five',  status: 'done' } },
+	];
+
+	function makeBoard(cardLimit: number | undefined): Board {
+		return { ...BOARD, viewConfig: { columns: 'status', cardLimit } };
+	}
+
+	it('renders all cards when cardLimit is undefined', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(undefined));
+		expect(el.querySelectorAll('.fk-card').length).toBe(5);
+	});
+
+	it('renders all cards when cardLimit is 0', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(0));
+		expect(el.querySelectorAll('.fk-card').length).toBe(5);
+	});
+
+	it('renders all cards when count does not exceed the limit', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(5));
+		expect(el.querySelectorAll('.fk-card').length).toBe(5);
+		expect(el.querySelector('.fk-col__show-more')).toBeNull();
+	});
+
+	it('hides cards beyond the limit with fk-hidden', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		const hidden = el.querySelectorAll('.fk-card.fk-hidden');
+		expect(hidden.length).toBe(2);
+	});
+
+	it('first N cards are visible (no fk-hidden)', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		const cards = el.querySelectorAll('.fk-card');
+		expect(cards[0].classList.contains('fk-hidden')).toBe(false);
+		expect(cards[1].classList.contains('fk-hidden')).toBe(false);
+		expect(cards[2].classList.contains('fk-hidden')).toBe(false);
+	});
+
+	it('shows a .fk-col__show-more button when limit is exceeded', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		expect(el.querySelector('.fk-col__show-more')).not.toBeNull();
+	});
+
+	it('show-more button text includes the hidden count', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		const btn = el.querySelector<HTMLButtonElement>('.fk-col__show-more')!;
+		expect(btn.textContent).toContain('2');
+	});
+
+	it('clicking show-more reveals all hidden cards', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		el.querySelector<HTMLButtonElement>('.fk-col__show-more')!.click();
+		expect(el.querySelectorAll('.fk-card.fk-hidden').length).toBe(0);
+	});
+
+	it('clicking show-more removes the button', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		el.querySelector<HTMLButtonElement>('.fk-col__show-more')!.click();
+		expect(el.querySelector('.fk-col__show-more')).toBeNull();
+	});
+
+	it('all cards remain in the DOM even when hidden', () => {
+		const el = renderColumn(document.createElement('div'), 'done', 'Done', FIVE_CARDS, makeBoard(3));
+		expect(el.querySelectorAll('.fk-card').length).toBe(5);
+	});
+});

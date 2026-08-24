@@ -296,6 +296,16 @@ export class BoardConfigModal extends Modal {
 		lanesSelect.addEventListener('change', () => {
 			this.schema.viewConfig.lanes = lanesSelect.value || undefined;
 		});
+
+		const limitWrap = this.field(section, 'Cards per column');
+		const limitInput = limitWrap.createEl('input', { cls: 'fk-modal-input', type: 'number' });
+		limitInput.placeholder = '0 = no limit';
+		limitInput.min = '0';
+		limitInput.value = String(this.schema.viewConfig.cardLimit ?? 0);
+		limitInput.addEventListener('input', () => {
+			const n = parseInt(limitInput.value, 10);
+			this.schema.viewConfig.cardLimit = !isNaN(n) && n > 0 ? n : undefined;
+		});
 	}
 
 	private populateLanesSelect(select: HTMLSelectElement): void {

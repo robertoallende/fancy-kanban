@@ -21,11 +21,30 @@ export function renderColumn(
 
 	const cardsContainer = container.createDiv({ cls: 'fk-column__cards' });
 
-	for (const card of cards) {
-		renderCard(cardsContainer, card, board);
+	const limit = board.viewConfig.cardLimit ?? 0;
+	const hasLimit = limit > 0 && cards.length > limit;
+
+	for (let i = 0; i < cards.length; i++) {
+		const cardEl = renderCard(cardsContainer, cards[i], board);
+		if (hasLimit && i >= limit) {
+			cardEl.classList.add('fk-hidden');
+		}
 	}
 
-	container.createEl('button', { cls: 'fk-col__add-btn', text: '+ Add card' });
+	const footer = container.createDiv({ cls: 'fk-col__footer' });
+	footer.createEl('button', { cls: 'fk-col__add-btn', text: '+ Add card' });
+
+	if (hasLimit) {
+		const hidden = cards.length - limit;
+		const showMoreBtn = footer.createEl('button', {
+			cls: 'fk-col__show-more',
+			text: `Show ${hidden} more`,
+		});
+		showMoreBtn.addEventListener('click', () => {
+			cardsContainer.querySelectorAll('.fk-hidden').forEach(el => el.classList.remove('fk-hidden'));
+			showMoreBtn.remove();
+		});
+	}
 
 	return container;
 }

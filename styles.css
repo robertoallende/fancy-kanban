@@ -248,9 +248,14 @@
 }
 
 
-.fk-board .fk-col__add-btn {
-  width: 100%;
+.fk-board .fk-col__footer {
+  display: flex;
+  gap: 4px;
   margin-top: 8px;
+}
+
+.fk-board .fk-col__add-btn {
+  flex: 1;
   padding: 6px;
   background: transparent;
   border: none;
@@ -269,35 +274,59 @@
   box-shadow: none;
 }
 
+.fk-board .fk-col__show-more {
+  flex: 1;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-normal);
+  opacity: 0.5;
+  cursor: pointer;
+  font-size: var(--font-smaller);
+  border-radius: var(--fk-card-radius);
+  text-align: right;
+}
+
+.fk-board .fk-col__show-more:hover {
+  opacity: 0.8;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
+}
+
 .fk-tabs {
   display: flex;
-  gap: 2px;
+  gap: 0;
   margin-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  padding-bottom: 0;
+  border: 1px solid var(--background-modifier-border);
+  overflow: hidden;
 }
 
 .fk-tab {
+  flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
   border-radius: 0;
   box-shadow: none;
   color: var(--text-muted);
   cursor: pointer;
   font-size: var(--font-ui-small);
-  margin-bottom: -1px;
-  padding: 6px 12px;
+  padding: 4px 12px;
+}
+
+.fk-tab + .fk-tab {
+  border-left: 1px solid var(--background-modifier-border);
 }
 
 .fk-tab:hover {
   color: var(--text-normal);
+  background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
 .fk-tab--active {
-  border-bottom-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
   color: var(--text-normal);
-  font-weight: 500;
 }
 
 .fk-modal-footer {

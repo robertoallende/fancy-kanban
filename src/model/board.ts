@@ -15,6 +15,7 @@ export interface ViewConfig {
 	cardTitle?: string;     // field name; '' = no title; undefined = auto-detect
 	cardFields?: string[];  // secondary fields only (title not included)
 	cardLabels?: boolean;   // false = hide labels on secondary fields; default true
+	cardLimit?: number;     // max cards shown per column before "Show more"; 0 or absent = no limit
 }
 
 export interface Card {
@@ -22,7 +23,7 @@ export interface Card {
 	values: Record<string, string>;
 }
 
-export const SUPPORTED_VERSION = 2;
+export const SUPPORTED_VERSION = 3;
 
 export interface BoardSchema {
 	title: string;

@@ -185,6 +185,31 @@ describe('serializeBoard', () => {
 			expect(result.board.viewConfig.cardLabels).toBe(false);
 		});
 
+		// unit 33.2 — card_limit serialization
+		it('includes card_limit when set to a positive number', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardLimit: 5 } };
+			const text = serializeBoard(board);
+			expect(text).toContain('card_limit: 5');
+		});
+
+		it('omits card_limit when undefined', () => {
+			const text = serializeBoard(MINIMAL_BOARD);
+			expect(text).not.toContain('card_limit');
+		});
+
+		it('omits card_limit when set to 0', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardLimit: 0 } };
+			const text = serializeBoard(board);
+			expect(text).not.toContain('card_limit');
+		});
+
+		it('round-trips card_limit through serialize then parse', () => {
+			const board: Board = { ...MINIMAL_BOARD, viewConfig: { columns: 'status', cardLimit: 8 } };
+			const result = parseBlock(serializeBoard(board));
+			if (!result.ok) throw new Error(result.error);
+			expect(result.board.viewConfig.cardLimit).toBe(8);
+		});
+
 		it('includes colors in the field line when defined', () => {
 			const board: Board = {
 				...MINIMAL_BOARD,

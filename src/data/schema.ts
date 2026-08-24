@@ -11,6 +11,7 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 	let cardTitle: string | undefined;
 	let cardFields: string[] | undefined;
 	let cardLabels: boolean | undefined;
+	let cardLimit: number | undefined;
 	let version = 1;
 	const fields: FieldDefinition[] = [];
 	const warnings: ConfigWarning[] = [];
@@ -47,6 +48,10 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 		else if (key === 'card_labels') {
 			if (value === 'false') cardLabels = false;
 		}
+		else if (key === 'card_limit') {
+			const n = parseInt(value, 10);
+			if (!isNaN(n)) cardLimit = n;
+		}
 		else if (key === 'fields') inFields = true;
 	}
 
@@ -55,7 +60,7 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 		fields,
 		rawWorkflow,
 		version,
-		viewConfig: { columns: 'status', lanes, cardTitle, cardFields, cardLabels },
+		viewConfig: { columns: 'status', lanes, cardTitle, cardFields, cardLabels, cardLimit },
 		warnings,
 	};
 }

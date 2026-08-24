@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0 - 19/08/2026
+
+- Fixed a bug where Select fields with a configured default did not store that default when a new card was saved without the user touching the field; the default is now always applied on save
+- Added `card_limit` config key to cap the number of visible cards per column; cards beyond the limit are hidden, with a "Show more" button at the bottom of the column to reveal them all at once — useful for keeping a long Done column from scrolling endlessly
+- Restyled the board setup modal tab bar to use the segmented button pattern (bordered container, no gap, shared dividers), matching the aesthetic used in Fancy Charts
+
 ## 0.9.0 - 17/08/2026
 
 - Board setup modal is now organised into three tabs — Fields, Layout, and Card display — making it easier to navigate as boards grow more complex; switching tabs preserves all unsaved changes

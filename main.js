@@ -28,7 +28,7 @@ var import_obsidian5 = require("obsidian");
 var import_obsidian3 = require("obsidian");
 
 // src/model/board.ts
-var SUPPORTED_VERSION = 2;
+var SUPPORTED_VERSION = 3;
 
 // src/data/deprecations.ts
 var W_FIELD_TYPE_DEPRECATED = "W_FIELD_TYPE_DEPRECATED";
@@ -46,6 +46,7 @@ function parseConfig(configText) {
   let cardTitle;
   let cardFields;
   let cardLabels;
+  let cardLimit;
   let version = 1;
   const fields = [];
   const warnings = [];
@@ -74,6 +75,9 @@ function parseConfig(configText) {
       if (parts.length) cardFields = parts;
     } else if (key === "card_labels") {
       if (value === "false") cardLabels = false;
+    } else if (key === "card_limit") {
+      const n = parseInt(value, 10);
+      if (!isNaN(n)) cardLimit = n;
     } else if (key === "fields") inFields = true;
   }
   return {
@@ -81,7 +85,7 @@ function parseConfig(configText) {
     fields,
     rawWorkflow,
     version,
-    viewConfig: { columns: "status", lanes, cardTitle, cardFields, cardLabels },
+    viewConfig: { columns: "status", lanes, cardTitle, cardFields, cardLabels, cardLimit },
     warnings
   };
 }
@@ -477,6 +481,7 @@ function renderCard(parent, card, board) {
 
 // src/render/column.ts
 function renderColumn(parent, name, label, cards, board, laneValue) {
+  var _a;
   const container = parent.createDiv({ cls: "fk-column" });
   container.dataset.columnValue = name;
   if (laneValue !== void 0) container.dataset.laneValue = laneValue;
@@ -486,10 +491,27 @@ function renderColumn(parent, name, label, cards, board, laneValue) {
     header.createSpan({ cls: "fk-column__count", text: String(cards.length) });
   }
   const cardsContainer = container.createDiv({ cls: "fk-column__cards" });
-  for (const card of cards) {
-    renderCard(cardsContainer, card, board);
+  const limit = (_a = board.viewConfig.cardLimit) != null ? _a : 0;
+  const hasLimit = limit > 0 && cards.length > limit;
+  for (let i = 0; i < cards.length; i++) {
+    const cardEl = renderCard(cardsContainer, cards[i], board);
+    if (hasLimit && i >= limit) {
+      cardEl.classList.add("fk-hidden");
+    }
   }
-  container.createEl("button", { cls: "fk-col__add-btn", text: "+ Add card" });
+  const footer = container.createDiv({ cls: "fk-col__footer" });
+  footer.createEl("button", { cls: "fk-col__add-btn", text: "+ Add card" });
+  if (hasLimit) {
+    const hidden = cards.length - limit;
+    const showMoreBtn = footer.createEl("button", {
+      cls: "fk-col__show-more",
+      text: `Show ${hidden} more`
+    });
+    showMoreBtn.addEventListener("click", () => {
+      cardsContainer.querySelectorAll(".fk-hidden").forEach((el) => el.classList.remove("fk-hidden"));
+      showMoreBtn.remove();
+    });
+  }
   return container;
 }
 
@@ -607,7 +629,7 @@ ${serializeBoard(board)}
 function serializeConfig(board) {
   var _a;
   const lines = [];
-  lines.push(`version: 2`);
+  lines.push(`version: 3`);
   lines.push(`title: ${board.title}`);
   lines.push("fields:");
   for (const field of board.fields) {
@@ -624,6 +646,7 @@ function serializeConfig(board) {
   if (board.viewConfig.cardTitle !== void 0) lines.push(`card_title: ${board.viewConfig.cardTitle}`);
   if ((_a = board.viewConfig.cardFields) == null ? void 0 : _a.length) lines.push(`card_fields: ${board.viewConfig.cardFields.join(", ")}`);
   if (board.viewConfig.cardLabels === false) lines.push(`card_labels: false`);
+  if (board.viewConfig.cardLimit) lines.push(`card_limit: ${board.viewConfig.cardLimit}`);
   if (board.rawWorkflow) lines.push(`workflow: ${board.rawWorkflow}`);
   return lines.join("\n");
 }
@@ -681,14 +704,13 @@ function reorderCard(board, cardId, toColumnValue, insertBeforeId) {
   return { ...board, cards: newCards };
 }
 function createCard(board, columnValue, values) {
-  var _a, _b;
   const columnField = board.viewConfig.columns;
   const cardValues = {};
   for (const field of board.fields) {
     if (field.name === columnField) {
       cardValues[field.name] = columnValue;
     } else {
-      cardValues[field.name] = (_b = (_a = values[field.name]) != null ? _a : field.default) != null ? _b : "";
+      cardValues[field.name] = values[field.name] || field.default || "";
     }
   }
   const newCard = { id: generateId(), values: cardValues };
@@ -1158,6 +1180,7 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     return row;
   }
   renderViewConfig(container) {
+    var _a;
     const section = container.createDiv({ cls: "fk-modal-section" });
     const colWrap = this.field(section, "Columns field");
     const colSelect = colWrap.createEl("select", { cls: "fk-modal-input" });
@@ -1173,6 +1196,15 @@ var BoardConfigModal = class extends import_obsidian2.Modal {
     this.populateLanesSelect(lanesSelect);
     lanesSelect.addEventListener("change", () => {
       this.schema.viewConfig.lanes = lanesSelect.value || void 0;
+    });
+    const limitWrap = this.field(section, "Cards per column");
+    const limitInput = limitWrap.createEl("input", { cls: "fk-modal-input", type: "number" });
+    limitInput.placeholder = "0 = no limit";
+    limitInput.min = "0";
+    limitInput.value = String((_a = this.schema.viewConfig.cardLimit) != null ? _a : 0);
+    limitInput.addEventListener("input", () => {
+      const n = parseInt(limitInput.value, 10);
+      this.schema.viewConfig.cardLimit = !isNaN(n) && n > 0 ? n : void 0;
     });
   }
   populateLanesSelect(select) {

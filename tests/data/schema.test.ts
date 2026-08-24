@@ -323,3 +323,28 @@ describe('reconcileCards', () => {
 		expect(result[0].values).toEqual({ status: 'inbox', title: 'Task A', notes: 'hello' });
 	});
 });
+
+// unit 33.2 — card_limit parsing
+describe('card_limit parsing', () => {
+	const base = `title: T\nfields:\n  - name: status, type: Select, options: inbox|done, label: Status`;
+
+	it('parses card_limit as a number', () => {
+		const result = parseConfig(`${base}\ncard_limit: 5`);
+		expect(result.viewConfig.cardLimit).toBe(5);
+	});
+
+	it('parses card_limit: 0 as 0 (no limit)', () => {
+		const result = parseConfig(`${base}\ncard_limit: 0`);
+		expect(result.viewConfig.cardLimit).toBe(0);
+	});
+
+	it('leaves cardLimit undefined when key is absent', () => {
+		const result = parseConfig(base);
+		expect(result.viewConfig.cardLimit).toBeUndefined();
+	});
+
+	it('ignores non-numeric card_limit values', () => {
+		const result = parseConfig(`${base}\ncard_limit: abc`);
+		expect(result.viewConfig.cardLimit).toBeUndefined();
+	});
+});
