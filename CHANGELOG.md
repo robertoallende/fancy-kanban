@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.0 -
+
+- Added `SKILL.md` — install Fancy Kanban as an agent skill with `npx skills add robertoallende/fancy-kanban` to give your AI coding assistant the full board schema; works with Claude Code, Kiro, Codex, Pi, and [75+ other agents](https://skills.sh)
+
 ## 0.10.0 - 19/08/2026
 
 - Fixed a bug where Select fields with a configured default did not store that default when a new card was saved without the user touching the field; the default is now always applied on save

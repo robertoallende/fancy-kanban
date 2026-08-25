@@ -112,6 +112,22 @@ workflow: backlog→in-progress, in-progress→review, review→done, review→i
 
 Because it's a standard Markdown table under the hood, a board is still legible — as a table, without interactivity — in any Markdown viewer, even without the plugin.
 
+### Generate boards with AI
+
+If you use an agentic AI coding tool — Claude Code, Kiro, Codex, Pi, or any of the [75+ supported agents](https://skills.sh) — you can install the Fancy Kanban skill and ask it to generate boards for you directly in your vault.
+
+```bash
+npx skills add robertoallende/fancy-kanban
+```
+
+Once installed, your AI assistant knows the full board schema: field types, config keys, workflow syntax, swimlanes, escaping rules, and the correct markdown table format. You can prompt it naturally:
+
+- *"Create a software project board with backlog, in-progress, review, and done columns, grouped by team"*
+- *"Add a priority Select field with High, Medium, and Low options to this board"*
+- *"Generate a content pipeline board with idea, draft, review, and published statuses"*
+
+The AI writes a valid `fancy-kanban` block directly into your note, ready to render with the plugin.
+
 ## Feature Requests and Issues
 
 If there's a gap you'd like prioritized, [open an issue](https://github.com/robertoallende/fancy-kanban/issues) — this roadmap takes real usage and feedback into account.
