@@ -3,6 +3,8 @@
 ## 0.11.0 -
 
 - Added `SKILL.md` — install Fancy Kanban as an agent skill with `npx skills add robertoallende/fancy-kanban` to give your AI coding assistant the full board schema; works with Claude Code, Kiro, Codex, Pi, and [75+ other agents](https://skills.sh)
+- Fixed the Columns field in the Layout settings tab not persisting across reloads — the selected field was never written to the config block, so the board always reverted to the first Select field on restart #15
+- Fixed drag-and-drop visual feedback: the card highlight now appears immediately on press rather than only after the pointer has moved #16
 
 ## 0.10.0 - 19/08/2026
 
