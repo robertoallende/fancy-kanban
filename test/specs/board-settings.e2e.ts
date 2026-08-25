@@ -18,7 +18,7 @@ async function openInPreview(fileName: string): Promise<void> {
             await (leaf.view as any).setState({ mode: 'preview' }, { history: false });
         }
     });
-    await browser.pause(1500);
+    await browser.pause(3000);
 }
 
 async function openSettingsModal(): Promise<void> {
