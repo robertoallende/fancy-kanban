@@ -348,3 +348,18 @@ describe('card_limit parsing', () => {
 		expect(result.viewConfig.cardLimit).toBeUndefined();
 	});
 });
+
+// unit 34.1 — columns field parsing (#15)
+describe('columns parsing', () => {
+	const base = `title: T\nfields:\n  - name: state, type: Select, options: open|closed, label: State`;
+
+	it('parses columns key into viewConfig.columns', () => {
+		const result = parseConfig(`${base}\ncolumns: state`);
+		expect(result.viewConfig.columns).toBe('state');
+	});
+
+	it('defaults to "status" when columns key is absent', () => {
+		const result = parseConfig(base);
+		expect(result.viewConfig.columns).toBe('status');
+	});
+});

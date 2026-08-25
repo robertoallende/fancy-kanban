@@ -201,3 +201,23 @@ describe('blockIndexFromContext', () => {
 		expect(true).toBe(true);
 	});
 });
+
+// unit 34.2 — drag highlight on pointerdown (#16)
+describe('mountBoard — drag highlight', () => {
+	it('adds fk-card--dragging immediately on pointerdown before any movement', () => {
+		const el = document.createElement('div');
+		mountBoard(el, BOARD, makeSave());
+		const card = el.querySelector<HTMLElement>('.fk-card')!;
+		card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 }));
+		expect(card.classList.contains('fk-card--dragging')).toBe(true);
+	});
+
+	it('removes fk-card--dragging on pointerup when mouse never moved past threshold', () => {
+		const el = document.createElement('div');
+		mountBoard(el, BOARD, makeSave());
+		const card = el.querySelector<HTMLElement>('.fk-card')!;
+		card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 }));
+		document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+		expect(card.classList.contains('fk-card--dragging')).toBe(false);
+	});
+});

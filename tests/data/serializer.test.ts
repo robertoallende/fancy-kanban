@@ -435,3 +435,34 @@ describe('duplicate _id resolution', () => {
 		expect(titles).toContain('Second');
 	});
 });
+
+// unit 34.1 — columns serialization (#15)
+describe('columns serialization', () => {
+	it('always emits columns: in serialized output', () => {
+		const output = serializeBoard(MINIMAL_BOARD);
+		expect(output).toContain('columns: status');
+	});
+
+	it('emits the correct non-default columns value', () => {
+		const board: Board = {
+			...MINIMAL_BOARD,
+			fields: [{ name: 'state', type: 'Select', label: 'State', options: ['open', 'closed'] }],
+			viewConfig: { columns: 'state' },
+			cards: [],
+		};
+		const output = serializeBoard(board);
+		expect(output).toContain('columns: state');
+	});
+
+	it('round-trips columns through serialize → parse', () => {
+		const board: Board = {
+			...MINIMAL_BOARD,
+			fields: [{ name: 'phase', type: 'Select', label: 'Phase', options: ['todo', 'done'] }],
+			viewConfig: { columns: 'phase' },
+			cards: [],
+		};
+		const result = parseBlock(serializeBoard(board));
+		if (!result.ok) throw new Error(result.error);
+		expect(result.board.viewConfig.columns).toBe('phase');
+	});
+});

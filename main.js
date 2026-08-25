@@ -42,6 +42,7 @@ function parseConfig(configText) {
   const lines = configText.split("\n");
   let title = "";
   let rawWorkflow = "";
+  let columns = "status";
   let lanes;
   let cardTitle;
   let cardFields;
@@ -66,6 +67,7 @@ function parseConfig(configText) {
     const key = trimmed.slice(0, colonIdx).trim();
     const value = trimmed.slice(colonIdx + 1).trim();
     if (key === "title") title = value;
+    else if (key === "columns") columns = value;
     else if (key === "version") version = parseInt(value, 10) || 1;
     else if (key === "workflow") rawWorkflow = value.replace(/^"(.*)"$/, "$1");
     else if (key === "lanes") lanes = value;
@@ -85,7 +87,7 @@ function parseConfig(configText) {
     fields,
     rawWorkflow,
     version,
-    viewConfig: { columns: "status", lanes, cardTitle, cardFields, cardLabels, cardLimit },
+    viewConfig: { columns, lanes, cardTitle, cardFields, cardLabels, cardLimit },
     warnings
   };
 }
@@ -631,6 +633,7 @@ function serializeConfig(board) {
   const lines = [];
   lines.push(`version: 3`);
   lines.push(`title: ${board.title}`);
+  lines.push(`columns: ${board.viewConfig.columns}`);
   lines.push("fields:");
   for (const field of board.fields) {
     let line = `  - name: ${field.name}, type: ${field.type}, label: ${field.label}`;
@@ -1551,6 +1554,7 @@ function attachDragDrop(boardEl, board, dispatch) {
     const startX = e.clientX;
     const startY = e.clientY;
     let dragStarted = false;
+    card.classList.add("fk-card--dragging");
     const onMove = (ev) => {
       var _a2, _b;
       if (!dragStarted) {
@@ -1559,7 +1563,6 @@ function attachDragDrop(boardEl, board, dispatch) {
         if (dx * dx + dy * dy < 25) return;
         dragStarted = true;
         draggingCardId = (_a2 = card.dataset.cardId) != null ? _a2 : null;
-        card.classList.add("fk-card--dragging");
       }
       ev.preventDefault();
       const below = activeDocument.elementFromPoint(ev.clientX, ev.clientY);
@@ -1579,7 +1582,10 @@ function attachDragDrop(boardEl, board, dispatch) {
       var _a2, _b, _c;
       activeDocument.removeEventListener("pointermove", onMove);
       activeDocument.removeEventListener("pointerup", onUp);
-      if (!dragStarted) return;
+      if (!dragStarted) {
+        card.classList.remove("fk-card--dragging");
+        return;
+      }
       const col = currentCol;
       clearDropState(boardEl);
       if (col && draggingCardId) {

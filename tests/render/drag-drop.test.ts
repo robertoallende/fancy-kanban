@@ -81,11 +81,11 @@ describe('drag lifecycle — pointer events', () => {
 		expect(card.classList.contains('fk-card--dragging')).toBe(true);
 	});
 
-	it('pointerdown alone does not add .fk-card--dragging', () => {
+	it('pointerdown alone adds .fk-card--dragging immediately', () => {
 		const { el } = makeEl();
 		const card = getCard(el, 'c1');
 		pointerDown(card);
-		expect(card.classList.contains('fk-card--dragging')).toBe(false);
+		expect(card.classList.contains('fk-card--dragging')).toBe(true);
 	});
 
 	it('pointerdown on a button inside a card does not start drag', () => {

@@ -7,6 +7,7 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 	const lines = configText.split('\n');
 	let title = '';
 	let rawWorkflow = '';
+	let columns = 'status';
 	let lanes: string | undefined;
 	let cardTitle: string | undefined;
 	let cardFields: string[] | undefined;
@@ -37,6 +38,7 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 		const value = trimmed.slice(colonIdx + 1).trim();
 
 		if (key === 'title') title = value;
+		else if (key === 'columns') columns = value;
 		else if (key === 'version') version = parseInt(value, 10) || 1;
 		else if (key === 'workflow') rawWorkflow = value.replace(/^"(.*)"$/, '$1');
 		else if (key === 'lanes') lanes = value;
@@ -60,7 +62,7 @@ export function parseConfig(configText: string): BoardSchema & { warnings: Confi
 		fields,
 		rawWorkflow,
 		version,
-		viewConfig: { columns: 'status', lanes, cardTitle, cardFields, cardLabels, cardLimit },
+		viewConfig: { columns, lanes, cardTitle, cardFields, cardLabels, cardLimit },
 		warnings,
 	};
 }

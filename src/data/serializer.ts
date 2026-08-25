@@ -30,6 +30,7 @@ function serializeConfig(board: Board): string {
 	const lines: string[] = [];
 	lines.push(`version: 3`);
 	lines.push(`title: ${board.title}`);
+	lines.push(`columns: ${board.viewConfig.columns}`);
 	lines.push('fields:');
 	for (const field of board.fields) {
 		let line = `  - name: ${field.name}, type: ${field.type}, label: ${field.label}`;
