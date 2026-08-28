@@ -2,6 +2,8 @@
 
 ## 0.11.1 -
 
+- Fixed clicking a card doing nothing after the 0.11.0 drag-highlight change — the pressed state now uses a separate class without `pointer-events: none`, so clicks reach the card and open the editor as expected #19
+
 ## 0.11.0 -
 
 - Added `SKILL.md` — install Fancy Kanban as an agent skill with `npx skills add robertoallende/fancy-kanban` to give your AI coding assistant the full board schema; works with Claude Code, Kiro, Codex, Pi, and [75+ other agents](https://skills.sh)
