@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.1 -
+
 ## 0.11.0 -
 
 - Added `SKILL.md` — install Fancy Kanban as an agent skill with `npx skills add robertoallende/fancy-kanban` to give your AI coding assistant the full board schema; works with Claude Code, Kiro, Codex, Pi, and [75+ other agents](https://skills.sh)

@@ -7,6 +7,7 @@ The first 4 completed cards are visible; older ones collapse behind a "Show more
 ---
 version: 3
 title: Feature Backlog
+columns: status
 fields:
   - name: title, type: Text, label: Title
   - name: status, type: Select, label: Status, options: backlog|in-progress|done, default: backlog
@@ -19,8 +20,6 @@ workflow: backlog→in-progress, in-progress→done, done→in-progress
 | _id | Title | Status | Priority |
 | --- | --- | --- | --- |
 | cl000001 | Redesign settings panel | in-progress | High |
-| cl000002 | Add keyboard shortcuts | backlog | Medium |
-| cl000003 | Dark mode support | backlog | Low |
 | cl000004 | Fix sidebar scroll on mobile | in-progress | High |
 | cl000005 | User login flow | done | High |
 | cl000006 | Password reset | done | Medium |
@@ -29,4 +28,6 @@ workflow: backlog→in-progress, in-progress→done, done→in-progress
 | cl000009 | Export to CSV | done | Low |
 | cl000010 | Two-factor authentication | done | High |
 | cl000011 | Onboarding tour | done | Medium |
+| cl000002 | Add keyboard shortcuts | backlog | Medium |
+| cl000003 | Dark mode support | backlog | Low |
 ```

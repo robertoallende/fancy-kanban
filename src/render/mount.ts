@@ -157,7 +157,7 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 		const startX = e.clientX;
 		const startY = e.clientY;
 		let dragStarted = false;
-		card.classList.add('fk-card--dragging');
+		card.classList.add('fk-card--pressed');
 
 		const onMove = (ev: PointerEvent) => {
 			if (!dragStarted) {
@@ -166,6 +166,8 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 				if (dx * dx + dy * dy < 25) return;
 				dragStarted = true;
 				draggingCardId = card.dataset.cardId ?? null;
+				card.classList.remove('fk-card--pressed');
+				card.classList.add('fk-card--dragging');
 			}
 			ev.preventDefault();
 			const below = activeDocument.elementFromPoint(ev.clientX, ev.clientY);
@@ -185,7 +187,7 @@ function attachDragDrop(boardEl: HTMLElement, board: Board, dispatch: (b: Board)
 		const onUp = () => {
 			activeDocument.removeEventListener('pointermove', onMove);
 			activeDocument.removeEventListener('pointerup', onUp);
-			if (!dragStarted) { card.classList.remove('fk-card--dragging'); return; }
+			if (!dragStarted) { card.classList.remove('fk-card--pressed'); return; }
 			const col = currentCol;
 			clearDropState(boardEl);
 			if (col && draggingCardId) {

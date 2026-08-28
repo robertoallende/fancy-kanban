@@ -158,6 +158,10 @@
   -webkit-touch-callout: none;
 }
 
+.fk-card--pressed {
+  opacity: 0.4;
+}
+
 .fk-card--dragging {
   opacity: 0.4;
   pointer-events: none;
