@@ -118,7 +118,7 @@ export class CardModal extends Modal {
 			inp.value = initialValue;
 			inp.addEventListener('input', () => onChange(inp.value));
 			inp.addEventListener('keydown', (e: KeyboardEvent) => {
-				if (e.key === 'Enter') {
+				if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
 					e.preventDefault();
 					e.stopPropagation();
 					const values = { ...this.values };

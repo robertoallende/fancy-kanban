@@ -96,6 +96,23 @@ describe('CardModal — new card', () => {
 	});
 });
 
+describe('CardModal — Enter key in text input', () => {
+	it('saves on Enter', () => {
+		const { modal, onConfirm } = makeModal(null);
+		const input = modal.contentEl.querySelector('input') as HTMLInputElement;
+		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+		expect(onConfirm).toHaveBeenCalled();
+	});
+
+	it('does not save on Enter that confirms an IME composition', () => {
+		const { modal, onConfirm } = makeModal(null);
+		const input = modal.contentEl.querySelector('input') as HTMLInputElement;
+		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true }));
+		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229 }));
+		expect(onConfirm).not.toHaveBeenCalled();
+	});
+});
+
 describe('CardModal — edit card', () => {
 	it('sets title to "Edit card"', () => {
 		const { modal } = makeModal(CARD);
