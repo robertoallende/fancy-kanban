@@ -854,7 +854,7 @@ var CardModal = class extends import_obsidian.Modal {
       inp.addEventListener("input", () => onChange(inp.value));
       inp.addEventListener("keydown", (e) => {
         var _a2;
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
           e.preventDefault();
           e.stopPropagation();
           const values = { ...this.values };

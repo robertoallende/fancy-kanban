@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.2 - 12/11/2026
+
+- Fixed the card modal saving and closing when Enter is pressed to confirm an IME conversion (Japanese, Chinese, Korean input); Enter is now ignored while composing, on both desktop and iOS/iPadOS #22
+
 ## 0.11.1 - 29/08/2026
 
 - Fixed clicking a card doing nothing after the 0.11.0 drag-highlight change — the pressed state now uses a separate class without `pointer-events: none`, so clicks reach the card and open the editor as expected #19
